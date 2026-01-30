@@ -1,0 +1,119 @@
+<div class="space-y-6" data-controller="inbox-drop"
+     data-inbox-drop-documents-url-value="<%= inbox_documents_path %>"
+     data-inbox-drop-notes-url-value="<%= inbox_notes_path %>"
+     data-inbox-drop-action-items-url-value="<%= inbox_action_items_path %>"
+     data-action="dragenter->inbox-drop#dragenter dragover->inbox-drop#dragover dragleave->inbox-drop#dragleave drop->inbox-drop#drop">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Inbox</h1>
+      <p class="text-sm text-gray-500 mt-1">Items die nog niet aan een dossier zijn toegewezen</p>
+    </div>
+    <div class="flex items-center space-x-2">
+      <%= link_to new_inbox_document_path, class: "inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50", data: { turbo_frame: "modal" } do %>
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Document
+      <% end %>
+      <%= link_to new_inbox_note_path, class: "inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50", data: { turbo_frame: "modal" } do %>
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Notitie
+      <% end %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <%= form_with model: ActionItem.new, url: inbox_action_items_path, class: "flex items-center gap-3", data: { controller: "quick-add", action: "turbo:submit-end->quick-add#reset" } do |f| %>
+      <%= f.text_field :description, placeholder: "Nieuw actiepunt toevoegen... (Enter om op te slaan)", class: "flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", data: { quick_add_target: "input" } %>
+      <%= f.date_field :due_date, class: "px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+    <% end %>
+  </div>
+
+  <ul id="inbox-action-items" class="divide-y divide-gray-100 bg-white rounded-lg shadow-sm border border-gray-200 <%= 'hidden' if @action_items.empty? %>" data-controller="sortable" data-sortable-url-value="<%= reorder_action_items_path %>">
+    <% @action_items.each do |action_item| %>
+      <%= render "inbox/action_item", action_item: action_item %>
+    <% end %>
+  </ul>
+
+  <% if @documents.empty? && @notes.empty? && @action_items.empty? %>
+    <div id="inbox-empty-state" class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">Inbox is leeg</h3>
+      <p class="mt-1 text-sm text-gray-500">Voeg een actiepunt toe met het veld hierboven.</p>
+    </div>
+  <% end %>
+
+  <% if @documents.any? %>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="p-4 border-b border-gray-200">
+          <h2 class="font-semibold text-gray-900">Documenten (<%= @documents.count %>)</h2>
+        </div>
+        <ul class="divide-y divide-gray-100">
+          <% @documents.each do |document| %>
+            <li class="p-4 flex items-center justify-between gap-4">
+              <div class="flex-1 min-w-0">
+                <%= link_to document.name, document, class: "font-medium text-gray-900 hover:text-blue-600" %>
+                <p class="text-xs text-gray-500"><%= document.display_date.strftime("%d-%m-%Y %H:%M") %></p>
+              </div>
+              <div class="flex items-center gap-2">
+                <%= form_with url: assign_document_path(document), method: :patch, class: "flex items-center gap-2" do |f| %>
+                  <%= f.select :dossier_id, @dossiers.map { |d| [d.name, d.id] }, { prompt: "Kies dossier..." }, class: "text-sm border-gray-300 rounded-lg" %>
+                  <%= f.submit "Toewijzen", class: "px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 cursor-pointer" %>
+                <% end %>
+                <%= button_to document_path(document), method: :delete, class: "text-gray-400 hover:text-red-600", data: { turbo_confirm: "Weet je zeker dat je dit document wilt verwijderen?" } do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                <% end %>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <% if @notes.any? %>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="p-4 border-b border-gray-200">
+          <h2 class="font-semibold text-gray-900">Notities (<%= @notes.count %>)</h2>
+        </div>
+        <ul class="divide-y divide-gray-100">
+          <% @notes.each do |note| %>
+            <li class="p-4 flex items-center justify-between gap-4">
+              <div class="flex-1 min-w-0">
+                <%= link_to note.title, note, class: "font-medium text-gray-900 hover:text-blue-600" %>
+                <p class="text-xs text-gray-500"><%= note.display_date.strftime("%d-%m-%Y %H:%M") %></p>
+              </div>
+              <div class="flex items-center gap-2">
+                <%= form_with url: assign_note_path(note), method: :patch, class: "flex items-center gap-2" do |f| %>
+                  <%= f.select :dossier_id, @dossiers.map { |d| [d.name, d.id] }, { prompt: "Kies dossier..." }, class: "text-sm border-gray-300 rounded-lg" %>
+                  <%= f.submit "Toewijzen", class: "px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 cursor-pointer" %>
+                <% end %>
+                <%= button_to note_path(note), method: :delete, class: "text-gray-400 hover:text-red-600", data: { turbo_confirm: "Weet je zeker dat je deze notitie wilt verwijderen?" } do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                <% end %>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+  <div data-inbox-drop-target="dropzone" class="hidden fixed inset-0 z-50 bg-blue-500 bg-opacity-90 flex items-center justify-center pointer-events-none">
+    <div class="text-center text-white">
+      <svg class="mx-auto h-16 w-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+      </svg>
+      <p class="text-2xl font-bold">Sleep bestanden of tekst hier</p>
+      <p class="text-lg opacity-80">Bestanden worden documenten, tekst wordt een notitie</p>
+    </div>
+  </div>
+</div>
+
+<%= turbo_frame_tag "modal" %>

@@ -1,0 +1,5 @@
+<%= turbo_stream.update "modal", "" %>
+
+<%= turbo_stream.prepend "dossier-content" do %>
+  <%= render "folders/folder", folder: @folder %>
+<% end %>

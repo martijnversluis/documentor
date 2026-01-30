@@ -1,0 +1,126 @@
+<%= turbo_frame_tag dom_id(action_item) do %>
+  <li class="flex items-start space-x-3 py-2 px-3 rounded-lg hover:bg-gray-50 group transition-all"
+      <%= "draggable=true data-sortable-id=#{action_item.id}".html_safe unless action_item.completed? %>
+      <%= "data-controller=completion-notes data-completion-notes-url-value=#{update_notes_action_item_path(action_item)}".html_safe if action_item.completed? %>
+      <% if local_assigns[:link_to_dossier] == false && !action_item.completed? %>
+        data-controller="action-item-document-drop"
+        data-action-item-document-drop-action-item-id-value="<%= action_item.id %>"
+      <% end %>>
+    <% unless action_item.completed? %>
+      <div class="flex-shrink-0 mt-1 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-gray-500" data-drag-handle>
+        <svg class="w-4 h-4 pointer-events-none" fill="currentColor" viewBox="0 0 24 24">
+          <circle cx="9" cy="6" r="1.5"></circle>
+          <circle cx="15" cy="6" r="1.5"></circle>
+          <circle cx="9" cy="12" r="1.5"></circle>
+          <circle cx="15" cy="12" r="1.5"></circle>
+          <circle cx="9" cy="18" r="1.5"></circle>
+          <circle cx="15" cy="18" r="1.5"></circle>
+        </svg>
+      </div>
+    <% end %>
+    <%= button_to toggle_action_item_path(action_item), method: :patch, class: "flex-shrink-0 mt-0.5", form: { data: { turbo_stream: true } } do %>
+      <% if action_item.completed? %>
+        <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+      <% else %>
+        <svg class="w-5 h-5 text-gray-300 group-hover:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+        </svg>
+      <% end %>
+    <% end %>
+
+    <div class="flex-1 min-w-0" data-controller="expandable" data-expandable-max-height-value="72">
+      <% if local_assigns[:link_to_dossier] == false %>
+        <%= link_to action_item, class: "block text-sm prose prose-sm max-w-none transition-all duration-200 overflow-x-auto #{action_item.completed? ? 'text-gray-400 line-through' : 'text-gray-900 hover:text-blue-600'}", data: { turbo_frame: "_top", expandable_target: "content" } do %>
+          <%= markdown_first_paragraph(action_item.description) %>
+        <% end %>
+      <% else %>
+        <%= link_to action_item.dossier, class: "block text-sm prose prose-sm max-w-none transition-all duration-200 #{action_item.completed? ? 'text-gray-400 line-through' : 'text-gray-900 hover:text-blue-600'}", data: { turbo_frame: "_top", expandable_target: "content" } do %>
+          <%= markdown_first_paragraph(action_item.description) %>
+        <% end %>
+      <% end %>
+      <button type="button" data-expandable-target="button" data-action="click->expandable#toggle" class="hidden text-xs text-blue-600 hover:text-blue-800 mt-1">Meer</button>
+      <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
+        <% if action_item.completed? && action_item.completed_at.present? %>
+          <span class="text-xs text-green-600">Afgerond <%= action_item.completed_at.strftime("%d-%m-%Y") %></span>
+        <% elsif action_item.due_date.present? %>
+          <span class="text-xs <%= action_item.overdue? ? 'text-red-600 font-medium' : 'text-gray-500' %>">
+            <%= action_item.due_date.strftime("%d-%m-%Y") %>
+          </span>
+        <% end %>
+        <% if action_item.context.present? %>
+          <span class="text-xs text-teal-600">@<%= action_item.context %></span>
+        <% end %>
+        <% if action_item.estimated_minutes.present? %>
+          <span class="text-xs text-gray-400"><%= ActionItem::DURATION_OPTIONS.find { |l, v| v == action_item.estimated_minutes }&.first || "#{action_item.estimated_minutes} min" %></span>
+        <% end %>
+        <% if action_item.next_action? %>
+          <span class="inline-flex items-center text-xs text-gray-700 font-medium">
+            <svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+            </svg>
+            Volgende
+          </span>
+        <% end %>
+        <% if action_item.waiting? %>
+          <span class="inline-flex items-center text-xs text-orange-600">
+            <svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <%= action_item.waiting_for_party&.name || action_item.waiting_for_description %>
+          </span>
+        <% end %>
+        <% if action_item.recurring? %>
+          <span class="inline-flex items-center text-xs text-purple-600">
+            <svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            <%= { 'daily' => 'Dagelijks', 'workdays' => 'Werkdagen', 'weekly' => 'Wekelijks', 'monthly' => 'Maandelijks', 'quarterly' => 'Per kwartaal', 'yearly' => 'Jaarlijks' }[action_item.recurrence] %>
+          </span>
+        <% end %>
+      </div>
+      <% if action_item.completed? %>
+        <div class="mt-2">
+          <div class="text-xs text-gray-600 prose prose-sm max-w-none cursor-pointer hover:bg-gray-100 rounded px-2 py-1 -mx-2 <%= action_item.notes.blank? ? 'hidden' : '' %>"
+               data-completion-notes-target="display"
+               data-action="click->completion-notes#edit">
+            <%= markdown(action_item.notes.to_s) %>
+          </div>
+          <%= text_area_tag :notes, action_item.notes,
+              rows: 1,
+              placeholder: "Notities toevoegen...",
+              class: "w-full px-2 py-1 text-xs text-gray-600 bg-gray-50 border border-transparent rounded focus:border-gray-300 focus:bg-white focus:outline-none resize-none transition-all #{action_item.notes.present? ? 'hidden' : ''}",
+              data: { completion_notes_target: "notes", action: "input->completion-notes#scheduleAutoSave blur->completion-notes#blur" } %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      <% if !action_item.completed? && local_assigns[:link_to_dossier] == false %>
+        <%= link_to action_item_path(action_item, anchor: "add-sub-item"), class: "text-gray-400 hover:text-green-600", title: "Sub-item toevoegen", data: { turbo_frame: "_top" } do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+        <% end %>
+      <% end %>
+      <%= link_to edit_action_item_path(action_item, return_to: request.path), class: "text-gray-400 hover:text-blue-600", data: { turbo_frame: "_top" } do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+        </svg>
+      <% end %>
+      <%= button_to action_item_path(action_item), method: :delete, class: "text-gray-400 hover:text-red-600", form: { data: { turbo_frame: "_top" } }, data: { turbo_confirm: "Weet je zeker dat je dit actiepunt wilt verwijderen?" } do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      <% end %>
+    </div>
+  </li>
+  <% if action_item.has_children? && local_assigns[:link_to_dossier] == false %>
+    <ul class="ml-8" data-controller="sortable" data-sortable-url-value="<%= reorder_action_items_path %>">
+      <% action_item.children.ordered.each do |child| %>
+        <%= render "action_items/sub_item", child: child %>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>

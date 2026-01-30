@@ -1,0 +1,11 @@
+<%= turbo_stream.update "modal", "" %>
+
+<% if @note.folder.present? %>
+  <%= turbo_stream.append dom_id(@note.folder, :content) do %>
+    <%= render "notes/note", note: @note %>
+  <% end %>
+<% else %>
+  <%= turbo_stream.append "dossier-content" do %>
+    <%= render "notes/note", note: @note %>
+  <% end %>
+<% end %>

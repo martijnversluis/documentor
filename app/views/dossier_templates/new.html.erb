@@ -1,0 +1,14 @@
+<div class="max-w-2xl mx-auto">
+  <div class="mb-6">
+    <div class="flex items-center space-x-2 text-sm text-gray-500 mb-1">
+      <%= link_to "Templates", dossier_templates_path, class: "hover:text-gray-700" %>
+      <span>/</span>
+    </div>
+    <h1 class="text-2xl font-bold text-gray-900">Nieuwe template</h1>
+    <% if @source_dossier %>
+      <p class="text-sm text-gray-500 mt-1">Gebaseerd op dossier "<%= @source_dossier.name %>"</p>
+    <% end %>
+  </div>
+
+  <%= render "form", dossier_template: @dossier_template %>
+</div>

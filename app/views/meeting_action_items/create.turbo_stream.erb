@@ -1,0 +1,7 @@
+<%= turbo_stream.append "meeting_action_items" do %>
+  <%= render "meetings/action_item", action_item: @action_item %>
+<% end %>
+
+<%= turbo_stream.replace "meeting_action_item_form" do %>
+  <%= render "meetings/action_item_form", meeting: @meeting, action_item: ActionItem.new %>
+<% end %>

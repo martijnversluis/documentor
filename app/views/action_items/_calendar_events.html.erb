@@ -1,0 +1,44 @@
+<% if calendar_events.present? %>
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+    <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-semibold text-gray-900 flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+        Agenda
+      </h2>
+      <span class="text-sm text-gray-500"><%= calendar_events.count %> <%= calendar_events.count == 1 ? 'afspraak' : 'afspraken' %></span>
+    </div>
+
+    <ul class="divide-y divide-gray-100">
+      <% calendar_events.each do |event| %>
+        <%
+          now = Time.current
+          is_ongoing = !event[:all_day] && event[:start_time].present? && event[:end_time].present? &&
+                       event[:start_time] <= now && event[:end_time] > now
+        %>
+        <li class="<%= is_ongoing ? 'bg-green-50 border-l-4 border-green-500' : '' %> hover:bg-gray-50 group">
+          <% if is_ongoing && event[:google_account_id].present? && event[:event_id].present? %>
+            <%= button_to enter_meeting_path,
+              method: :post,
+              params: {
+                google_account_id: event[:google_account_id],
+                event_id: event[:event_id],
+                title: event[:title],
+                start_time: event[:start_time],
+                end_time: event[:end_time],
+                html_link: event[:html_link]
+              },
+              class: "w-full text-left px-4 py-3 flex items-start gap-3 cursor-pointer" do %>
+              <%= render "action_items/calendar_event_content", event: event, is_ongoing: is_ongoing %>
+            <% end %>
+          <% else %>
+            <div class="px-4 py-3 flex items-start gap-3">
+              <%= render "action_items/calendar_event_content", event: event, is_ongoing: is_ongoing %>
+            </div>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

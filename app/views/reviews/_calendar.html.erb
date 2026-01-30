@@ -1,0 +1,90 @@
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+  <h2 class="text-lg font-semibold text-gray-900 mb-4">Review Habit Tracker</h2>
+
+  <div class="space-y-6">
+    <% habit_data.each do |habit| %>
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-3">
+            <span class="font-medium text-gray-900"><%= habit[:label] %></span>
+            <% if habit[:streak] > 0 %>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs font-medium">
+                🔥 <%= habit[:streak] %>
+              </span>
+            <% end %>
+          </div>
+          <span class="text-sm text-gray-500">
+            <%= habit[:completed_count] %>/<%= habit[:total_count] %> voltooid
+            (<%= habit[:total_count] > 0 ? (habit[:completed_count] * 100 / habit[:total_count]) : 0 %>%)
+          </span>
+        </div>
+
+        <div class="flex gap-1 flex-wrap">
+          <% habit[:periods].each do |period| %>
+            <%
+              if period[:future]
+                color_class = "bg-gray-100"
+                border_class = ""
+              elsif period[:completed]
+                color_class = "bg-green-500"
+                border_class = ""
+              elsif period[:in_progress]
+                color_class = "bg-yellow-400"
+                border_class = ""
+              else
+                color_class = "bg-red-100"
+                border_class = "border-2 border-red-300"
+              end
+
+              current_class = period[:current] ? "ring-2 ring-blue-500 ring-offset-1" : ""
+            %>
+            <div class="w-6 h-6 rounded <%= color_class %> <%= border_class %> <%= current_class %> flex items-center justify-center"
+                 title="<%= period[:label] %><%= period[:completed] ? ' ✓' : (period[:future] ? '' : ' ✗') %>">
+              <% if period[:completed] %>
+                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+              <% elsif period[:in_progress] %>
+                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                </svg>
+              <% elsif !period[:future] %>
+                <svg class="w-3 h-3 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Legend -->
+  <div class="flex items-center gap-6 mt-6 pt-4 border-t border-gray-100 text-xs text-gray-500">
+    <div class="flex items-center gap-1.5">
+      <div class="w-4 h-4 rounded bg-green-500 flex items-center justify-center">
+        <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+        </svg>
+      </div>
+      <span>Voltooid</span>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <div class="w-4 h-4 rounded bg-yellow-400"></div>
+      <span>Bezig</span>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <div class="w-4 h-4 rounded bg-red-100 border-2 border-red-300"></div>
+      <span>Gemist</span>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <div class="w-4 h-4 rounded bg-gray-100"></div>
+      <span>Toekomst</span>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <div class="w-4 h-4 rounded bg-gray-100 ring-2 ring-blue-500 ring-offset-1"></div>
+      <span>Huidige periode</span>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,53 @@
+<div class="max-w-4xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Review Templates</h1>
+      <p class="text-sm text-gray-500 mt-1">Beheer de stappen voor elke review type</p>
+    </div>
+    <%= link_to new_review_template_path, class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700" do %>
+      Nieuwe template
+    <% end %>
+  </div>
+
+  <% ReviewTemplate::REVIEW_TYPES.each do |type| %>
+    <% templates = @templates_by_type[type] || [] %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+      <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+        <h2 class="font-semibold text-gray-900"><%= ReviewTemplate::REVIEW_TYPE_LABELS[type] %></h2>
+        <% if templates.none?(&:active?) %>
+          <%= link_to "Template aanmaken", new_review_template_path(review_type: type), class: "text-sm text-blue-600 hover:underline" %>
+        <% end %>
+      </div>
+
+      <% if templates.any? %>
+        <ul class="divide-y divide-gray-100">
+          <% templates.each do |template| %>
+            <li class="p-4 hover:bg-gray-50 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <% if template.active? %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Actief</span>
+                <% else %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Inactief</span>
+                <% end %>
+                <div>
+                  <div class="font-medium text-gray-900"><%= template.name %></div>
+                  <div class="text-sm text-gray-500"><%= template.review_template_steps.count %> stappen</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <%= link_to "Bewerken", edit_review_template_path(template), class: "text-sm text-blue-600 hover:underline" %>
+                <%= button_to review_template_path(template), method: :delete, class: "text-sm text-red-600 hover:underline", data: { turbo_confirm: "Weet je zeker dat je deze template wilt verwijderen?" } do %>
+                  Verwijderen
+                <% end %>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="p-8 text-center text-gray-500">
+          Nog geen template voor dit type
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,27 @@
+<div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg" data-review-template-form-target="stepRow" draggable="true">
+  <div class="flex-shrink-0 mt-2 text-gray-400 cursor-grab">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+    </svg>
+  </div>
+
+  <div class="flex-1 space-y-3">
+    <%= f.hidden_field :id %>
+    <%= f.hidden_field :position, data: { review_template_form_target: "positionField" } %>
+    <%= f.hidden_field :_destroy, data: { review_template_form_target: "destroyField" } %>
+
+    <div>
+      <%= f.text_field :title, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", placeholder: "Stap titel" %>
+    </div>
+
+    <div>
+      <%= f.text_area :description, rows: 3, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", placeholder: "Beschrijving (markdown ondersteund)", data: { controller: "markdown-paste" } %>
+    </div>
+  </div>
+
+  <button type="button" data-action="click->review-template-form#removeStep" class="flex-shrink-0 p-2 text-gray-400 hover:text-red-600">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+    </svg>
+  </button>
+</div>

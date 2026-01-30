@@ -1,0 +1,94 @@
+<% ongoing_meetings.each do |event| %>
+  <% meeting_url = extract_meeting_url(event) %>
+  <% is_upcoming = event[:meeting_status] == :upcoming %>
+  <%
+    # Color scheme based on status
+    if is_upcoming
+      bg_class = "bg-amber-500"
+      text_muted_class = "text-amber-100"
+      btn_primary_class = "bg-white text-amber-700 hover:bg-amber-50"
+      btn_secondary_class = "bg-amber-600 hover:bg-amber-700 border-amber-400"
+      btn_dismiss_class = "text-amber-200 hover:text-white hover:bg-amber-600"
+      minutes_until = ((event[:start_time] - Time.current) / 60).ceil
+    else
+      bg_class = "bg-green-600"
+      text_muted_class = "text-green-100"
+      btn_primary_class = "bg-white text-green-700 hover:bg-green-50"
+      btn_secondary_class = "bg-green-700 hover:bg-green-800 border-green-500"
+      btn_dismiss_class = "text-green-200 hover:text-white hover:bg-green-700"
+    end
+  %>
+  <div class="<%= bg_class %> text-white"
+       data-controller="dismissable-banner"
+       data-dismissable-banner-key-value="meeting-<%= event[:event_id] %>">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-3">
+          <div class="flex-shrink-0">
+            <% if is_upcoming %>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            <% else %>
+              <svg class="w-5 h-5 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="3" />
+              </svg>
+            <% end %>
+          </div>
+          <div>
+            <p class="font-medium">
+              <% if is_upcoming %>
+                <span class="font-normal">Start over <%= minutes_until %> min:</span>
+              <% end %>
+              <%= event[:title] || "(Geen titel)" %>
+            </p>
+            <p class="text-sm <%= text_muted_class %>">
+              <%= event[:start_time]&.strftime("%H:%M") %> - <%= event[:end_time]&.strftime("%H:%M") %>
+              <% if event[:location].present? && !meeting_url&.include?(event[:location]) %>
+                <span class="mx-1">·</span>
+                <%= event[:location] %>
+              <% end %>
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <% if meeting_url.present? %>
+            <%= link_to meeting_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center gap-2 px-4 py-2 font-medium rounded-lg transition-colors #{btn_primary_class}" do %>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              Open meeting
+            <% end %>
+          <% end %>
+
+          <%= button_to enter_meeting_path,
+            method: :post,
+            params: {
+              google_account_id: event[:google_account_id],
+              event_id: event[:event_id],
+              title: event[:title],
+              start_time: event[:start_time],
+              end_time: event[:end_time],
+              html_link: event[:html_link]
+            },
+            class: "inline-flex items-center gap-2 px-4 py-2 text-white font-medium rounded-lg transition-colors border #{btn_secondary_class}" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Notities
+          <% end %>
+
+          <button type="button"
+                  data-action="click->dismissable-banner#dismiss"
+                  class="p-2 rounded-lg transition-colors <%= btn_dismiss_class %>"
+                  title="Verberg deze meeting">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,135 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Zoekresultaten</h1>
+    <% if @query.present? %>
+      <p class="text-gray-500 mt-1">Resultaten voor "<%= @query %>"</p>
+    <% end %>
+  </div>
+
+  <% if @query.blank? %>
+    <div class="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">Voer een zoekterm in</h3>
+      <p class="mt-1 text-sm text-gray-500">Zoek in dossiers, documenten, notities en meetings.</p>
+    </div>
+  <% elsif @dossiers.empty? && @documents.empty? && @notes.empty? && @action_items.empty? && @meetings.empty? %>
+    <div class="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">Geen resultaten</h3>
+      <p class="mt-1 text-sm text-gray-500">Probeer andere zoektermen.</p>
+    </div>
+  <% else %>
+    <% if @dossiers.any? %>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="p-4 border-b border-gray-200">
+          <h2 class="font-semibold text-gray-900">Dossiers (<%= @dossiers.count %>)</h2>
+        </div>
+        <ul class="divide-y divide-gray-100">
+          <% @dossiers.each do |dossier| %>
+            <li class="px-4 py-3 hover:bg-gray-50">
+              <%= link_to dossier, class: "block" do %>
+                <p class="font-medium text-gray-900"><%= dossier.name %></p>
+                <% if dossier.description.present? %>
+                  <p class="text-sm text-gray-500 truncate"><%= truncate(dossier.description, length: 100) %></p>
+                <% end %>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <% if @documents.any? %>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="p-4 border-b border-gray-200">
+          <h2 class="font-semibold text-gray-900">Documenten (<%= @documents.count %>)</h2>
+        </div>
+        <ul class="divide-y divide-gray-100">
+          <% @documents.each do |document| %>
+            <li class="px-4 py-3 hover:bg-gray-50">
+              <%= link_to document, class: "block" do %>
+                <p class="font-medium text-gray-900"><%= document.name %></p>
+                <p class="text-sm text-gray-500">
+                  in <%= document.folder&.name || document.dossier&.name %>
+                  &middot; <%= document.display_date.strftime("%d-%m-%Y") %>
+                </p>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <% if @notes.any? %>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="p-4 border-b border-gray-200">
+          <h2 class="font-semibold text-gray-900">Notities (<%= @notes.count %>)</h2>
+        </div>
+        <ul class="divide-y divide-gray-100">
+          <% @notes.each do |note| %>
+            <li class="px-4 py-3 hover:bg-gray-50">
+              <%= link_to note, class: "block" do %>
+                <p class="font-medium text-gray-900"><%= note.title %></p>
+                <% if note.content.present? %>
+                  <p class="text-sm text-gray-500 truncate"><%= truncate(note.content, length: 100) %></p>
+                <% end %>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <% if @action_items.any? %>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="p-4 border-b border-gray-200">
+          <h2 class="font-semibold text-gray-900">Actiepunten (<%= @action_items.count %>)</h2>
+        </div>
+        <ul class="divide-y divide-gray-100">
+          <% @action_items.each do |item| %>
+            <li class="px-4 py-3 hover:bg-gray-50">
+              <%= link_to action_item_path(item), class: "block" do %>
+                <p class="font-medium text-gray-900 <%= item.completed? ? 'line-through text-gray-400' : '' %>"><%= item.description %></p>
+                <p class="text-sm text-gray-500">
+                  <%= item.dossier&.name || "Inbox" %>
+                  <% if item.completed? %>
+                    &middot; <span class="text-green-600">Afgerond</span>
+                  <% elsif item.due_date.present? %>
+                    &middot; <%= item.due_date.strftime("%d-%m-%Y") %>
+                  <% end %>
+                </p>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <% if @meetings.any? %>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="p-4 border-b border-gray-200">
+          <h2 class="font-semibold text-gray-900">Meetings (<%= @meetings.count %>)</h2>
+        </div>
+        <ul class="divide-y divide-gray-100">
+          <% @meetings.each do |meeting| %>
+            <li class="px-4 py-3 hover:bg-gray-50">
+              <%= link_to meeting_path(meeting), class: "block" do %>
+                <p class="font-medium text-gray-900"><%= meeting.title %></p>
+                <p class="text-sm text-gray-500">
+                  <%= meeting.start_time.strftime("%d-%m-%Y %H:%M") %>
+                  <% if meeting.notes.present? %>
+                    &middot; <span class="text-gray-400">heeft notities</span>
+                  <% end %>
+                </p>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  <% end %>
+</div>

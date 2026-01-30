@@ -1,0 +1,45 @@
+<div class="max-w-2xl mx-auto">
+  <div class="mb-6 flex items-center gap-3">
+    <%= link_to settings_google_accounts_path, class: "p-2 -ml-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      </svg>
+    <% end %>
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Agenda's</h1>
+      <p class="text-sm text-gray-500"><%= @google_account.email %></p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="px-4 py-3 border-b border-gray-100">
+      <h2 class="font-semibold text-gray-900">Selecteer agenda's</h2>
+      <p class="text-sm text-gray-500 mt-1">Kies welke agenda's je wilt zien in Documentor</p>
+    </div>
+
+    <% if @calendars.any? %>
+      <ul class="divide-y divide-gray-100">
+        <% @calendars.each do |calendar| %>
+          <li id="<%= dom_id(calendar) %>" class="px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="w-3 h-3 rounded-full" style="background-color: <%= calendar.color %>"></span>
+              <span class="text-sm font-medium text-gray-900"><%= calendar.name %></span>
+            </div>
+            <%= form_with model: [@google_account, calendar], url: settings_google_account_google_calendar_path(@google_account, calendar), method: :patch, data: { turbo_stream: true } do |f| %>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <%= f.check_box :enabled,
+                    class: "sr-only peer",
+                    onchange: "this.form.requestSubmit()" %>
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="px-4 py-8 text-center text-gray-500">
+        <p>Geen agenda's gevonden in dit account</p>
+      </div>
+    <% end %>
+  </div>
+</div>

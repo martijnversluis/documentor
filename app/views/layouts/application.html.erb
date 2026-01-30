@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Documentor" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-gray-50 min-h-screen"
+        data-controller="global-drop keyboard-shortcuts"
+        data-global-drop-documents-url-value="<%= inbox_documents_path %>"
+        data-global-drop-action-items-url-value="<%= inbox_action_items_path %>"
+        data-action="dragenter->global-drop#dragenter dragover->global-drop#dragover dragleave->global-drop#dragleave drop->global-drop#drop"
+        data-keyboard-shortcuts-next-meeting-url-value="<%= next_meeting_path %>"
+        data-keyboard-shortcuts-next-review-url-value="<%= next_review_path %>"
+        data-keyboard-shortcuts-today-url-value="<%= action_items_path(filter: 'today') %>">
+
+    <!-- Global drop zone indicator -->
+    <div data-global-drop-target="dropzone" class="hidden fixed inset-x-4 bottom-4 z-50 pointer-events-none">
+      <div class="border-2 border-dashed border-blue-500 rounded-lg p-4 bg-blue-50 bg-opacity-90 text-center">
+        <p class="text-sm font-medium text-blue-700">Sleep hier om toe te voegen aan inbox</p>
+      </div>
+    </div>
+
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex">
+            <%= link_to root_path, class: "flex items-center px-2 text-gray-900 font-semibold text-lg" do %>
+              Documentor
+            <% end %>
+
+            <div class="hidden sm:ml-8 sm:flex sm:space-x-4">
+              <%= link_to "Actiepunten", action_items_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/action_items') || current_page?(root_path) ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
+              <%= link_to "Dossiers", dossiers_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/dossiers') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
+              <%= link_to "Gewoontes", habits_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/habits') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
+              <%= link_to "Reviews", reviews_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/reviews') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
+              <%= link_to "Meetings", meetings_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/meetings') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
+              <div class="relative group flex items-center">
+                <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium <%= request.path.start_with?('/parties', '/tags', '/dossier_templates', '/checklists', '/expiring_items', '/settings') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900' %>">
+                  Instellingen
+                  <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                <div class="absolute left-0 top-full w-40 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                  <%= link_to "Afvalkalender", settings_waste_calendar_index_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/waste') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'} rounded-t-lg" %>
+                  <%= link_to "Checklists", checklists_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/checklists') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <%= link_to "Contexts", settings_contexts_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/contexts') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <%= link_to "Dossier templates", dossier_templates_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/dossier_templates') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <%= link_to "GitHub", settings_github_accounts_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/github') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <%= link_to "Google Agenda's", settings_google_accounts_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/google') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <%= link_to "Inbox regels", settings_inbox_rules_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/inbox_rules') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <%= link_to "Partijen", parties_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/parties') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <%= link_to "Review templates", review_templates_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/review_templates') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <%= link_to "Tags", tags_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/tags') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <%= link_to "Verloopdatums", expiring_items_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/expiring_items') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'} rounded-b-lg" %>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <button type="button"
+                    data-action="click->command-palette#open"
+                    class="w-64 flex items-center gap-2 pl-3 pr-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+              <span class="flex-1 text-left">Zoeken...</span>
+              <kbd class="hidden sm:inline-flex px-1.5 py-0.5 text-xs text-gray-400 bg-gray-100 rounded">⌘K</kbd>
+            </button>
+
+            <div class="flex items-center gap-2">
+              <% if work_mode_auto? && work_status[:status] != :unknown %>
+                <% status = work_status %>
+                <span class="hidden sm:inline text-xs <%= status[:status] == :free ? 'text-green-600' : status[:status] == :working ? 'text-amber-600' : 'text-gray-400' %>">
+                  <% if status[:status] == :working %>
+                    <%= status[:label] %><% if status[:times] %> · <%= status[:times] %><% end %>
+                  <% elsif status[:status] == :free %>
+                    Vrij
+                  <% else %>
+                    Buiten werktijd
+                  <% end %>
+                </span>
+              <% end %>
+              <%= button_to toggle_work_mode_path, method: :patch, class: "group flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer #{work_mode? ? 'bg-amber-500 text-white shadow-md hover:bg-amber-600 hover:shadow-lg' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'}", title: work_mode? ? "Werkmodus uitschakelen" : "Werkmodus inschakelen" do %>
+                <div class="relative w-4 h-4">
+                  <svg class="w-4 h-4 transition-transform duration-200 <%= work_mode? ? 'scale-110' : '' %>" fill="<%= work_mode? ? 'currentColor' : 'none' %>" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+                <span class="hidden sm:inline"><%= work_mode? ? 'Werk' : 'Vrij' %></span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div id="ongoing_meetings_banner" data-controller="meeting-banner" data-meeting-banner-url-value="<%= meetings_banner_path %>">
+      <% if ongoing_meetings.any? %>
+        <%= render "shared/ongoing_meetings_banner", ongoing_meetings: ongoing_meetings %>
+      <% end %>
+    </div>
+
+    <% if flash[:notice] %>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
+          <%= flash[:notice] %>
+        </div>
+      </div>
+    <% end %>
+
+    <% if flash[:alert] %>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+          <%= flash[:alert] %>
+        </div>
+      </div>
+    <% end %>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <%= yield %>
+    </main>
+
+    <%= render "shared/command_palette" %>
+  </body>
+</html>

@@ -1,0 +1,82 @@
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+  <%= form_with model: dossier_template, data: { controller: "template-form", template_form_contexts_value: TaskContext.ordered.pluck(:name).to_json } do |f| %>
+    <div class="space-y-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Naam</label>
+        <%= f.text_field :name, class: "w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", placeholder: "Bijv. Juridische zaak" %>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Beschrijving</label>
+        <%= f.text_area :description, rows: 2, class: "w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", placeholder: "Optionele beschrijving van de template" %>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Mappen</label>
+        <div data-template-form-target="foldersContainer" class="space-y-2">
+          <% dossier_template.folders_data.each_with_index do |folder, index| %>
+            <div class="flex items-center gap-2" data-template-form-target="folderRow">
+              <input type="text" name="dossier_template[folders_data][][name]" value="<%= folder["name"] %>" class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Mapnaam">
+              <button type="button" data-action="click->template-form#removeFolder" class="p-2 text-gray-400 hover:text-red-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          <% end %>
+        </div>
+        <button type="button" data-action="click->template-form#addFolder" class="mt-2 inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Map toevoegen
+        </button>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Actiepunten</label>
+        <div data-template-form-target="actionsContainer" class="space-y-2">
+          <% dossier_template.action_items_data.each_with_index do |item, index| %>
+            <div class="flex items-start gap-2 p-3 bg-gray-50 rounded-lg" data-template-form-target="actionRow">
+              <div class="flex-1 space-y-2">
+                <input type="text" name="dossier_template[action_items_data][][description]" value="<%= item["description"] %>" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Beschrijving">
+                <div class="grid grid-cols-3 gap-2">
+                  <%= render "shared/context_select", field_name: "dossier_template[action_items_data][][context]", selected: item["context"], input_class: "w-full" %>
+                  <select name="dossier_template[action_items_data][][estimated_minutes]" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Onbekend</option>
+                    <% ActionItem::DURATION_OPTIONS.each do |label, val| %>
+                      <option value="<%= val %>" <%= 'selected' if item["estimated_minutes"] == val %>><%= label %></option>
+                    <% end %>
+                  </select>
+                  <select name="dossier_template[action_items_data][][recurrence]" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Eenmalig</option>
+                    <option value="weekly" <%= 'selected' if item["recurrence"] == "weekly" %>>Wekelijks</option>
+                    <option value="monthly" <%= 'selected' if item["recurrence"] == "monthly" %>>Maandelijks</option>
+                    <option value="quarterly" <%= 'selected' if item["recurrence"] == "quarterly" %>>Per kwartaal</option>
+                    <option value="yearly" <%= 'selected' if item["recurrence"] == "yearly" %>>Jaarlijks</option>
+                  </select>
+                </div>
+              </div>
+              <button type="button" data-action="click->template-form#removeAction" class="p-2 text-gray-400 hover:text-red-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          <% end %>
+        </div>
+        <button type="button" data-action="click->template-form#addAction" class="mt-2 inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Actiepunt toevoegen
+        </button>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+        <%= link_to "Annuleren", dossier_templates_path, class: "px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900" %>
+        <%= f.submit "Opslaan", class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer" %>
+      </div>
+    </div>
+  <% end %>
+</div>

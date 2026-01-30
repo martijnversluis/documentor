@@ -1,0 +1,527 @@
+---
+
+inherit_from:
+- ".rubocop_disabled.yml"
+
+plugins:
+- rubocop-capybara
+- rubocop-factory_bot
+- rubocop-rails
+- rubocop-rake
+- rubocop-rspec
+- rubocop-rspec_rails
+
+AllCops:
+  NewCops: enable
+  Exclude:
+  - bin/**/*
+  - db/schema.rb
+  - db/seeds.rb
+  - db/migrate/**/*
+  - db/cache_schema.rb
+  - db/queue_schema.rb
+  - db/cable_schema.rb
+  - coverage/**/*
+  - log/**/*
+  - node_modules/**/*
+  - public/**/*
+  - storage/**/*
+  - tmp/**/*
+  - vendor/**/*
+
+Rails:
+  Enabled: true
+
+Capybara/ClickLinkOrButtonStyle:
+  EnforcedStyle: link_or_button
+
+Layout/BeginEndAlignment:
+  Enabled: true
+
+Layout/BlockAlignment:
+  Enabled: true
+  EnforcedStyleAlignWith: start_of_block
+
+Layout/ClassStructure:
+  Enabled: true
+  ExpectedOrder:
+  - module_inclusion
+  - constants
+  - association_belongs_to
+  - association_has_one
+  - association_has_many
+  - association_habtm
+  - attachments
+  - rails_macros
+  - enums
+  - delegations_public
+  - validations
+  - ordering
+  - scopes
+  - callbacks
+  - attribute_macros
+  - public_class_methods
+  - initializer
+  - public_methods
+  - protected_attribute_macros
+  - protected_methods
+  - private_attribute_macros
+  - delegations_private
+  - private_methods
+  Categories:
+    module_inclusion:
+    - include
+    - prepend
+    - extend
+    association_belongs_to:
+    - belongs_to
+    association_has_one:
+    - has_one
+    association_has_many:
+    - has_many
+    association_habtm:
+    - has_and_belongs_to_many
+    attachments:
+    - has_one_attached
+    - has_many_attached
+    rails_macros:
+    - accepts_nested_attributes_for
+    - broadcasts_to
+    - encrypts
+    - json
+    - order_by
+    enums:
+    - enum
+    attribute_macros:
+    - attr_accessor
+    - attr_reader
+    - attr_writer
+    - class_attribute
+    - mattr_accessor
+    - mattr_reader
+    - mattr_writer
+    delegations_public:
+    - delegate
+    - alias
+    - alias_method
+    - alias_attribute
+    delegations_private:
+    - delegate
+    validations:
+    - validates
+    - validate
+    - validates_with
+    - validates_each
+    scopes:
+    - default_scope
+    - scope
+    callbacks:
+    - after_initialize
+    - after_find
+    - before_validation
+    - after_validation
+    - before_save
+    - around_save
+    - after_save
+    - before_create
+    - around_create
+    - after_create
+    - before_update
+    - around_update
+    - after_update
+    - before_destroy
+    - around_destroy
+    - after_destroy
+    - after_commit
+    - after_rollback
+    - before_action
+    - around_action
+    - after_action
+    - skip_before_action
+    - skip_after_action
+    - skip_around_action
+
+Layout/EmptyLineBetweenDefs:
+  Enabled: true
+
+Layout/EmptyLines:
+  Enabled: true
+
+Layout/EmptyLinesAroundAttributeAccessor:
+  Enabled: true
+
+Layout/FirstArgumentIndentation:
+  Enabled: true
+  EnforcedStyle: consistent
+
+Layout/FirstArrayElementIndentation:
+  Enabled: true
+  EnforcedStyle: consistent
+
+Layout/FirstArrayElementLineBreak:
+  Enabled: true
+
+Layout/FirstHashElementIndentation:
+  Enabled: true
+  EnforcedStyle: consistent
+
+Layout/FirstHashElementLineBreak:
+  Enabled: true
+
+Layout/FirstMethodArgumentLineBreak:
+  Enabled: true
+
+Layout/FirstParameterIndentation:
+  Enabled: true
+  EnforcedStyle: consistent
+
+Layout/LineLength:
+  Enabled: true
+  Max: 115
+
+Layout/MultilineArrayBraceLayout:
+  Enabled: true
+  EnforcedStyle: new_line
+
+Layout/MultilineArrayLineBreaks:
+  Enabled: true
+
+Layout/MultilineHashBraceLayout:
+  Enabled: true
+  EnforcedStyle: new_line
+
+Layout/MultilineHashKeyLineBreaks:
+  Enabled: true
+
+Layout/MultilineMethodArgumentLineBreaks:
+  Enabled: true
+
+Layout/MultilineMethodCallBraceLayout:
+  Enabled: true
+  EnforcedStyle: new_line
+
+Layout/MultilineMethodCallIndentation:
+  Enabled: true
+  EnforcedStyle: indented
+
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
+
+Layout/TrailingWhitespace:
+  Enabled: true
+  AllowInHeredoc: true
+
+Lint/AmbiguousBlockAssociation:
+  Exclude:
+  - spec/**/*
+
+Lint/BinaryOperatorWithIdenticalOperands:
+  Enabled: true
+
+Lint/ConstantDefinitionInBlock:
+  Enabled: true
+
+Lint/DeprecatedOpenSSLConstant:
+  Enabled: true
+
+Lint/DuplicateElsifCondition:
+  Enabled: true
+
+Lint/DuplicateRequire:
+  Enabled: true
+
+Lint/DuplicateRescueException:
+  Enabled: true
+
+Lint/EmptyConditionalBody:
+  Enabled: true
+
+Lint/EmptyFile:
+  Enabled: true
+
+Lint/FloatComparison:
+  Enabled: true
+
+Lint/IdentityComparison:
+  Enabled: true
+
+Lint/MissingSuper:
+  Enabled: true
+
+Lint/MixedRegexpCaptureTypes:
+  Enabled: true
+
+Lint/OutOfRangeRegexpRef:
+  Enabled: true
+
+Lint/RaiseException:
+  Enabled: true
+
+Lint/SelfAssignment:
+  Enabled: true
+
+Lint/StructNewOverride:
+  Enabled: true
+
+Lint/TopLevelReturnWithArgument:
+  Enabled: true
+
+Lint/TrailingCommaInAttributeDeclaration:
+  Enabled: true
+
+Lint/UnreachableLoop:
+  Enabled: true
+
+Lint/UnusedBlockArgument:
+  AllowUnusedKeywordArguments: true
+
+Lint/UselessAssignment:
+  Exclude:
+  - spec/**/*
+
+Lint/UselessMethodDefinition:
+  Enabled: true
+
+Lint/UselessTimes:
+  Enabled: true
+
+Metrics/BlockLength:
+  AllowedMethods:
+  - class_methods
+  - included
+  Exclude:
+  - "**/spec/**/*"
+  - config/routes.rb
+  - config/initializers/**/*.rb
+  - "**/*.gemspec"
+  - config/environments/**/*
+  - lib/tasks/**/*.rake
+
+Metrics/CyclomaticComplexity:
+  Max: 42
+
+Metrics/MethodLength:
+  Max: 42
+  Exclude:
+  - "**/spec/**/*"
+
+Metrics/ParameterLists:
+  Enabled: true
+  CountKeywordArgs: false
+
+Metrics/PerceivedComplexity:
+  Max: 42
+
+Naming/AccessorMethodName:
+  Exclude:
+  - app/models/**/*.rb
+
+Naming/MethodParameterName:
+  MinNameLength: 2
+
+Naming/PredicatePrefix:
+  Enabled: true
+  ForbiddenPrefixes:
+  - is_
+
+RSpec/ImplicitSubject:
+  EnforcedStyle: single_statement_only
+
+RSpec/NestedGroups:
+  Max: 4
+
+RSpec/VerifiedDoubles:
+  Enabled: true
+
+Rails/ActiveRecordCallbacksOrder:
+  Enabled: true
+
+Rails/AfterCommitOverride:
+  Enabled: true
+
+Rails/EnvironmentVariableAccess:
+  AllowReads: true
+
+Rails/Exit:
+  Enabled: true
+
+Rails/FindById:
+  Enabled: true
+
+Rails/I18nLocaleAssignment:
+  Enabled: true
+  Include:
+  - "**/*.rb"
+  - "**/*.erb"
+
+Rails/I18nLocaleTexts:
+  Enabled: true
+
+Rails/MailerName:
+  Enabled: true
+
+Rails/MatchRoute:
+  Enabled: true
+
+Rails/NegateInclude:
+  Enabled: true
+
+Rails/Output:
+  Enabled: true
+  Exclude:
+  - lib/tasks/**/*.rake
+
+Rails/Pluck:
+  Enabled: true
+
+Rails/PluckInWhere:
+  Enabled: true
+
+Rails/RenderInline:
+  Enabled: true
+
+Rails/RenderPlainText:
+  Enabled: true
+
+Rails/ShortI18n:
+  Enabled: true
+
+Rails/SkipsModelValidations:
+  Enabled: true
+  AllowedMethods:
+  - upsert
+
+Rails/SquishedSQLHeredocs:
+  Enabled: true
+
+Rails/TimeZoneAssignment:
+  Enabled: true
+  Include:
+  - "**/*.rb"
+  - "**/*.erb"
+
+Rails/UnknownEnv:
+  Environments:
+  - development
+  - production
+  - test
+
+Rails/WhereExists:
+  Enabled: true
+
+Rails/WhereNot:
+  Enabled: true
+
+Style/AccessorGrouping:
+  Enabled: true
+
+Style/ArrayCoercion:
+  Enabled: true
+
+Style/BisectedAttrAccessor:
+  Enabled: true
+
+Style/BlockDelimiters:
+  Enabled: true
+
+Style/CaseLikeIf:
+  Enabled: true
+
+Style/CombinableLoops:
+  Enabled: true
+
+Style/EmptyMethod:
+  EnforcedStyle: expanded
+
+Style/ExplicitBlockArgument:
+  Enabled: true
+
+Style/ExponentialNotation:
+  Enabled: true
+
+Style/FrozenStringLiteralComment:
+  EnforcedStyle: never
+
+Style/GlobalStdStream:
+  Enabled: true
+
+Style/HashAsLastArrayItem:
+  Enabled: true
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashLikeCase:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
+
+Style/KeywordParametersOrder:
+  Enabled: true
+
+Style/Lambda:
+  EnforcedStyle: literal
+
+Style/OptionalBooleanParameter:
+  Enabled: true
+
+Style/PreferredHashMethods:
+  Enabled: true
+  EnforcedStyle: verbose
+
+Style/RedundantAssignment:
+  Enabled: true
+
+Style/RedundantFetchBlock:
+  Enabled: true
+
+Style/RedundantFileExtensionInRequire:
+  Enabled: true
+
+Style/RedundantRegexpCharacterClass:
+  Enabled: true
+
+Style/RedundantRegexpEscape:
+  Enabled: true
+
+Style/RedundantSelfAssignment:
+  Enabled: true
+
+Style/SingleArgumentDig:
+  Enabled: true
+
+Style/SlicingWithRange:
+  Enabled: true
+
+Style/SoleNestedConditional:
+  Enabled: true
+
+Style/StringConcatenation:
+  Enabled: true
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
+  Exclude:
+  - spec/**/*
+
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
+Style/TrailingCommaInArguments:
+  Enabled: true
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInArrayLiteral:
+  Enabled: true
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInHashLiteral:
+  Enabled: true
+  EnforcedStyleForMultiline: comma

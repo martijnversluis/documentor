@@ -1,0 +1,18 @@
+<div id="action-item-form">
+  <%= form_with model: [dossier, ActionItem.new], class: "flex items-center space-x-3" do |f| %>
+    <%= f.hidden_field :next_action, value: true %>
+    <div class="flex-1">
+      <%= f.text_field :description, placeholder: "Nieuw actiepunt...", class: "w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+    </div>
+    <div class="w-36">
+      <%= f.date_field :due_date, class: "w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+    </div>
+    <div class="w-40">
+      <%= render "shared/context_select", field_name: "action_item[context]", selected: nil, include_blank: "Context" %>
+    </div>
+    <div class="w-32">
+      <%= f.select :recurrence, [["Eenmalig", nil], ["Dagelijks", "daily"], ["Werkdagen", "workdays"], ["Wekelijks", "weekly"], ["Maandelijks", "monthly"], ["Per kwartaal", "quarterly"], ["Jaarlijks", "yearly"]], {}, class: "w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+    </div>
+    <%= f.submit "Toevoegen", class: "px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer" %>
+  <% end %>
+</div>

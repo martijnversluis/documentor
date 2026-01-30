@@ -1,0 +1,65 @@
+<%# Usage: render "shared/context_select", field_name: "action_item[context]", selected: @action_item.context, include_blank: "Geen context" %>
+<%
+  field_name ||= "context"
+  selected ||= nil
+  include_blank ||= "Geen context"
+  input_class ||= "w-full"
+
+  contexts = TaskContext.ordered
+  selected_context = selected.present? ? contexts.find { |c| c.name == selected } : nil
+  selected_label = selected_context ? "@#{selected_context.name}" : ""
+  placeholder_text = include_blank
+%>
+
+<div data-controller="searchable-select"
+     data-searchable-select-selected-value="<%= selected %>"
+     data-searchable-select-placeholder-value="<%= placeholder_text %>"
+     data-action="click@window->searchable-select#handleClickOutside"
+     class="relative <%= input_class %>">
+
+  <input type="hidden"
+         name="<%= field_name %>"
+         value="<%= selected %>"
+         data-searchable-select-target="hidden">
+
+  <div class="relative">
+    <input type="text"
+           data-searchable-select-target="input"
+           data-action="input->searchable-select#filter keydown->searchable-select#handleKeydown focus->searchable-select#focusInput blur->searchable-select#clearIfEmpty"
+           value="<%= selected_label %>"
+           placeholder="<%= placeholder_text %>"
+           autocomplete="off"
+           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-8">
+    <button type="button"
+            data-action="click->searchable-select#toggle"
+            class="absolute inset-y-0 right-0 flex items-center px-2 text-gray-400 hover:text-gray-600">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div data-searchable-select-target="dropdown"
+       class="hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+
+    <div data-searchable-select-target="option"
+         data-value=""
+         data-label="<%= include_blank %>"
+         data-search-text="geen context"
+         data-action="click->searchable-select#select"
+         class="px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 cursor-pointer">
+      <%= include_blank %>
+    </div>
+
+    <% contexts.each do |context| %>
+      <div data-searchable-select-target="option"
+           data-value="<%= context.name %>"
+           data-label="@<%= context.name %>"
+           data-search-text="<%= context.name.downcase %>"
+           data-action="click->searchable-select#select"
+           class="px-3 py-2 text-sm hover:bg-gray-50 cursor-pointer <%= selected == context.name ? 'bg-blue-50' : '' %>">
+        <span class="text-teal-600">@</span><%= context.name %>
+      </div>
+    <% end %>
+  </div>
+</div>

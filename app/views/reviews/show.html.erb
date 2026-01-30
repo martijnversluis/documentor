@@ -1,0 +1,110 @@
+<div class="max-w-3xl mx-auto">
+  <div class="mb-6">
+    <div class="flex items-center space-x-2 text-sm text-gray-500 mb-1">
+      <%= link_to "Reviews", reviews_path, class: "hover:text-gray-700" %>
+      <span>/</span>
+    </div>
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900"><%= @review.review_type_label %> Review</h1>
+        <p class="text-sm text-gray-500 mt-1"><%= @review.period_key %></p>
+      </div>
+      <% if @review.in_progress? && !@review.paused? %>
+        <%= button_to pause_review_path(@review), method: :patch, class: "text-sm text-gray-500 hover:text-gray-700" do %>
+          Pauzeren
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @review.review_steps.any? %>
+    <!-- Progress bar -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+        <span>Voortgang</span>
+        <span><%= @review.review_steps.done.count %>/<%= @review.review_steps.count %> stappen (<%= @review.progress_percentage %>%)</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="bg-blue-600 h-2 rounded-full transition-all" style="width: <%= @review.progress_percentage %>%"></div>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @review.not_started? %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+      </svg>
+      <p class="text-gray-500 mb-6">Klaar om te beginnen met je <%= @review.review_type_label.downcase %> review?</p>
+      <%= button_to start_review_path(@review), method: :post, class: "px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 cursor-pointer" do %>
+        Start Review
+      <% end %>
+    </div>
+  <% elsif @review.paused? %>
+    <div class="bg-yellow-50 rounded-lg border border-yellow-200 p-8 text-center mb-6">
+      <svg class="mx-auto h-12 w-12 text-yellow-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <p class="text-yellow-700 mb-4">Deze review is gepauzeerd</p>
+      <%= button_to resume_review_path(@review), method: :patch, class: "px-6 py-3 bg-yellow-600 text-white font-medium rounded-lg hover:bg-yellow-700 cursor-pointer" do %>
+        Hervat Review
+      <% end %>
+    </div>
+  <% elsif @review.completed? %>
+    <div class="bg-green-50 rounded-lg border border-green-200 p-6 mb-6">
+      <div class="flex items-center gap-3">
+        <svg class="h-8 w-8 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+        <div>
+          <p class="font-medium text-green-800">Review voltooid!</p>
+          <p class="text-sm text-green-600">Afgerond op <%= @review.completed_at.strftime("%d-%m-%Y om %H:%M") %></p>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <!-- Current step -->
+    <turbo-frame id="current-step">
+      <% if @current_step %>
+        <%= render "review_steps/step", step: @current_step, review: @review %>
+      <% end %>
+    </turbo-frame>
+  <% end %>
+
+  <!-- All steps overview -->
+  <% if @review.review_steps.any? %>
+    <div class="mt-8">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Alle stappen</h2>
+      <ul class="space-y-2">
+        <% @review.review_steps.each do |step| %>
+          <li class="flex items-center gap-3 p-3 rounded-lg <%= step.completed? ? 'bg-green-50' : step.skipped? ? 'bg-gray-50' : step == @current_step ? 'bg-blue-50 border border-blue-200' : 'bg-white border border-gray-200' %>">
+            <% if step.completed? %>
+              <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+              </svg>
+            <% elsif step.skipped? %>
+              <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+              </svg>
+            <% elsif step == @current_step %>
+              <div class="w-5 h-5 rounded-full border-2 border-blue-500 flex-shrink-0"></div>
+            <% else %>
+              <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0"></div>
+            <% end %>
+            <div class="flex-1">
+              <span class="prose prose-sm max-w-none <%= step.pending? && step != @current_step ? 'text-gray-500' : step.skipped? ? 'text-gray-400' : 'text-gray-900' %>">
+                <%= markdown(step.title) %>
+              </span>
+              <% if step.notes.present? %>
+                <p class="text-xs text-gray-500 mt-0.5 truncate"><%= step.notes.truncate(80) %></p>
+              <% end %>
+            </div>
+            <% if step.completed_at %>
+              <span class="text-xs text-gray-400"><%= step.completed_at.strftime("%H:%M") %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+</div>

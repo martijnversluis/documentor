@@ -1,0 +1,32 @@
+<%= turbo_frame_tag "modal" do %>
+  <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4">
+      <div class="p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Notitie toevoegen aan inbox</h2>
+
+        <%= form_with model: @note, url: inbox_notes_path, class: "space-y-4", data: { turbo_frame: "_top" } do |f| %>
+          <div>
+            <%= f.label :title, "Titel", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= f.text_field :title, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", placeholder: "Titel van de notitie", autofocus: true %>
+          </div>
+
+          <div>
+            <%= f.label :content, "Inhoud", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= f.text_area :content, rows: 6, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", placeholder: "Inhoud van de notitie" %>
+          </div>
+
+          <div>
+            <%= f.label :occurred_at, "Datum (optioneel)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= f.datetime_local_field :occurred_at, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+            <p class="mt-1 text-xs text-gray-500">Wanneer vond dit plaats? Standaard: nu</p>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-4">
+            <%= link_to "Annuleren", inbox_path, class: "px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900" %>
+            <%= f.submit "Toevoegen", class: "px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

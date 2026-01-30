@@ -1,0 +1,142 @@
+<li id="<%= dom_id(item) %>" class="hover:bg-gray-50 group" draggable="true" data-sortable-id="<%= item.id %>">
+  <div class="p-4 <%= 'pl-8' if local_assigns[:nested] %>">
+    <div class="flex items-start gap-4">
+      <div class="flex-shrink-0 mt-1 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-gray-500" data-drag-handle>
+        <svg class="w-4 h-4 pointer-events-none" fill="currentColor" viewBox="0 0 24 24">
+          <circle cx="9" cy="6" r="1.5"></circle>
+          <circle cx="15" cy="6" r="1.5"></circle>
+          <circle cx="9" cy="12" r="1.5"></circle>
+          <circle cx="15" cy="12" r="1.5"></circle>
+          <circle cx="9" cy="18" r="1.5"></circle>
+          <circle cx="15" cy="18" r="1.5"></circle>
+        </svg>
+      </div>
+      <%= button_to toggle_action_item_path(item, from: "index"), method: :patch, class: "flex-shrink-0 mt-0.5", form: { data: { turbo_stream: true } } do %>
+        <div class="w-5 h-5 rounded border-2 border-gray-300 group-hover:border-gray-400 flex items-center justify-center cursor-pointer">
+          <% if item.has_children? && !item.all_children_completed? %>
+            <span class="text-xs text-gray-400"><%= item.pending_children_count %></span>
+          <% end %>
+        </div>
+      <% end %>
+
+      <div class="flex-1 min-w-0 overflow-hidden">
+        <div class="flex items-start justify-between gap-4">
+          <% waste_type_match = item.notes&.match(/waste_type:(\w+)/) %>
+          <% charging_match = item.notes&.match(/charging_status:/) %>
+          <% if waste_type_match %>
+            <div class="flex-shrink-0 -mr-2"><%= waste_bin_icon(waste_type_match[1], size: 32) %></div>
+          <% elsif charging_match %>
+            <div class="flex-shrink-0 -mr-2"><%= car_charging_icon(size: 32) %></div>
+          <% end %>
+          <div data-controller="expandable" data-expandable-max-height-value="72" class="flex-1 min-w-0 overflow-hidden">
+            <%= link_to item, class: "block text-sm font-medium text-gray-900 hover:text-blue-600 prose prose-sm max-w-none transition-all duration-200 break-all", data: { expandable_target: "content", turbo_frame: "_top" } do %>
+              <%= markdown_first_paragraph(item.description) %>
+            <% end %>
+            <button type="button" data-expandable-target="button" data-action="click->expandable#toggle" class="hidden text-xs text-blue-600 hover:text-blue-800 mt-1">Meer</button>
+            <div class="flex items-center gap-2 mt-1 flex-wrap">
+              <% if item.dossier.present? %>
+                <%= link_to item.dossier.name, item.dossier, class: "text-xs text-blue-600 hover:underline" %>
+              <% else %>
+                <span class="text-xs text-gray-400">Inbox</span>
+              <% end %>
+              <% if item.context.present? %>
+                <span class="text-xs text-teal-600 font-medium">@<%= item.context %></span>
+              <% end %>
+              <% if item.waiting? %>
+                <span class="inline-flex items-center gap-1 text-xs text-orange-600 font-medium">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Wacht op <%= item.waiting_for_display %>
+                </span>
+              <% end %>
+              <% if item.someday? %>
+                <span class="text-xs text-indigo-600 font-medium">Ooit/misschien</span>
+              <% end %>
+              <% if item.next_action? %>
+                <span class="inline-flex items-center gap-0.5 text-xs text-gray-600 font-medium">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                  </svg>
+                  Eerstvolgende
+                </span>
+              <% end %>
+              <% if item.estimated_minutes.present? %>
+                <span class="inline-flex items-center gap-0.5 text-xs text-emerald-600 font-medium">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                  <%= ActionItem::DURATION_OPTIONS.find { |label, val| val == item.estimated_minutes }&.first || "#{item.estimated_minutes} min" %>
+                </span>
+              <% end %>
+              <% if item.due_date.present? && !item.next_action? %>
+                <span class="text-xs <%= item.overdue? ? 'text-red-600 font-medium' : 'text-gray-500' %>">
+                  <%= item.due_date.strftime("%d-%m-%Y") %>
+                </span>
+              <% end %>
+              <% if item.recurring? %>
+                <span class="inline-flex items-center text-xs text-purple-600">
+                  <svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                  </svg>
+                  <%= { 'daily' => 'Dagelijks', 'workdays' => 'Werkdagen', 'weekly' => 'Wekelijks', 'monthly' => 'Maandelijks', 'quarterly' => 'Per kwartaal', 'yearly' => 'Jaarlijks' }[item.recurrence] %>
+                </span>
+              <% end %>
+              <% if item.has_children? %>
+                <span class="inline-flex items-center gap-0.5 text-xs text-gray-500">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                  </svg>
+                  <%= item.children.completed.count %>/<%= item.children.count %> sub-items
+                </span>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button type="button"
+                    data-controller="sub-item-form"
+                    data-action="click->sub-item-form#toggle"
+                    data-sub-item-form-parent-id-value="<%= item.id %>"
+                    class="text-gray-400 hover:text-green-600"
+                    title="Sub-item toevoegen">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+            </button>
+            <%= link_to edit_action_item_path(item, return_to: local_assigns[:return_to]), data: { turbo_frame: "_top" }, class: "text-gray-400 hover:text-blue-600" do %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+            <% end %>
+            <%= button_to action_item_path(item), method: :delete, class: "text-gray-400 hover:text-red-600", data: { turbo_confirm: "Weet je zeker dat je dit actiepunt wilt verwijderen?" } do %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# Inline form for adding sub-items %>
+  <div id="sub-item-form-<%= item.id %>" class="hidden px-4 pb-4 pl-12">
+    <%= form_with model: ActionItem.new, url: action_items_path, class: "flex items-center gap-2", data: { controller: "sub-item-submit", action: "turbo:submit-end->sub-item-submit#reset" } do |f| %>
+      <%= f.hidden_field :parent_id, value: item.id %>
+      <%= f.hidden_field :dossier_id, value: item.dossier_id %>
+      <%= f.hidden_field :due_date, value: item.due_date %>
+      <%= f.text_field :description, placeholder: "Sub-item toevoegen...", class: "flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500", data: { sub_item_submit_target: "input" } %>
+      <%= f.submit "Toevoegen", class: "px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700" %>
+    <% end %>
+  </div>
+
+  <%# Render pending children %>
+  <% if item.children.pending.any? %>
+    <ul class="border-l-2 border-gray-200 ml-8">
+      <% item.children.pending.ordered.each do |child| %>
+        <%= render "action_items/index_item", item: child, return_to: local_assigns[:return_to], nested: true %>
+      <% end %>
+    </ul>
+  <% end %>
+</li>

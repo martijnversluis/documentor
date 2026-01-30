@@ -1,0 +1,7 @@
+<%= turbo_stream.replace "ongoing_meetings_banner" do %>
+  <div id="ongoing_meetings_banner">
+    <% if @ongoing_meetings.any? %>
+      <%= render "shared/ongoing_meetings_banner", ongoing_meetings: @ongoing_meetings %>
+    <% end %>
+  </div>
+<% end %>

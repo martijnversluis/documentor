@@ -1,0 +1,38 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-gray-900">Tags</h1>
+    <%= link_to new_tag_path, class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700" do %>
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Nieuwe tag
+    <% end %>
+  </div>
+
+  <% if @tags.any? %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div class="divide-y divide-gray-100">
+        <% @tags.each do |tag| %>
+          <% item_count = tag.taggings.count %>
+          <%= link_to tag, class: "flex items-center justify-between px-4 py-3 hover:bg-gray-50" do %>
+            <div class="flex items-center gap-3">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-white" style="background-color: <%= tag.color %>">
+                <%= tag.name %>
+              </span>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="text-sm text-gray-500"><%= item_count %> <%= item_count == 1 ? 'item' : 'items' %></span>
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+      <p class="text-gray-500">Nog geen tags aangemaakt.</p>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,178 @@
+<div class="max-w-2xl mx-auto">
+  <div class="mb-6">
+    <div class="flex items-center space-x-2 text-sm text-gray-500 mb-1">
+      <%= link_to "Actiepunten", action_items_path, class: "hover:text-gray-700" %>
+      <span>/</span>
+    </div>
+    <div class="flex items-center justify-between">
+      <h1 class="text-2xl font-bold text-gray-900">Actiepunt</h1>
+      <div class="flex items-center gap-2">
+        <%= button_to toggle_action_item_path(@action_item), method: :patch, class: "inline-flex items-center gap-2 px-4 py-2 #{@action_item.completed? ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-green-600 text-white hover:bg-green-700'} text-sm font-medium rounded-lg cursor-pointer" do %>
+          <% if @action_item.completed? %>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Heropenen
+          <% else %>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Afronden
+          <% end %>
+        <% end %>
+        <%= link_to edit_action_item_path(@action_item), class: "inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50" do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+          </svg>
+          Bewerken
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <% waste_type_match = @action_item.notes&.match(/waste_type:(\w+)/) %>
+  <% charging_match = @action_item.notes&.match(/charging_status:/) %>
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
+    <div class="flex items-start gap-3">
+      <% if waste_type_match %>
+        <div class="flex-shrink-0"><%= waste_bin_icon(waste_type_match[1], size: 32) %></div>
+      <% elsif charging_match %>
+        <div class="flex-shrink-0"><%= car_charging_icon(size: 32) %></div>
+      <% end %>
+      <div class="prose prose-sm max-w-none overflow-x-auto <%= @action_item.completed? ? 'text-gray-400 line-through' : 'text-gray-900' %>">
+        <%= markdown(@action_item.description) %>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <% if @action_item.completed? %>
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+          </svg>
+          Afgerond <%= @action_item.completed_at.strftime("%d-%m-%Y") %>
+        </span>
+      <% end %>
+      <% if @action_item.due_date.present? && !@action_item.completed? %>
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium <%= @action_item.overdue? ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-700' %>">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <%= @action_item.due_date.strftime("%d-%m-%Y") %>
+        </span>
+      <% end %>
+      <% if @action_item.context.present? %>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-teal-100 text-teal-800">
+          @<%= @action_item.context %>
+        </span>
+      <% end %>
+      <% if @action_item.waiting? %>
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Wacht op <%= @action_item.waiting_for_display %>
+        </span>
+      <% end %>
+      <% if @action_item.someday? %>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+          Ooit/misschien
+        </span>
+      <% end %>
+      <% if @action_item.next_action? %>
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-gray-200 text-gray-800">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+          </svg>
+          Eerstvolgende
+        </span>
+      <% end %>
+      <% if @action_item.estimated_minutes.present? %>
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-800">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+          <%= ActionItem::DURATION_OPTIONS.find { |label, val| val == @action_item.estimated_minutes }&.first || "#{@action_item.estimated_minutes} min" %>
+        </span>
+      <% end %>
+      <% if @action_item.recurring? %>
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <%= { 'daily' => 'Dagelijks', 'workdays' => 'Werkdagen', 'weekly' => 'Wekelijks', 'monthly' => 'Maandelijks', 'quarterly' => 'Per kwartaal', 'yearly' => 'Jaarlijks' }[@action_item.recurrence] %>
+        </span>
+      <% end %>
+    </div>
+
+    <div class="border-t border-gray-100 pt-4" data-controller="auto-save-notes" data-auto-save-notes-url-value="<%= update_notes_action_item_path(@action_item) %>">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-sm font-medium text-gray-700">Notities</h3>
+        <% if @action_item.notes.present? %>
+          <%= button_to extract_notes_action_item_path(@action_item), method: :post, class: "text-xs text-blue-600 hover:text-blue-800 font-medium", data: { turbo_confirm: "Notities verplaatsen naar een losse notitie in het dossier?" } do %>
+            Naar notitie verplaatsen
+          <% end %>
+        <% end %>
+      </div>
+      <div class="prose prose-sm max-w-none cursor-pointer hover:bg-gray-50 rounded p-2 -m-2 min-h-[60px] <%= @action_item.notes.blank? ? 'text-gray-400' : 'text-gray-700' %>"
+           data-auto-save-notes-target="display"
+           data-action="click->auto-save-notes#edit">
+        <% if @action_item.notes.present? %>
+          <%= markdown(@action_item.notes) %>
+        <% else %>
+          <p class="italic">Klik om notities toe te voegen...</p>
+        <% end %>
+      </div>
+      <%= text_area_tag :notes, @action_item.notes,
+          rows: 4,
+          placeholder: "Notities... (markdown ondersteund)",
+          class: "hidden w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none overflow-hidden",
+          data: { controller: "markdown-paste", auto_save_notes_target: "notes", action: "input->auto-save-notes#scheduleAutoSave input->auto-save-notes#autoResize blur->auto-save-notes#blur" } %>
+      <p class="text-xs text-gray-400 mt-1" data-auto-save-notes-target="status"></p>
+    </div>
+
+    <div class="border-t border-gray-100 pt-4">
+      <dl class="grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <dt class="text-gray-500">Dossier</dt>
+          <dd class="font-medium text-gray-900">
+            <% if @action_item.dossier.present? %>
+              <%= link_to @action_item.dossier.name, @action_item.dossier, class: "text-blue-600 hover:underline" %>
+            <% else %>
+              <span class="text-gray-400">Inbox</span>
+            <% end %>
+          </dd>
+        </div>
+        <div>
+          <dt class="text-gray-500">Aangemaakt</dt>
+          <dd class="font-medium text-gray-900"><%= @action_item.created_at.strftime("%d-%m-%Y %H:%M") %></dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="border-t border-gray-100 pt-4" id="action-item-documents">
+      <%= render "action_items/documents_section", action_item: @action_item, recent_documents: @recent_documents %>
+    </div>
+
+    <div class="border-t border-gray-100 pt-4" id="add-sub-item">
+      <h3 class="text-sm font-medium text-gray-500 mb-2">Sub-items</h3>
+      <ul id="sub-items-<%= @action_item.id %>" class="space-y-1 <%= 'mb-3' if @action_item.children.any? %>" data-controller="sortable" data-sortable-url-value="<%= reorder_action_items_path %>">
+        <% @action_item.children.ordered.each do |child| %>
+          <%= render "action_items/sub_item", child: child %>
+        <% end %>
+      </ul>
+      <%= form_with model: ActionItem.new, url: action_items_path, class: "flex items-center gap-2" do |f| %>
+        <%= f.hidden_field :parent_id, value: @action_item.id %>
+        <%= f.hidden_field :dossier_id, value: @action_item.dossier_id %>
+        <%= f.text_field :description, placeholder: "Nieuw sub-item...", class: "flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+        <%= f.submit "Toevoegen", class: "px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 cursor-pointer" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-4 flex justify-between">
+    <%= button_to action_item_path(@action_item), method: :delete, class: "text-red-600 hover:text-red-800 text-sm font-medium", data: { turbo_confirm: "Weet je zeker dat je dit actiepunt wilt verwijderen?" } do %>
+      Verwijderen
+    <% end %>
+  </div>
+</div>

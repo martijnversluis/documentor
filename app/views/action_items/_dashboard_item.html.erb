@@ -1,0 +1,50 @@
+<%# locals: (action_item:) %>
+<%= turbo_frame_tag dom_id(action_item) do %>
+  <% if action_item.completed? %>
+    <li class="flex items-center gap-2 text-sm text-gray-400 group">
+      <%= button_to toggle_action_item_path(action_item), method: :patch, class: "flex-shrink-0 flex items-center", form: { class: "flex", data: { turbo_stream: true } } do %>
+        <svg class="w-4 h-4 text-green-500 group-hover:text-green-600 cursor-pointer" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+      <% end %>
+      <span class="line-through flex-1 truncate"><%= action_item.description %></span>
+      <span class="text-xs"><%= action_item.completed_at.strftime("%d-%m") %></span>
+    </li>
+  <% else %>
+    <li class="p-3 border border-gray-200 rounded-lg transition-colors"
+        data-dashboard-drag-target="actionItem"
+        data-action-item-id="<%= action_item.id %>"
+        data-action="dragover->dashboard-drag#dragOver dragenter->dashboard-drag#dragEnter dragleave->dashboard-drag#dragLeave drop->dashboard-drag#drop">
+      <div class="flex items-start gap-3">
+        <%= button_to toggle_action_item_path(action_item), method: :patch, class: "mt-0.5 flex-shrink-0 flex items-center", form: { class: "flex", data: { turbo_stream: true } } do %>
+          <div class="w-5 h-5 rounded border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center cursor-pointer">
+          </div>
+        <% end %>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium text-gray-900 prose prose-sm max-w-none overflow-x-auto"><%= markdown(action_item.description) %></div>
+          <div class="flex items-center gap-2 mt-1">
+            <% if action_item.dossier.present? %>
+              <%= link_to action_item.dossier.name, action_item.dossier, class: "text-xs text-blue-600 hover:underline", data: { turbo_frame: "_top" } %>
+            <% else %>
+              <span class="text-xs text-gray-400">Inbox</span>
+            <% end %>
+            <% if action_item.due_date.present? %>
+              <span class="text-xs <%= action_item.overdue? ? 'text-red-600' : 'text-gray-500' %>">
+                <%= action_item.due_date.strftime("%d-%m-%Y") %>
+              </span>
+            <% end %>
+          </div>
+          <% if action_item.documents.any? %>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <% action_item.documents.each do |doc| %>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">
+                  <%= link_to doc.name, doc, class: "hover:underline truncate max-w-32", data: { turbo_frame: "_top" } %>
+                </span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </li>
+  <% end %>
+<% end %>

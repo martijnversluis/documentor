@@ -1,0 +1,139 @@
+<div class="max-w-4xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Gewoontes</h1>
+      <p class="text-sm text-gray-500 mt-1">Track je dagelijkse gewoontes</p>
+    </div>
+    <%= link_to new_habit_path, class: "inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Nieuwe gewoonte
+    <% end %>
+  </div>
+
+  <% if @habits.any? %>
+    <!-- Today's habits -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+      <div class="px-4 py-3 border-b border-gray-100">
+        <h2 class="font-semibold text-gray-900">Vandaag</h2>
+      </div>
+      <div class="divide-y divide-gray-100">
+        <% @habits.each do |habit| %>
+          <% if habit.scheduled_for?(@date) %>
+            <div class="px-4 py-3 flex items-center">
+              <div id="habit_<%= habit.id %>_date_<%= @date %>" class="w-20 flex-shrink-0">
+                <%= render "habit_checkbox", habit: habit, date: @date %>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-medium text-gray-900"><%= habit.name %></p>
+                <p class="text-sm text-gray-500"><%= habit.frequency_label %></p>
+              </div>
+              <div class="flex items-center gap-4 ml-auto">
+                <% if habit.duration_seconds.present? && habit.duration_seconds > 0 %>
+                  <div data-controller="habit-timer" data-habit-timer-duration-value="<%= habit.duration_seconds %>" data-habit-timer-habit-id-value="<%= habit.id %>" class="flex items-center gap-2">
+                    <span data-habit-timer-target="display" class="font-mono text-lg font-medium text-gray-700 w-16 text-right">
+                      <%= "#{habit.duration_seconds / 60}:#{(habit.duration_seconds % 60).to_s.rjust(2, '0')}" %>
+                    </span>
+                    <button type="button" data-habit-timer-target="startButton" data-action="click->habit-timer#start" class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+                      </svg>
+                      Start
+                    </button>
+                    <button type="button" data-habit-timer-target="cancelButton" data-action="click->habit-timer#cancel" class="hidden px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">
+                      Annuleren
+                    </button>
+                  </div>
+                <% end %>
+                <div class="w-12 flex justify-center">
+                  <% if habit.current_streak > 0 %>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs font-medium">
+                      <span class="text-base">🔥</span> <%= habit.current_streak %>
+                    </span>
+                  <% end %>
+                </div>
+                <%= link_to edit_habit_path(habit), class: "text-gray-400 hover:text-gray-600" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                  </svg>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Week overview -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div class="px-4 py-3 border-b border-gray-100">
+        <h2 class="font-semibold text-gray-900">Deze week</h2>
+      </div>
+      <div class="p-4">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr>
+                <th class="text-left text-sm font-medium text-gray-500 pb-3 pr-4">Gewoonte</th>
+                <% 7.times do |i| %>
+                  <% day = Date.current.beginning_of_week + i.days %>
+                  <th class="text-center text-sm font-medium pb-3 px-2 <%= day == Date.current ? 'text-blue-600' : 'text-gray-500' %>">
+                    <%= I18n.l(day, format: "%a") %>
+                  </th>
+                <% end %>
+                <th class="text-center text-sm font-medium text-gray-500 pb-3 pl-4">Streak</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <% @habits.each do |habit| %>
+                <tr>
+                  <td class="py-3 pr-4">
+                    <div class="flex items-center gap-2">
+                      <div class="w-2 h-2 rounded-full <%= habit.color_classes[:bg] %>"></div>
+                      <span class="text-sm font-medium text-gray-900"><%= habit.name %></span>
+                    </div>
+                  </td>
+                  <% 7.times do |i| %>
+                    <% day = Date.current.beginning_of_week + i.days %>
+                    <td class="py-3 px-2">
+                      <% if habit.scheduled_for?(day) %>
+                        <div id="habit_<%= habit.id %>_date_<%= day %>" class="flex justify-center">
+                          <%= render "habit_checkbox", habit: habit, date: day %>
+                        </div>
+                      <% else %>
+                        <div class="flex justify-center">
+                          <span class="text-gray-300">-</span>
+                        </div>
+                      <% end %>
+                    </td>
+                  <% end %>
+                  <td class="text-center py-3 pl-4">
+                    <% if habit.current_streak > 0 %>
+                      <span class="inline-flex items-center gap-1 text-sm text-orange-600 font-medium">
+                        🔥 <%= habit.current_streak %>
+                      </span>
+                    <% else %>
+                      <span class="text-sm text-gray-400">0</span>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+      <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+      </svg>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">Geen gewoontes</h3>
+      <p class="text-gray-500 mb-4">Voeg je eerste gewoonte toe om te beginnen met tracken</p>
+      <%= link_to new_habit_path, class: "inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700" do %>
+        Eerste gewoonte toevoegen
+      <% end %>
+    </div>
+  <% end %>
+</div>

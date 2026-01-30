@@ -1,0 +1,64 @@
+<%= turbo_frame_tag dom_id(folder) do %>
+  <div class="border-b border-gray-100 last:border-0" data-controller="folder-expand" data-folder-expand-folder-id-value="<%= folder.id %>">
+    <div class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer" data-action="click->folder-expand#toggle">
+      <button type="button" class="mr-2 text-gray-400" data-folder-expand-target="icon">
+        <svg class="w-4 h-4 transform transition-transform" data-folder-expand-target="arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+      <svg class="w-5 h-5 text-yellow-500 mr-2" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+      </svg>
+      <span class="font-medium text-gray-900"><%= folder.name %></span>
+      <% if folder.tags.any? || folder.parties.any? %>
+        <div class="flex flex-wrap gap-1 ml-2" data-action="click->folder-expand#stopPropagation">
+          <% folder.tags.each do |tag| %>
+            <%= link_to tag.name, tag, class: "inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium text-white", style: "background-color: #{tag.color}", data: { turbo_frame: "_top" } %>
+          <% end %>
+          <% folder.parties.each do |party| %>
+            <%= link_to party.name, party, class: "inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-700 hover:bg-gray-300", data: { turbo_frame: "_top" } %>
+          <% end %>
+        </div>
+      <% end %>
+      <span class="flex-1"></span>
+      <span class="text-xs text-gray-400 mr-4"><%= folder.documents.count + folder.notes.count %> items</span>
+      <div class="flex items-center space-x-1" data-action="click->folder-expand#stopPropagation">
+        <%= link_to new_folder_document_path(folder), class: "p-1 text-gray-400 hover:text-blue-600", title: "Document toevoegen", data: { turbo_frame: "modal" } do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+        <% end %>
+        <%= link_to new_folder_note_path(folder), class: "p-1 text-gray-400 hover:text-green-600", title: "Notitie toevoegen", data: { turbo_frame: "modal" } do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+          </svg>
+        <% end %>
+        <%= link_to edit_folder_path(folder), class: "p-1 text-gray-400 hover:text-gray-600", title: "Map bewerken", data: { turbo_frame: "modal" } do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+          </svg>
+        <% end %>
+        <% if folder.documents.any? %>
+          <%= link_to download_folder_path(folder), class: "p-1 text-gray-400 hover:text-blue-600", title: "Download als ZIP" do %>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+    <div id="<%= dom_id(folder, :content) %>" class="hidden pl-8 bg-gray-50 border-l-2 border-transparent transition-colors" data-folder-expand-target="content" data-dropzone data-folder-id="<%= folder.id %>">
+      <% folder.documents.each do |document| %>
+        <%= render "documents/document", document: document %>
+      <% end %>
+      <% folder.notes.each do |note| %>
+        <%= render "notes/note", note: note %>
+      <% end %>
+      <% if folder.documents.empty? && folder.notes.empty? %>
+        <div class="py-4 px-4 text-sm text-gray-500">
+          Sleep hier bestanden of notities naartoe.
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

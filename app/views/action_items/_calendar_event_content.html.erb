@@ -1,0 +1,64 @@
+<%# Time column %>
+<div class="w-20 flex-shrink-0 text-right">
+  <% if event[:all_day] %>
+    <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">Hele dag</span>
+  <% else %>
+    <span class="text-sm font-medium text-gray-900"><%= event[:start_time]&.strftime("%H:%M") %></span>
+    <% if event[:end_time] %>
+      <span class="text-xs text-gray-400 block"><%= event[:end_time]&.strftime("%H:%M") %></span>
+    <% end %>
+  <% end %>
+</div>
+
+<%# Color indicator %>
+<div class="w-1 h-full min-h-[2.5rem] rounded-full flex-shrink-0" style="background-color: <%= event[:calendar_color] || '#4285f4' %>"></div>
+
+<%# Event details %>
+<div class="flex-1 min-w-0">
+  <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
+    <span><%= auto_link(event[:title] || "(Geen titel)") %></span>
+    <% if is_ongoing %>
+      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+        Nu bezig
+      </span>
+    <% end %>
+  </div>
+
+  <div class="flex items-center gap-3 mt-1 text-xs text-gray-500">
+    <% if event[:calendar_name].present? %>
+      <span class="inline-flex items-center gap-1">
+        <span class="w-2 h-2 rounded-full" style="background-color: <%= event[:calendar_color] || '#4285f4' %>"></span>
+        <%= event[:calendar_name] %>
+      </span>
+    <% end %>
+
+    <% if event[:conference_url].present? %>
+      <%= link_to event[:conference_url], target: "_blank", class: "inline-flex items-center gap-1 text-blue-600 hover:text-blue-800" do %>
+        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+        </svg>
+        Deelnemen
+      <% end %>
+    <% end %>
+
+    <% if event[:location].present? %>
+      <span class="inline-flex items-center gap-1">
+        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+        <%= auto_link(event[:location]) %>
+      </span>
+    <% end %>
+
+    <% if is_ongoing %>
+      <span class="inline-flex items-center gap-1 text-green-600">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+        Klik om te openen
+      </span>
+    <% end %>
+  </div>
+</div>

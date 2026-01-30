@@ -1,0 +1,321 @@
+/* HeyDocumentor injected styles */
+
+/* Bottom bar buttons */
+.heydoc-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 16px;
+  color: #a0a0a0;
+  cursor: pointer;
+  transition: color 0.15s;
+  font-size: 12px;
+  gap: 4px;
+}
+
+.heydoc-btn:hover {
+  color: #ffffff;
+}
+
+.heydoc-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Attachment checkbox overlay */
+.heydoc-checkbox-overlay {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 24px;
+  height: 24px;
+  background: rgba(80, 70, 229, 0.9);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 10;
+}
+
+.heydoc-attachment-wrapper:hover .heydoc-checkbox-overlay,
+.heydoc-checkbox-overlay.checked {
+  opacity: 1;
+}
+
+.heydoc-checkbox-overlay svg {
+  width: 16px;
+  height: 16px;
+  color: white;
+}
+
+.heydoc-checkbox-overlay.checked {
+  background: #5046e5;
+}
+
+/* Floating save button */
+.heydoc-save-float {
+  position: fixed;
+  bottom: 100px;
+  right: 24px;
+  background: #5046e5;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(80, 70, 229, 0.4);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.heydoc-save-float:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(80, 70, 229, 0.5);
+}
+
+/* Modal */
+.heydoc-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.heydoc-modal {
+  background: white;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.heydoc-modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.heydoc-modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.heydoc-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6b7280;
+  line-height: 1;
+}
+
+.heydoc-modal-close:hover {
+  color: #1a1a1a;
+}
+
+.heydoc-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.heydoc-form-group {
+  margin-bottom: 16px;
+}
+
+.heydoc-form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.heydoc-form-group input,
+.heydoc-form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.heydoc-form-group input:focus,
+.heydoc-form-group textarea:focus {
+  outline: none;
+  border-color: #5046e5;
+  box-shadow: 0 0 0 3px rgba(80, 70, 229, 0.1);
+}
+
+.heydoc-form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.heydoc-form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  background: white;
+}
+
+.heydoc-form-group select:focus {
+  outline: none;
+  border-color: #5046e5;
+  box-shadow: 0 0 0 3px rgba(80, 70, 229, 0.1);
+}
+
+.heydoc-form-group select:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+/* Dossier selector */
+.heydoc-dossier-search {
+  margin-bottom: 12px;
+}
+
+.heydoc-dossier-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+}
+
+.heydoc-dossier-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #e5e7eb;
+  transition: background 0.1s;
+  color: #1f2937;
+}
+
+.heydoc-dossier-item:last-child {
+  border-bottom: none;
+}
+
+.heydoc-dossier-item:hover {
+  background: #f3f4f6;
+}
+
+.heydoc-dossier-item.selected {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.heydoc-dossier-item .name {
+  font-weight: 600;
+  color: #111827;
+}
+
+.heydoc-dossier-item .meta {
+  font-size: 12px;
+  color: #4b5563;
+  margin-top: 2px;
+}
+
+.heydoc-dossier-matched {
+  background: #fef3c7;
+  border-left: 3px solid #f59e0b;
+}
+
+.heydoc-dossier-matched:hover {
+  background: #fde68a;
+}
+
+.heydoc-dossier-header {
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #f9fafb;
+}
+
+.heydoc-dossier-divider {
+  height: 1px;
+  background: #e5e7eb;
+}
+
+/* Modal footer */
+.heydoc-modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.heydoc-btn-secondary {
+  padding: 10px 20px;
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.heydoc-btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.heydoc-btn-primary {
+  padding: 10px 20px;
+  background: #5046e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.heydoc-btn-primary:hover {
+  background: #4338ca;
+}
+
+.heydoc-btn-primary:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Loading spinner */
+.heydoc-loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: heydoc-spin 0.8s linear infinite;
+}
+
+@keyframes heydoc-spin {
+  to { transform: rotate(360deg); }
+}

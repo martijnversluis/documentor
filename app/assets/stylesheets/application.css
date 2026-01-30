@@ -1,0 +1,37 @@
+/*
+ * This is a manifest file that'll be compiled into application.css.
+ *
+ * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
+ * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
+ * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
+ * depending on specificity.
+ *
+ * Consider organizing styles into separate files for maintainability.
+ */
+
+/* Prevent content from overflowing containers */
+.prose, .prose * {
+  overflow-wrap: anywhere !important;
+  word-break: break-all !important;
+  max-width: 100% !important;
+}
+
+/* Ensure links break properly */
+.prose a, .prose p, .prose span {
+  word-break: break-all !important;
+}
+
+.prose pre {
+  white-space: pre-wrap !important;
+  cursor: text;
+  user-select: text;
+}
+
+.prose code {
+  cursor: text;
+  user-select: text;
+}
+
+.prose a {
+  text-decoration: underline;
+}

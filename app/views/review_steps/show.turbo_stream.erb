@@ -1,0 +1,3 @@
+<%= turbo_stream.update "current-step" do %>
+  <%= render "review_steps/step", step: @review_step, review: @review %>
+<% end %>

@@ -1,0 +1,25 @@
+class Checklist < ApplicationRecord
+  has_many :checklist_items, -> { order(:position) }, dependent: :destroy
+  accepts_nested_attributes_for :checklist_items, allow_destroy: true, reject_if: :all_blank
+
+  validates :name, presence: true
+
+  scope :ordered, -> { order(:name) }
+
+  def create_action_items!(dossier: nil, due_date: nil)
+    checklist_items.map do |item|
+      ActionItem.create!(
+        description: item.description,
+        dossier: dossier,
+        due_date: due_date || Date.current,
+        context: item.context,
+        estimated_minutes: item.estimated_minutes,
+        notes: "checklist:#{id}"
+      )
+    end
+  end
+
+  def total_estimated_time
+    checklist_items.sum(:estimated_minutes)
+  end
+end

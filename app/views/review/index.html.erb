@@ -1,0 +1,159 @@
+<div class="max-w-4xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-gray-900">Weekly Review</h1>
+    <p class="text-sm text-gray-500 mt-1">Overzicht voor je wekelijkse review</p>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+      <p class="text-3xl font-bold text-green-600"><%= @completed_this_week %></p>
+      <p class="text-sm text-gray-500">Afgerond deze week</p>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+      <p class="text-3xl font-bold <%= @overdue_items.any? ? 'text-red-600' : 'text-gray-400' %>"><%= @overdue_items.count %></p>
+      <p class="text-sm text-gray-500">Verlopen</p>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+      <p class="text-3xl font-bold <%= @waiting_items.any? ? 'text-orange-600' : 'text-gray-400' %>"><%= @waiting_items.count %></p>
+      <p class="text-sm text-gray-500">Wachten op</p>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+      <p class="text-3xl font-bold <%= @inbox_count > 0 ? 'text-blue-600' : 'text-gray-400' %>"><%= @inbox_count %></p>
+      <p class="text-sm text-gray-500">In inbox</p>
+    </div>
+  </div>
+
+  <% if @overdue_items.any? %>
+    <div class="bg-white rounded-lg shadow-sm border border-red-200 mb-6">
+      <div class="px-4 py-3 border-b border-red-100 bg-red-50 rounded-t-lg">
+        <h2 class="font-semibold text-red-900 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Verlopen actiepunten (<%= @overdue_items.count %>)
+        </h2>
+      </div>
+      <ul class="divide-y divide-gray-100">
+        <% @overdue_items.each do |item| %>
+          <li class="p-4 hover:bg-gray-50">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="text-sm font-medium text-gray-900"><%= item.description %></div>
+                <div class="flex items-center gap-2 mt-1">
+                  <% if item.dossier.present? %>
+                    <%= link_to item.dossier.name, item.dossier, class: "text-xs text-blue-600 hover:underline" %>
+                  <% end %>
+                  <span class="text-xs text-red-600 font-medium"><%= item.due_date.strftime("%d-%m-%Y") %></span>
+                </div>
+              </div>
+              <%= link_to "Bewerken", edit_action_item_path(item), class: "text-sm text-blue-600 hover:underline" %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if @dossiers_without_actions.any? %>
+    <div class="bg-white rounded-lg shadow-sm border border-yellow-200 mb-6">
+      <div class="px-4 py-3 border-b border-yellow-100 bg-yellow-50 rounded-t-lg">
+        <h2 class="font-semibold text-yellow-900 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+          </svg>
+          Dossiers zonder next action (<%= @dossiers_without_actions.count %>)
+        </h2>
+        <p class="text-xs text-yellow-700 mt-1">Heeft elk dossier een volgende actie?</p>
+      </div>
+      <ul class="divide-y divide-gray-100">
+        <% @dossiers_without_actions.each do |dossier| %>
+          <li class="p-4 hover:bg-gray-50">
+            <div class="flex items-center justify-between">
+              <%= link_to dossier.name, dossier, class: "font-medium text-gray-900 hover:text-blue-600" %>
+              <span class="text-xs text-gray-400">Laatst bijgewerkt <%= time_ago_in_words(dossier.updated_at) %> geleden</span>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if @waiting_items.any? %>
+    <div class="bg-white rounded-lg shadow-sm border border-orange-200 mb-6">
+      <div class="px-4 py-3 border-b border-orange-100 bg-orange-50 rounded-t-lg">
+        <h2 class="font-semibold text-orange-900 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Wachten op (<%= @waiting_items.count %>)
+        </h2>
+        <p class="text-xs text-orange-700 mt-1">Moet je ergens achteraan?</p>
+      </div>
+      <ul class="divide-y divide-gray-100">
+        <% @waiting_items.each do |item| %>
+          <li class="p-4 hover:bg-gray-50">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="text-sm font-medium text-gray-900"><%= item.description %></div>
+                <div class="flex items-center gap-2 mt-1">
+                  <% if item.dossier.present? %>
+                    <%= link_to item.dossier.name, item.dossier, class: "text-xs text-blue-600 hover:underline" %>
+                  <% end %>
+                  <span class="text-xs text-orange-600 font-medium">Wacht op: <%= item.waiting_for_display %></span>
+                </div>
+              </div>
+              <%= link_to "Bewerken", edit_action_item_path(item), class: "text-sm text-blue-600 hover:underline" %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if @someday_items.any? %>
+    <div class="bg-white rounded-lg shadow-sm border border-indigo-200 mb-6">
+      <div class="px-4 py-3 border-b border-indigo-100 bg-indigo-50 rounded-t-lg">
+        <h2 class="font-semibold text-indigo-900 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          Ooit/misschien om te bekijken
+        </h2>
+        <p class="text-xs text-indigo-700 mt-1">Wil je iets hiervan oppakken?</p>
+      </div>
+      <ul class="divide-y divide-gray-100">
+        <% @someday_items.each do |item| %>
+          <li class="p-4 hover:bg-gray-50">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="text-sm font-medium text-gray-900"><%= item.description %></div>
+                <div class="flex items-center gap-2 mt-1">
+                  <% if item.dossier.present? %>
+                    <%= link_to item.dossier.name, item.dossier, class: "text-xs text-blue-600 hover:underline" %>
+                  <% end %>
+                  <span class="text-xs text-gray-400">Sinds <%= item.created_at.strftime("%d-%m-%Y") %></span>
+                </div>
+              </div>
+              <%= link_to "Bewerken", edit_action_item_path(item), class: "text-sm text-blue-600 hover:underline" %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+      <% if ActionItem.pending.someday_maybe.count > 10 %>
+        <div class="p-4 border-t border-gray-100 text-center">
+          <%= link_to "Bekijk alle #{ActionItem.pending.someday_maybe.count} ooit/misschien items", action_items_path(someday: "1"), class: "text-sm text-indigo-600 hover:underline" %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @overdue_items.empty? && @dossiers_without_actions.empty? && @waiting_items.empty? && @inbox_count == 0 %>
+    <div class="bg-green-50 rounded-lg border border-green-200 p-8 text-center">
+      <svg class="mx-auto h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <h3 class="mt-2 text-lg font-medium text-green-900">Alles is up to date!</h3>
+      <p class="mt-1 text-sm text-green-700">Je hebt geen verlopen items en al je dossiers hebben een volgende actie.</p>
+    </div>
+  <% end %>
+</div>

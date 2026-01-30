@@ -1,0 +1,189 @@
+---
+nl:
+  date:
+    day_names:
+      - zondag
+      - maandag
+      - dinsdag
+      - woensdag
+      - donderdag
+      - vrijdag
+      - zaterdag
+    abbr_day_names:
+      - zo
+      - ma
+      - di
+      - wo
+      - do
+      - vr
+      - za
+    month_names:
+      - ~
+      - januari
+      - februari
+      - maart
+      - april
+      - mei
+      - juni
+      - juli
+      - augustus
+      - september
+      - oktober
+      - november
+      - december
+    abbr_month_names:
+      - ~
+      - jan
+      - feb
+      - mrt
+      - apr
+      - mei
+      - jun
+      - jul
+      - aug
+      - sep
+      - okt
+      - nov
+      - dec
+    formats:
+      long: "%A %d %B %Y"
+  time:
+    formats:
+      long: "%A %d %B %Y om %H:%M"
+      time: "%H:%M"
+  datetime:
+    distance_in_words:
+      about_x_hours:
+        one: ongeveer 1 uur
+        other: ongeveer %{count} uur
+      about_x_months:
+        one: ongeveer 1 maand
+        other: ongeveer %{count} maanden
+      about_x_years:
+        one: ongeveer 1 jaar
+        other: ongeveer %{count} jaar
+      almost_x_years:
+        one: bijna 1 jaar
+        other: bijna %{count} jaar
+      half_a_minute: een halve minuut
+      less_than_x_minutes:
+        one: minder dan 1 minuut
+        other: minder dan %{count} minuten
+      less_than_x_seconds:
+        one: minder dan 1 seconde
+        other: minder dan %{count} seconden
+      over_x_years:
+        one: meer dan 1 jaar
+        other: meer dan %{count} jaar
+      x_days:
+        one: 1 dag
+        other: "%{count} dagen"
+      x_minutes:
+        one: 1 minuut
+        other: "%{count} minuten"
+      x_months:
+        one: 1 maand
+        other: "%{count} maanden"
+      x_seconds:
+        one: 1 seconde
+        other: "%{count} seconden"
+      x_years:
+        one: 1 jaar
+        other: "%{count} jaar"
+  activerecord:
+    models:
+      dossier: Dossier
+      folder: Map
+      document: Document
+      note: Notitie
+      tag: Tag
+      party: Partij
+      action_item: Actiepunt
+    attributes:
+      dossier:
+        name: Naam
+        description: Beschrijving
+      folder:
+        name: Naam
+      document:
+        name: Naam
+        occurred_at: Datum
+      note:
+        title: Titel
+        content: Inhoud
+        occurred_at: Datum
+      tag:
+        name: Naam
+        color: Kleur
+      party:
+        name: Naam
+        kvk_number: KvK-nummer
+        address: Adres
+        postal_code: Postcode
+        city: Plaats
+        phone: Telefoon
+        email: E-mail
+        website: Website
+        notes: Notities
+      action_item:
+        description: Beschrijving
+        due_date: Deadline
+        completed: Afgerond
+  helpers:
+    submit:
+      create: Aanmaken
+      update: Opslaan
+      submit: Opslaan
+  views:
+    dashboard:
+      title: Dashboard
+      upcoming_reminders: Aankomende herinneringen
+      recent_dossiers: Recente dossiers
+      no_reminders: Geen aankomende herinneringen
+    dossiers:
+      index:
+        title: Dossiers
+        new: Nieuw dossier
+      show:
+        add_folder: Map toevoegen
+        add_document: Document toevoegen
+        add_note: Notitie toevoegen
+        timeline: Tijdlijn
+        action_items: Actiepunten
+      form:
+        name_placeholder: Naam van het dossier
+        description_placeholder: Optionele beschrijving
+    folders:
+      form:
+        name_placeholder: Naam van de map
+    documents:
+      form:
+        select_file: Selecteer bestand
+        drop_file: of sleep hier een bestand
+    notes:
+      form:
+        title_placeholder: Titel
+        content_placeholder: Inhoud van de notitie
+    tags:
+      show:
+        title: "Tag: %{name}"
+    parties:
+      index:
+        title: Partijen
+        new: Nieuwe partij
+      show:
+        contact_info: Contactgegevens
+        linked_content: Gelinkte content
+      form:
+        lookup_kvk: KvK opzoeken
+    search:
+      placeholder: Zoeken...
+      no_results: Geen resultaten gevonden
+    shared:
+      actions:
+        edit: Bewerken
+        delete: Verwijderen
+        cancel: Annuleren
+        save: Opslaan
+        back: Terug
+      confirm_delete: Weet je zeker dat je dit wilt verwijderen?

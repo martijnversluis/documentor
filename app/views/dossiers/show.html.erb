@@ -1,0 +1,183 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <div class="flex items-center space-x-2 text-sm text-gray-500 mb-1">
+        <%= link_to "Dossiers", dossiers_path, class: "hover:text-gray-700" %>
+        <span>/</span>
+      </div>
+      <h1 class="text-2xl font-bold text-gray-900"><%= @dossier.name %></h1>
+      <% if @dossier.description.present? %>
+        <div class="mt-1 text-gray-600 prose prose-sm max-w-none"><%= markdown(@dossier.description) %></div>
+      <% end %>
+      <%= render "party_links/party_links", linkable: @dossier %>
+    </div>
+    <div class="flex items-center space-x-2">
+      <%= link_to new_dossier_template_path(from_dossier_id: @dossier.id), class: "inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50" do %>
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        Als template opslaan
+      <% end %>
+      <%= link_to edit_dossier_path(@dossier), class: "inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50" do %>
+        Bewerken
+      <% end %>
+      <% if @dossier.archived? %>
+        <%= button_to unarchive_dossier_path(@dossier), method: :patch, class: "inline-flex items-center px-3 py-2 border border-green-300 text-sm font-medium rounded-lg text-green-700 bg-white hover:bg-green-50" do %>
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          Herstellen
+        <% end %>
+      <% else %>
+        <%= button_to archive_dossier_path(@dossier), method: :patch, data: { turbo_confirm: "Weet je zeker dat je dit dossier wilt archiveren?" }, class: "inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50" do %>
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+          </svg>
+          Archiveren
+        <% end %>
+      <% end %>
+      <%= button_to @dossier, method: :delete, data: { turbo_confirm: "Weet je zeker dat je dit dossier wilt verwijderen?" }, class: "inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-lg text-red-700 bg-white hover:bg-red-50" do %>
+        Verwijderen
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flex space-x-3">
+    <%= link_to new_dossier_folder_path(@dossier), class: "inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50", data: { turbo_frame: "modal" } do %>
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Map toevoegen
+    <% end %>
+    <%= link_to new_dossier_document_path(@dossier), class: "inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50", data: { turbo_frame: "modal" } do %>
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Document toevoegen
+    <% end %>
+    <%= link_to new_dossier_note_path(@dossier), class: "inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50", data: { turbo_frame: "modal" } do %>
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Notitie toevoegen
+    <% end %>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200" data-controller="drag-drop">
+    <div class="p-4 border-b border-gray-200">
+      <h2 class="font-semibold text-gray-900">Inhoud</h2>
+    </div>
+
+    <div id="dossier-content" class="divide-y divide-gray-100" data-dropzone data-dossier-id="<%= @dossier.id %>">
+      <% @folders.each do |folder| %>
+        <%= render "folders/folder", folder: folder %>
+      <% end %>
+
+      <% @direct_documents.each do |document| %>
+        <%= render "documents/document", document: document %>
+      <% end %>
+
+      <% @direct_notes.each do |note| %>
+        <%= render "notes/note", note: note %>
+      <% end %>
+
+      <% if @folders.empty? && @direct_documents.empty? && @direct_notes.empty? %>
+        <div class="p-8 text-center text-gray-500">
+          <p>Dit dossier is nog leeg.</p>
+          <p class="text-sm mt-1">Voeg een map, document of notitie toe om te beginnen.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="p-4 border-b border-gray-200">
+      <h2 class="font-semibold text-gray-900">Actiepunten</h2>
+    </div>
+    <div class="p-4">
+      <%= render "action_items/form", dossier: @dossier %>
+
+      <% pending_items = @dossier.action_items.pending.root_items.ordered %>
+      <% completed_items = @dossier.action_items.completed.root_items.ordered.limit(5) %>
+
+      <ul id="action-items-pending" class="mt-4 -mx-3" data-controller="sortable" data-sortable-url-value="<%= reorder_action_items_path %>">
+        <% pending_items.each do |item| %>
+          <%= render "action_items/action_item", action_item: item, link_to_dossier: false %>
+        <% end %>
+      </ul>
+      <% if pending_items.empty? %>
+        <p id="action-items-empty" class="text-sm text-gray-500">Geen openstaande actiepunten.</p>
+      <% end %>
+
+      <div id="action-items-completed-section" class="<%= 'mt-4 pt-4 border-t border-gray-100' if completed_items.any? %> <%= 'hidden' unless completed_items.any? %>">
+        <p class="text-xs text-gray-500 mb-2">Afgerond</p>
+        <ul id="action-items-completed" class="-mx-3">
+          <% completed_items.each do |item| %>
+            <%= render "action_items/action_item", action_item: item, link_to_dossier: false %>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="p-4 border-b border-gray-200">
+      <h2 class="font-semibold text-gray-900">Tijdlijn</h2>
+    </div>
+    <div class="p-4">
+      <% timeline = @dossier.timeline_items %>
+      <% if timeline.any? %>
+        <div class="space-y-4">
+          <% timeline.each do |item| %>
+            <%= link_to item, class: "flex items-start space-x-3 p-2 -mx-2 rounded hover:bg-gray-50" do %>
+              <div class="flex-shrink-0 w-2 h-2 mt-2 rounded-full <%= item.is_a?(Document) ? 'bg-blue-500' : 'bg-green-500' %>"></div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900">
+                  <%= item.is_a?(Document) ? item.name : item.title %>
+                </p>
+                <p class="text-xs text-gray-500">
+                  <%= item.display_date.strftime("%d-%m-%Y %H:%M") %>
+                  <% if item.folder.present? %>
+                    &middot; in <%= item.folder.name %>
+                  <% end %>
+                </p>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-gray-500 text-sm">Nog geen items in dit dossier.</p>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<%= turbo_frame_tag "modal" %>
+
+<% if params[:highlight].present? %>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Expand folder if needed
+    <% if params[:expand_folder].present? %>
+    const folderId = <%= params[:expand_folder] %>;
+    const folderContent = document.getElementById('content_folder_' + folderId);
+    if (folderContent) {
+      folderContent.classList.remove('hidden');
+      const arrow = folderContent.closest('[data-controller="folder-expand"]')?.querySelector('[data-folder-expand-target="arrow"]');
+      if (arrow) arrow.classList.add('rotate-90');
+    }
+    <% end %>
+
+    // Highlight document
+    const highlightId = '<%= params[:highlight] %>';
+    const element = document.getElementById(highlightId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2', 'bg-blue-50');
+      setTimeout(() => {
+        element.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2', 'bg-blue-50');
+      }, 3000);
+    }
+  });
+</script>
+<% end %>

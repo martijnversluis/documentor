@@ -1,0 +1,87 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center">
+      <span class="inline-flex items-center justify-center w-8 h-8 rounded-full mr-3" style="background-color: <%= @tag.color %>"></span>
+      <h1 class="text-2xl font-bold text-gray-900"><%= @tag.name %></h1>
+    </div>
+    <div class="flex items-center space-x-2">
+      <%= link_to edit_tag_path(@tag), class: "inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50" do %>
+        Bewerken
+      <% end %>
+    </div>
+  </div>
+
+  <% if @items[:dossiers].any? %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div class="p-4 border-b border-gray-200">
+        <h2 class="font-semibold text-gray-900">Dossiers</h2>
+      </div>
+      <ul class="divide-y divide-gray-100">
+        <% @items[:dossiers].each do |dossier| %>
+          <li class="px-4 py-3 hover:bg-gray-50">
+            <%= link_to dossier.name, dossier, class: "font-medium text-gray-900 hover:text-blue-600" %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if @items[:folders].any? %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div class="p-4 border-b border-gray-200">
+        <h2 class="font-semibold text-gray-900">Mappen</h2>
+      </div>
+      <ul class="divide-y divide-gray-100">
+        <% @items[:folders].each do |folder| %>
+          <li class="px-4 py-3 hover:bg-gray-50">
+            <%= link_to folder.dossier, class: "font-medium text-gray-900 hover:text-blue-600" do %>
+              <%= folder.dossier.name %> / <%= folder.name %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if @items[:documents].any? %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div class="p-4 border-b border-gray-200">
+        <h2 class="font-semibold text-gray-900">Documenten</h2>
+      </div>
+      <ul class="divide-y divide-gray-100">
+        <% @items[:documents].each do |document| %>
+          <li class="px-4 py-3 hover:bg-gray-50">
+            <%= link_to document.name, document, class: "font-medium text-gray-900 hover:text-blue-600" %>
+            <span class="text-sm text-gray-500">
+              in <%= document.folder&.name || document.dossier&.name %>
+            </span>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if @items[:notes].any? %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div class="p-4 border-b border-gray-200">
+        <h2 class="font-semibold text-gray-900">Notities</h2>
+      </div>
+      <ul class="divide-y divide-gray-100">
+        <% @items[:notes].each do |note| %>
+          <li class="px-4 py-3 hover:bg-gray-50">
+            <%= link_to note.title, note, class: "font-medium text-gray-900 hover:text-green-600" %>
+            <span class="text-sm text-gray-500">
+              in <%= note.folder&.name || note.dossier&.name %>
+            </span>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if @items.values.all?(&:empty?) %>
+    <div class="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
+      <p class="text-gray-500">Geen content met deze tag.</p>
+    </div>
+  <% end %>
+</div>

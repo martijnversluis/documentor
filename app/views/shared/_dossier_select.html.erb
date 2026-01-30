@@ -1,0 +1,71 @@
+<%# Usage: render "shared/dossier_select", field_name: "action_item[dossier_id]", selected_id: @action_item.dossier_id, include_blank: "Inbox (geen dossier)", auto_submit: false, show_all: false %>
+<%
+  field_name ||= "dossier_id"
+  selected_id ||= nil
+  include_blank ||= nil
+  auto_submit ||= false
+  input_class ||= "w-full"
+  show_all ||= false
+
+  dossiers = show_all ? Dossier.active.ordered_by_name : (work_mode? ? Dossier.active.work.ordered_by_name : Dossier.active.personal.ordered_by_name)
+  # Always find selected dossier, even if not in filtered list
+  selected_dossier = selected_id ? Dossier.find_by(id: selected_id) : nil
+  selected_label = selected_dossier&.name || ""
+  placeholder_text = include_blank || "Zoeken..."
+%>
+
+<div data-controller="searchable-select"
+     data-searchable-select-selected-value="<%= selected_id %>"
+     data-searchable-select-placeholder-value="<%= placeholder_text %>"
+     data-action="click@window->searchable-select#handleClickOutside"
+     class="relative <%= input_class %>">
+
+  <input type="hidden"
+         name="<%= field_name %>"
+         value="<%= selected_id %>"
+         data-searchable-select-target="hidden"
+         <% if auto_submit %>data-action="change->auto-submit#submit"<% end %>>
+
+  <div class="relative">
+    <input type="text"
+           data-searchable-select-target="input"
+           data-action="input->searchable-select#filter keydown->searchable-select#handleKeydown focus->searchable-select#focusInput blur->searchable-select#clearIfEmpty"
+           value="<%= selected_label %>"
+           placeholder="<%= placeholder_text %>"
+           autocomplete="off"
+           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-8">
+    <button type="button"
+            data-action="click->searchable-select#toggle"
+            class="absolute inset-y-0 right-0 flex items-center px-2 text-gray-400 hover:text-gray-600">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div data-searchable-select-target="dropdown"
+       class="hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+
+    <% if include_blank.present? %>
+      <div data-searchable-select-target="option"
+           data-value=""
+           data-label="<%= include_blank %>"
+           data-search-text="inbox geen dossier"
+           data-action="click->searchable-select#select"
+           class="px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 cursor-pointer">
+        <%= include_blank %>
+      </div>
+    <% end %>
+
+    <% dossiers.each do |dossier| %>
+      <div data-searchable-select-target="option"
+           data-value="<%= dossier.id %>"
+           data-label="<%= dossier.name %>"
+           data-search-text="<%= dossier.name_without_emoji.downcase %>"
+           data-action="click->searchable-select#select"
+           class="px-3 py-2 text-sm hover:bg-gray-50 cursor-pointer <%= selected_id == dossier.id ? 'bg-blue-50' : '' %>">
+        <%= dossier.name %>
+      </div>
+    <% end %>
+  </div>
+</div>

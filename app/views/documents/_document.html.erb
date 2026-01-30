@@ -1,0 +1,46 @@
+<%= turbo_frame_tag dom_id(document) do %>
+  <div id="<%= dom_id(document) %>_highlight" class="flex items-center px-4 py-3 hover:bg-gray-50 group cursor-grab active:cursor-grabbing rounded transition-all" draggable="true" data-document-id="<%= document.id %>" data-action="dragstart->drag-drop#dragstart">
+    <svg class="w-5 h-5 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+    </svg>
+    <div class="flex-1 min-w-0">
+      <%= link_to document.name, document, class: "text-sm font-medium text-gray-900 hover:text-blue-600", data: { turbo_frame: "_top" } %>
+      <p class="text-xs text-gray-500">
+        <%= document.display_date.strftime("%d-%m-%Y %H:%M") %>
+        <% if document.file.attached? %>
+          &middot; <%= number_to_human_size(document.file.byte_size) %>
+        <% end %>
+      </p>
+      <% if document.tags.any? || document.parties.any? %>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <% document.tags.each do |tag| %>
+            <%= link_to tag.name, tag, class: "inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white", style: "background-color: #{tag.color}", data: { turbo_frame: "_top" } %>
+          <% end %>
+          <% document.parties.each do |party| %>
+            <%= link_to party.name, party, class: "inline-flex items-center px-2 py-1 rounded text-xs font-medium border border-gray-300 text-gray-700 hover:bg-gray-100", data: { turbo_frame: "_top" } %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <% if document.file.attached? %>
+        <button type="button"
+                data-controller="download"
+                data-download-url-value="<%= download_document_path(document) %>"
+                data-download-filename-value="<%= document.name %><%= File.extname(document.file.filename.to_s) unless document.name.include?('.') %>"
+                data-action="click->download#download"
+                class="p-1 text-gray-400 hover:text-blue-600"
+                title="Downloaden">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+        </button>
+      <% end %>
+      <%= link_to edit_document_path(document), class: "p-1 text-gray-400 hover:text-gray-600", title: "Bewerken", data: { turbo_frame: "modal" } do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+        </svg>
+      <% end %>
+    </div>
+  </div>
+<% end %>

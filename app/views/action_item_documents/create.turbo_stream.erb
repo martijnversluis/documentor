@@ -1,0 +1,5 @@
+<%= turbo_stream.replace "action-item-documents" do %>
+  <div class="border-t border-gray-100 pt-4" id="action-item-documents">
+    <%= render "action_items/documents_section", action_item: @action_item, recent_documents: @recent_documents %>
+  </div>
+<% end %>

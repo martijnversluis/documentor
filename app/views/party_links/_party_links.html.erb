@@ -1,0 +1,50 @@
+<%# locals: (linkable:, dropdown_up: false) %>
+<div class="mt-4" data-controller="party-linker">
+  <div class="flex items-center justify-between mb-2">
+    <h4 class="text-sm font-medium text-gray-700">Partijen</h4>
+    <div class="relative">
+      <button type="button" data-action="click->party-linker#toggle" class="text-sm text-blue-600 hover:text-blue-800">
+        + Partij koppelen
+      </button>
+      <div data-party-linker-target="dropdown" class="hidden absolute right-0 w-64 max-h-48 overflow-y-auto bg-white rounded-lg shadow-lg border border-gray-200 z-50 <%= dropdown_up ? 'bottom-full mb-1' : 'top-full mt-1' %>">
+        <div class="p-2">
+          <% available_parties = Party.where.not(id: linkable.party_ids).ordered %>
+          <% if available_parties.any? %>
+            <% available_parties.each do |party| %>
+              <%= button_to party_links_path(linkable), method: :post, params: { party_id: party.id }, class: "w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded", data: { turbo_frame: "_top" } do %>
+                <%= party.name %>
+              <% end %>
+            <% end %>
+          <% else %>
+            <p class="px-3 py-2 text-sm text-gray-500">Alle partijen zijn al gekoppeld</p>
+          <% end %>
+          <div class="border-t border-gray-100 mt-1 pt-1">
+            <%= form_with url: party_links_path(linkable), method: :post, class: "flex gap-1 p-1", data: { turbo_frame: "_top" } do |f| %>
+              <%= text_field_tag :new_party_name, nil, placeholder: "Nieuwe partij...", class: "flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" %>
+              <%= f.submit "+", class: "px-2 py-1 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 cursor-pointer" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="<%= dom_id(linkable, :parties) %>">
+    <% if linkable.parties.any? %>
+      <div class="flex flex-wrap gap-2">
+        <% linkable.party_links.includes(:party).each do |party_link| %>
+          <div class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+            <%= link_to party_link.party.name, party_link.party, class: "hover:underline" %>
+            <%= button_to party_link_path(linkable, party_link), method: :delete, class: "text-purple-600 hover:text-purple-900", data: { turbo_confirm: "Partij ontkoppelen?" } do %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-sm text-gray-500">Geen partijen gekoppeld</p>
+    <% end %>
+  </div>
+</div>

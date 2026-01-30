@@ -1,0 +1,13 @@
+<div class="max-w-2xl mx-auto">
+  <div class="mb-6">
+    <div class="flex items-center space-x-2 text-sm text-gray-500 mb-1">
+      <%= link_to "Checklists", checklists_path, class: "hover:text-gray-700" %>
+      <span>/</span>
+    </div>
+    <h1 class="text-2xl font-bold text-gray-900">Nieuwe checklist</h1>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <%= render "form", checklist: @checklist %>
+  </div>
+</div>

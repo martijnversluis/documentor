@@ -1,0 +1,33 @@
+<%= turbo_frame_tag dom_id(note) do %>
+  <div class="flex items-center px-4 py-3 hover:bg-gray-50 group cursor-grab active:cursor-grabbing" draggable="true" data-note-id="<%= note.id %>" data-action="dragstart->drag-drop#dragstart">
+    <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+    </svg>
+    <div class="flex-1 min-w-0">
+      <%= link_to note.title, note, class: "text-sm font-medium text-gray-900 hover:text-green-600", data: { turbo_frame: "_top" } %>
+      <p class="text-xs text-gray-500">
+        <%= note.display_date.strftime("%d-%m-%Y %H:%M") %>
+        <% if note.content.present? %>
+          &middot; <%= truncate(note.content, length: 50) %>
+        <% end %>
+      </p>
+      <% if note.tags.any? || note.parties.any? %>
+        <div class="flex flex-wrap gap-1 mt-1">
+          <% note.tags.each do |tag| %>
+            <%= link_to tag.name, tag, class: "inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-#{tag.color}-100 text-#{tag.color}-800 hover:bg-#{tag.color}-200", data: { turbo_frame: "_top" } %>
+          <% end %>
+          <% note.parties.each do |party| %>
+            <%= link_to party.name, party, class: "inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 hover:bg-purple-200", data: { turbo_frame: "_top" } %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <%= link_to edit_note_path(note), class: "p-1 text-gray-400 hover:text-gray-600", title: "Bewerken", data: { turbo_frame: "modal" } do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+        </svg>
+      <% end %>
+    </div>
+  </div>
+<% end %>

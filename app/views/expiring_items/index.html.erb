@@ -1,0 +1,75 @@
+<div class="max-w-4xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Verloopdatums</h1>
+      <p class="text-sm text-gray-500 mt-1">Houd vervaldata van rijbewijs, paspoort en andere documenten bij</p>
+    </div>
+    <%= link_to new_expiring_item_path, class: "inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Toevoegen
+    <% end %>
+  </div>
+
+  <% if @expired.any? %>
+    <div class="mb-6">
+      <h2 class="text-sm font-semibold text-red-600 uppercase tracking-wide mb-3 flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        Verlopen
+      </h2>
+      <div class="bg-red-50 rounded-lg border border-red-200 divide-y divide-red-100">
+        <% @expired.each do |item| %>
+          <%= render "expiring_item", item: item %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @expiring_soon.any? %>
+    <div class="mb-6">
+      <h2 class="text-sm font-semibold text-orange-600 uppercase tracking-wide mb-3 flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        Verloopt binnenkort
+      </h2>
+      <div class="bg-orange-50 rounded-lg border border-orange-200 divide-y divide-orange-100">
+        <% @expiring_soon.each do |item| %>
+          <%= render "expiring_item", item: item %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @valid.any? %>
+    <div class="mb-6">
+      <h2 class="text-sm font-semibold text-green-600 uppercase tracking-wide mb-3 flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        Geldig
+      </h2>
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm divide-y divide-gray-100">
+        <% @valid.each do |item| %>
+          <%= render "expiring_item", item: item %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @expiring_items.empty? %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">Geen items</h3>
+      <p class="mt-1 text-sm text-gray-500">Voeg je rijbewijs, paspoort of andere documenten toe om vervaldata bij te houden.</p>
+      <%= link_to new_expiring_item_path, class: "mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700" do %>
+        Eerste item toevoegen
+      <% end %>
+    </div>
+  <% end %>
+</div>

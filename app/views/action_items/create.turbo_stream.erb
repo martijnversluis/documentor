@@ -1,0 +1,63 @@
+<% if @action_item.parent_id.present? %>
+  <%= turbo_stream.append "sub-items-#{@action_item.parent_id}" do %>
+    <%= render "action_items/sub_item", child: @action_item %>
+  <% end %>
+  <%= turbo_stream.replace "action_item_description" do %>
+    <input type="text" name="action_item[description]" id="action_item_description" placeholder="Nieuw sub-item..." class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+  <% end %>
+<% elsif @from_index %>
+  <%= turbo_stream.append "action-items-list" do %>
+    <%= render "action_items/index_item", item: @action_item %>
+  <% end %>
+
+  <%# Update relevant counts based on the new item's attributes %>
+  <% if @action_item.due_date == Date.current %>
+    <%= turbo_stream.replace "today-count" do %>
+      <span id="today-count"><%= ActionItem.pending.active.today.count %></span>
+    <% end %>
+  <% end %>
+  <% if @action_item.due_date == Date.tomorrow %>
+    <%= turbo_stream.replace "tomorrow-count" do %>
+      <span id="tomorrow-count"><%= ActionItem.pending.active.tomorrow.count %></span>
+    <% end %>
+  <% end %>
+  <% if @action_item.someday? %>
+    <%= turbo_stream.replace "someday-count" do %>
+      <span id="someday-count"><%= ActionItem.pending.someday_maybe.count %></span>
+    <% end %>
+  <% end %>
+  <% if @action_item.waiting? %>
+    <%= turbo_stream.replace "waiting-count" do %>
+      <span id="waiting-count"><%= ActionItem.pending.active.waiting.count %></span>
+    <% end %>
+  <% end %>
+  <% if @action_item.next_action? %>
+    <%= turbo_stream.replace "next-count" do %>
+      <span id="next-count"><%= ActionItem.pending.active.next_actions.count %></span>
+    <% end %>
+  <% end %>
+  <% if @action_item.estimated_minutes.present? && @action_item.estimated_minutes <= 15 %>
+    <%= turbo_stream.replace "quick-count" do %>
+      <span id="quick-count"><%= ActionItem.pending.active.quick_wins.count %></span>
+    <% end %>
+  <% end %>
+  <% if @action_item.recurring? %>
+    <%= turbo_stream.replace "recurring-count" do %>
+      <span id="recurring-count"><%= ActionItem.pending.active.recurring.count %></span>
+    <% end %>
+  <% end %>
+<% elsif @dossier.nil? %>
+  <%= turbo_stream.append "inbox-action-items" do %>
+    <%= render "inbox/action_item", action_item: @action_item %>
+  <% end %>
+<% else %>
+  <%= turbo_stream.append "action-items-pending" do %>
+    <%= render "action_items/action_item", action_item: @action_item, link_to_dossier: false %>
+  <% end %>
+
+  <%= turbo_stream.replace "action-item-form" do %>
+    <%= render "action_items/form", dossier: @dossier %>
+  <% end %>
+
+  <%= turbo_stream.remove "action-items-empty" %>
+<% end %>

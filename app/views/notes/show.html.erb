@@ -1,0 +1,40 @@
+<div class="max-w-4xl mx-auto space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <div class="flex items-center space-x-2 text-sm text-gray-500 mb-1">
+        <% if @note.folder %>
+          <%= link_to @note.folder.dossier.name, @note.folder.dossier, class: "hover:text-gray-700" %>
+          <span>/</span>
+          <%= link_to @note.folder.name, @note.folder.dossier, class: "hover:text-gray-700" %>
+          <span>/</span>
+        <% elsif @note.dossier %>
+          <%= link_to @note.dossier.name, @note.dossier, class: "hover:text-gray-700" %>
+          <span>/</span>
+        <% else %>
+          <%= link_to "Inbox", inbox_path, class: "hover:text-gray-700" %>
+          <span>/</span>
+        <% end %>
+      </div>
+      <h1 class="text-2xl font-bold text-gray-900"><%= @note.title %></h1>
+      <p class="text-sm text-gray-500 mt-1">
+        <%= @note.display_date.strftime("%d-%m-%Y %H:%M") %>
+      </p>
+      <%= render "party_links/party_links", linkable: @note %>
+    </div>
+    <div class="flex items-center space-x-2">
+      <%= link_to edit_note_path(@note), class: "inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50" do %>
+        Bewerken
+      <% end %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <% if @note.content.present? %>
+      <div class="prose prose-sm max-w-none">
+        <%= markdown(@note.content) %>
+      </div>
+    <% else %>
+      <p class="text-gray-500 italic">Geen inhoud.</p>
+    <% end %>
+  </div>
+</div>

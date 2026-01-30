@@ -1,0 +1,70 @@
+<div class="max-w-2xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Instellingen</h1>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+    <div class="px-4 py-3 border-b border-gray-100">
+      <h2 class="font-semibold text-gray-900">Afvalkalender</h2>
+      <p class="text-sm text-gray-500 mt-1">Configureer je adres voor automatische afval-herinneringen</p>
+    </div>
+
+    <div class="p-4">
+      <%= form_tag settings_waste_calendar_index_path, method: :patch, class: "space-y-4" do %>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <%= label_tag :post_code, "Postcode", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= text_field_tag :post_code, @post_code, placeholder: "1234AB", class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+          </div>
+          <div>
+            <%= label_tag :house_number, "Huisnummer", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= text_field_tag :house_number, @house_number, placeholder: "42", class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <%= submit_tag "Opslaan", class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 cursor-pointer" %>
+          <% if @post_code.present? && @house_number.present? %>
+            <%= button_to "Test verbinding", test_settings_waste_calendar_index_path, method: :post, class: "px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 cursor-pointer" %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="px-4 py-3 border-t border-gray-100 bg-gray-50 rounded-b-lg">
+      <p class="text-sm text-gray-600">
+        De afvalkalender wordt dagelijks om 12:00 gecontroleerd. Als morgen de kliko wordt geleegd,
+        wordt automatisch een actiepunt aangemaakt.
+      </p>
+    </div>
+  </div>
+
+  <% if @post_code.present? && @house_number.present? %>
+    <% pickups = WasteCalendarService.new(post_code: @post_code, house_number: @house_number).fetch_pickups rescue [] %>
+    <% if pickups.any? %>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-4 py-3 border-b border-gray-100">
+          <h2 class="font-semibold text-gray-900">Komende ophaaldata</h2>
+        </div>
+        <ul class="divide-y divide-gray-100">
+          <% pickups.first(6).each do |pickup| %>
+            <li class="px-4 py-3 flex items-center gap-3">
+              <%= waste_bin_icon(pickup[:waste_type], size: 28) %>
+              <div>
+                <p class="font-medium text-gray-900"><%= pickup[:waste_type] %></p>
+                <p class="text-sm text-gray-500">
+                  <%= l(pickup[:date], format: "%A %d %B") %>
+                  <% if pickup[:date] == Date.tomorrow %>
+                    <span class="ml-2 px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded">morgen</span>
+                  <% elsif pickup[:date] == Date.current %>
+                    <span class="ml-2 px-1.5 py-0.5 bg-red-100 text-red-700 text-xs rounded">vandaag</span>
+                  <% end %>
+                </p>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  <% end %>
+</div>

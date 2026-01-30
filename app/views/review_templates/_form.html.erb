@@ -1,0 +1,62 @@
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+  <%= form_with model: review_template, class: "space-y-6", data: { controller: "review-template-form" } do |f| %>
+    <% if review_template.errors.any? %>
+      <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <ul class="list-disc list-inside">
+          <% review_template.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Naam</label>
+        <%= f.text_field :name, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", placeholder: "Bijv. Wekelijkse Review" %>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+        <%= f.select :review_type, ReviewTemplate::REVIEW_TYPES.map { |t| [ReviewTemplate::REVIEW_TYPE_LABELS[t], t] }, {}, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Beschrijving (optioneel)</label>
+      <%= f.text_area :description, rows: 2, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", placeholder: "Beschrijf het doel van deze review..." %>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <%= f.check_box :active, class: "w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" %>
+      <%= f.label :active, "Actief", class: "text-sm font-medium text-gray-700" %>
+      <span class="text-xs text-gray-500">- Alleen actieve templates worden gebruikt voor nieuwe reviews</span>
+    </div>
+
+    <div class="border-t border-gray-200 pt-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold text-gray-900">Stappen</h3>
+        <button type="button" data-action="click->review-template-form#addStep" class="text-sm text-blue-600 hover:underline">
+          + Stap toevoegen
+        </button>
+      </div>
+
+      <div class="space-y-4" data-review-template-form-target="stepsContainer">
+        <%= f.fields_for :review_template_steps do |step_form| %>
+          <%= render "step_fields", f: step_form %>
+        <% end %>
+      </div>
+
+      <% if review_template.review_template_steps.empty? %>
+        <p class="text-gray-500 text-sm text-center py-4" data-review-template-form-target="emptyMessage">
+          Voeg stappen toe om de review te structureren
+        </p>
+      <% end %>
+    </div>
+
+    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+      <%= link_to "Annuleren", review_templates_path, class: "px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900" %>
+      <%= f.submit "Opslaan", class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer" %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,26 @@
+<div id="<%= dom_id(action_item) %>" class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 group">
+  <%= button_to toggle_action_item_path(action_item), method: :patch, class: "flex-shrink-0 mt-0.5" do %>
+    <% if action_item.completed? %>
+      <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+      </svg>
+    <% else %>
+      <svg class="w-5 h-5 text-gray-300 group-hover:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" stroke-width="2" />
+      </svg>
+    <% end %>
+  <% end %>
+
+  <div class="flex-1 min-w-0">
+    <%= link_to action_item_path(action_item), class: "block" do %>
+      <span class="text-sm <%= action_item.completed? ? 'text-gray-400 line-through' : 'text-gray-900' %>">
+        <%= action_item.description %>
+      </span>
+    <% end %>
+    <% if action_item.dossier.present? %>
+      <p class="text-xs text-gray-500 mt-0.5">
+        <%= link_to action_item.dossier.name, action_item.dossier, class: "hover:text-blue-600" %>
+      </p>
+    <% end %>
+  </div>
+</div>

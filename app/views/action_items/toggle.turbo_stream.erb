@@ -1,0 +1,83 @@
+<% if @action_item.parent_id.present? %>
+  <%# Sub-item toggle - just replace the sub-item %>
+  <%= turbo_stream.replace @action_item do %>
+    <%= render "action_items/sub_item", child: @action_item %>
+  <% end %>
+<% elsif @from_action_items_index %>
+  <%# On action items index page, remove the item and move to appropriate list %>
+  <%= turbo_stream.remove @action_item %>
+  <% if @action_item.completed? %>
+    <%= turbo_stream.prepend "completed-items-list" do %>
+      <%= render "action_items/completed_index_item", item: @action_item %>
+    <% end %>
+  <% else %>
+    <%= turbo_stream.prepend "action-items-list" do %>
+      <%= render "action_items/index_item", item: @action_item %>
+    <% end %>
+  <% end %>
+
+  <%# Update all filter counts %>
+  <%= turbo_stream.replace "today-count" do %>
+    <span id="today-count"><%= ActionItem.pending.active.today.count %></span>
+  <% end %>
+  <%= turbo_stream.replace "tomorrow-count" do %>
+    <span id="tomorrow-count"><%= ActionItem.pending.active.tomorrow.count %></span>
+  <% end %>
+  <%= turbo_stream.replace "yesterday-count" do %>
+    <span id="yesterday-count"><%= ActionItem.completed_yesterday.count %></span>
+  <% end %>
+  <%= turbo_stream.replace "someday-count" do %>
+    <span id="someday-count"><%= ActionItem.pending.someday_maybe.count %></span>
+  <% end %>
+  <%= turbo_stream.replace "waiting-count" do %>
+    <span id="waiting-count"><%= ActionItem.pending.active.waiting.count %></span>
+  <% end %>
+  <%= turbo_stream.replace "next-count" do %>
+    <span id="next-count"><%= ActionItem.pending.active.next_actions.count %></span>
+  <% end %>
+  <%= turbo_stream.replace "quick-count" do %>
+    <span id="quick-count"><%= ActionItem.pending.active.quick_wins.count %></span>
+  <% end %>
+  <%= turbo_stream.replace "recurring-count" do %>
+    <span id="recurring-count"><%= ActionItem.pending.active.recurring.count %></span>
+  <% end %>
+<% elsif @new_occurrence %>
+  <%# Replace completed recurring item with the new occurrence %>
+  <%= turbo_stream.replace @action_item do %>
+    <% if @from_dashboard %>
+      <%= render "action_items/dashboard_item", action_item: @new_occurrence %>
+    <% elsif @from_inbox %>
+      <%= render "inbox/action_item", action_item: @new_occurrence %>
+    <% else %>
+      <%= render "action_items/action_item", action_item: @new_occurrence, link_to_dossier: false %>
+    <% end %>
+  <% end %>
+
+  <%# Also add the completed item to the completed section (only on dossier page) %>
+  <% unless @from_dashboard || @from_inbox %>
+    <%= turbo_stream.prepend "action-items-completed" do %>
+      <%= render "action_items/action_item", action_item: @action_item, link_to_dossier: false %>
+    <% end %>
+    <%# Show the completed section if it was hidden %>
+    <% if @action_item.dossier&.action_items&.completed&.count == 1 %>
+      <%= turbo_stream.replace "action-items-completed-section" do %>
+        <div id="action-items-completed-section" class="mt-4 pt-4 border-t border-gray-100">
+          <p class="text-xs text-gray-500 mb-2">Afgerond</p>
+          <ul id="action-items-completed" class="-mx-3">
+            <%= render "action_items/action_item", action_item: @action_item, link_to_dossier: false %>
+          </ul>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= turbo_stream.replace @action_item do %>
+    <% if @from_dashboard %>
+      <%= render "action_items/dashboard_item", action_item: @action_item %>
+    <% elsif @from_inbox %>
+      <%= render "inbox/action_item", action_item: @action_item %>
+    <% else %>
+      <%= render "action_items/action_item", action_item: @action_item, link_to_dossier: false %>
+    <% end %>
+  <% end %>
+<% end %>

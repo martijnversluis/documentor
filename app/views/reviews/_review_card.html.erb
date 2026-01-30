@@ -1,0 +1,101 @@
+<%
+  # Full class names needed for Tailwind to include them in the build
+  type_styles = {
+    "daily_start" => { bg: "bg-amber-600", bg_hover: "hover:bg-amber-700", bg_light: "bg-amber-100", text: "text-amber-800", text_link: "text-amber-600" },
+    "daily_end" => { bg: "bg-indigo-600", bg_hover: "hover:bg-indigo-700", bg_light: "bg-indigo-100", text: "text-indigo-800", text_link: "text-indigo-600" },
+    "weekly" => { bg: "bg-blue-600", bg_hover: "hover:bg-blue-700", bg_light: "bg-blue-100", text: "text-blue-800", text_link: "text-blue-600" },
+    "monthly" => { bg: "bg-purple-600", bg_hover: "hover:bg-purple-700", bg_light: "bg-purple-100", text: "text-purple-800", text_link: "text-purple-600" },
+    "quarterly" => { bg: "bg-orange-600", bg_hover: "hover:bg-orange-700", bg_light: "bg-orange-100", text: "text-orange-800", text_link: "text-orange-600" },
+    "yearly" => { bg: "bg-green-600", bg_hover: "hover:bg-green-700", bg_light: "bg-green-100", text: "text-green-800", text_link: "text-green-600" }
+  }
+  styles = type_styles[type] || type_styles["weekly"]
+%>
+
+<%
+  # For non-persisted reviews, create a temporary one to calculate due date
+  temp_review = review.persisted? ? review : Review.find_or_initialize_for_period(type)
+  review_due = temp_review.due?
+  review_due_soon = temp_review.due_soon?
+  review_actionable = temp_review.completed? || temp_review.in_progress? || temp_review.paused? || review_due || review_due_soon
+  card_opacity = review_actionable ? "" : "opacity-50"
+%>
+
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 <%= card_opacity %>">
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="font-semibold text-gray-900"><%= Review::REVIEW_TYPE_LABELS[type] %></h3>
+    <% if review.persisted? %>
+      <% case review.status %>
+      <% when "completed" %>
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Voltooid</span>
+      <% when "in_progress" %>
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium <%= styles[:bg_light] %> <%= styles[:text] %>">Bezig</span>
+      <% when "paused" %>
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Gepauzeerd</span>
+      <% else %>
+        <% if review_due %>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Due</span>
+        <% elsif review_due_soon %>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">Binnenkort</span>
+        <% else %>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Gepland</span>
+        <% end %>
+      <% end %>
+    <% else %>
+      <% if review_due %>
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Due</span>
+      <% elsif review_due_soon %>
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">Binnenkort</span>
+      <% else %>
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Gepland</span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if review.persisted? && review.in_progress? %>
+    <div class="mb-3">
+      <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+        <span>Voortgang</span>
+        <span><%= review.progress_percentage %>%</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-1.5">
+        <div class="<%= styles[:bg] %> h-1.5 rounded-full" style="width: <%= review.progress_percentage %>%"></div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="text-sm text-gray-500 mb-4">
+    <div><%= temp_review.period_key %></div>
+    <% unless temp_review.completed? || %w[daily_start daily_end].include?(type) %>
+      <div class="text-xs mt-1">
+        Due: <%= I18n.l(temp_review.due_date, format: :long) %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if template.nil? %>
+    <div class="text-center py-2">
+      <p class="text-sm text-gray-500 mb-2">Geen template</p>
+      <%= link_to "Template aanmaken", new_review_template_path(review_type: type), class: "text-sm #{styles[:text_link]} hover:underline" %>
+    </div>
+  <% elsif review.completed? %>
+    <%= link_to review_path(review), class: "block w-full px-4 py-2 text-center text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200" do %>
+      Bekijken
+    <% end %>
+  <% elsif review.paused? %>
+    <%= link_to review_path(review), class: "block w-full px-4 py-2 text-center text-sm font-medium text-white bg-yellow-600 rounded-lg hover:bg-yellow-700" do %>
+      Hervatten
+    <% end %>
+  <% elsif review.in_progress? %>
+    <%= link_to review_path(review), class: "block w-full px-4 py-2 text-center text-sm font-medium text-white #{styles[:bg]} rounded-lg #{styles[:bg_hover]}" do %>
+      Doorgaan
+    <% end %>
+  <% elsif review.persisted? %>
+    <%= button_to start_review_path(review), method: :post, class: "w-full px-4 py-2 text-center text-sm font-medium text-white #{styles[:bg]} rounded-lg #{styles[:bg_hover]} cursor-pointer" do %>
+      Starten
+    <% end %>
+  <% else %>
+    <%= button_to reviews_path(review_type: type), method: :post, class: "w-full px-4 py-2 text-center text-sm font-medium text-white #{styles[:bg]} rounded-lg #{styles[:bg_hover]} cursor-pointer" do %>
+      Review aanmaken
+    <% end %>
+  <% end %>
+</div>

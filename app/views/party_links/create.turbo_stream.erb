@@ -1,0 +1,20 @@
+<%= turbo_stream.replace dom_id(@linkable, :parties) do %>
+  <div id="<%= dom_id(@linkable, :parties) %>">
+    <% if @linkable.parties.any? %>
+      <div class="flex flex-wrap gap-2">
+        <% @linkable.party_links.includes(:party).each do |party_link| %>
+          <div class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+            <%= link_to party_link.party.name, party_link.party, class: "hover:underline" %>
+            <%= button_to party_link_path(@linkable, party_link), method: :delete, class: "text-purple-600 hover:text-purple-900", data: { turbo_confirm: "Partij ontkoppelen?" } do %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-sm text-gray-500">Geen partijen gekoppeld</p>
+    <% end %>
+  </div>
+<% end %>

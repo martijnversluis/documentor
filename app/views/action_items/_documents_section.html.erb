@@ -1,0 +1,50 @@
+<h3 class="text-sm font-medium text-gray-700 mb-2">Documenten</h3>
+<% if action_item.documents.any? %>
+  <ul class="space-y-2 mb-4">
+    <% action_item.documents.includes(:parties).each do |document| %>
+      <li class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 group">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <%= link_to document.name, document, class: "text-sm text-gray-900 hover:text-blue-600" %>
+          <% if document.parties.any? %>
+            <span class="text-gray-400">·</span>
+            <% document.parties.each do |party| %>
+              <%= link_to party.name, party, class: "text-xs text-gray-500 hover:text-gray-700" %>
+            <% end %>
+          <% end %>
+        </div>
+        <%= button_to action_item_document_path(action_item, document), method: :delete, class: "opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-600", title: "Ontkoppelen" do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="text-sm text-gray-400 mb-4">Geen documenten gekoppeld</p>
+<% end %>
+
+<% if recent_documents.any? %>
+  <div class="bg-gray-50 rounded-lg p-3">
+    <h4 class="text-xs font-medium text-gray-500 mb-2">Recent geüpload (24 uur)</h4>
+    <ul class="space-y-1">
+      <% recent_documents.each do |document| %>
+        <li class="flex items-center justify-between py-1">
+          <div class="flex items-center gap-2 min-w-0">
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span class="text-sm text-gray-700 truncate"><%= document.name %></span>
+            <span class="text-xs text-gray-400 flex-shrink-0"><%= time_ago_in_words(document.created_at) %></span>
+          </div>
+          <%= button_to action_item_documents_path(action_item), method: :post, params: { document_id: document.id }, class: "flex-shrink-0 px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded" do %>
+            Koppelen
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

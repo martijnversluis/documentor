@@ -1,0 +1,76 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="mb-6">
+    <%= link_to meetings_path, class: "inline-flex items-center text-sm text-gray-500 hover:text-gray-700" do %>
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Alle meetings
+    <% end %>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="p-6 border-b border-gray-200">
+      <div class="flex items-start justify-between">
+        <div>
+          <h1 class="text-xl font-bold text-gray-900"><%= @meeting.title %></h1>
+          <p class="text-sm text-gray-500 mt-1">
+            <%= l(@meeting.start_time, format: :long) %> - <%= l(@meeting.end_time, format: :time) %>
+            <% if @meeting.ongoing? %>
+              <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Nu bezig
+              </span>
+            <% end %>
+          </p>
+        </div>
+        <% if @meeting.html_link.present? %>
+          <%= link_to @meeting.html_link, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50" do %>
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            Google Calendar
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="p-6 border-b border-gray-200" data-controller="auto-save-notes" data-auto-save-notes-url-value="<%= meeting_path(@meeting) %>" data-auto-save-notes-param-value="meeting[notes]">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-medium text-gray-700">Notities</h2>
+        <span data-auto-save-notes-target="status" class="text-xs text-gray-400"></span>
+      </div>
+
+      <%# Markdown display (click to edit) %>
+      <div data-auto-save-notes-target="display"
+           data-action="click->auto-save-notes#edit"
+           style="min-height: 32rem;"
+           class="px-3 py-2 text-sm border border-gray-200 rounded-lg cursor-text hover:border-gray-300 hover:bg-gray-50 transition-colors prose prose-sm max-w-none <%= @meeting.notes.blank? ? 'text-gray-400' : 'text-gray-700' %>">
+        <% if @meeting.notes.present? %>
+          <%= markdown(@meeting.notes) %>
+        <% else %>
+          <p class="italic">Klik om notities toe te voegen...</p>
+        <% end %>
+      </div>
+
+      <%# Textarea (hidden by default) %>
+      <%= text_area_tag "meeting[notes]", @meeting.notes,
+        rows: 28,
+        placeholder: "Maak hier aantekeningen tijdens de meeting...",
+        class: "hidden w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y font-mono",
+        data: { auto_save_notes_target: "notes", action: "input->auto-save-notes#scheduleAutoSave blur->auto-save-notes#blur" } %>
+    </div>
+
+    <div class="p-6">
+      <h2 class="text-sm font-medium text-gray-700 mb-3">Actiepunten</h2>
+
+      <div id="meeting_action_items" class="space-y-2 mb-4">
+        <% @meeting.action_items.each do |action_item| %>
+          <%= render "meetings/action_item", action_item: action_item %>
+        <% end %>
+      </div>
+
+      <div id="meeting_action_item_form">
+        <%= render "meetings/action_item_form", meeting: @meeting, action_item: ActionItem.new %>
+      </div>
+    </div>
+  </div>
+</div>
