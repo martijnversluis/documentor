@@ -69,15 +69,22 @@
         </div>
       <% end %>
 
-      <% if @items[:documents].any? %>
+      <% if @items[:direct_documents].any? || @items[:folder_documents].any? %>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
           <div class="p-4 border-b border-gray-200">
-            <h2 class="font-semibold text-gray-900">Gelinkte documenten</h2>
+            <h2 class="font-semibold text-gray-900">Documenten</h2>
           </div>
           <ul class="divide-y divide-gray-100">
-            <% @items[:documents].each do |document| %>
-              <li class="px-4 py-3 hover:bg-gray-50">
+            <% @items[:direct_documents].each do |document| %>
+              <li class="px-4 py-3 hover:bg-gray-50 flex items-center justify-between">
                 <%= link_to document.name, document, class: "font-medium text-gray-900 hover:text-blue-600" %>
+                <span class="text-xs text-gray-400">direct gekoppeld</span>
+              </li>
+            <% end %>
+            <% @items[:folder_documents].each do |document| %>
+              <li class="px-4 py-3 hover:bg-gray-50 flex items-center justify-between">
+                <%= link_to document.name, document, class: "font-medium text-gray-900 hover:text-blue-600" %>
+                <span class="text-xs text-gray-400">via <%= document.folder.name %></span>
               </li>
             <% end %>
           </ul>
@@ -99,7 +106,7 @@
         </div>
       <% end %>
 
-      <% if @items.values.all?(&:empty?) %>
+      <% if @items[:dossiers].empty? && @items[:folders].empty? && @items[:direct_documents].empty? && @items[:folder_documents].empty? && @items[:notes].empty? %>
         <div class="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
           <p class="text-gray-500">Nog geen gelinkte content.</p>
         </div>

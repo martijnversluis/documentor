@@ -30,13 +30,10 @@
 
 /public/assets
 
-# Ignore master key for decrypting credentials and more.
-/config/master.key
-
 /app/assets/builds/*
 !/app/assets/builds/.keep
 
-/config/credentials/development.key
 .claude/settings.local.json
 
 node_modules
+.overmind.sock

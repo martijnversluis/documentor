@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  root "action_items#index"
+  root "action_items#today"
 
   # API for Chrome extension
   namespace :api do
@@ -75,21 +75,33 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :checklists do
+  resources :checklists, except: [:destroy] do
     member do
       get :use
       post :apply
+      patch :archive
+      patch :unarchive
     end
   end
 
   resources :expiring_items, except: [:show]
 
-  resources :action_items, only: [:index, :show, :edit, :update, :destroy, :create] do
+  resources :action_items, only: [:show, :edit, :update, :destroy, :create] do
     collection do
+      get :today
+      get :tomorrow
+      get :yesterday
+      get :overdue
+      get :waiting
+      get :someday
+      get :next_actions
+      get :quick_wins
+      get :recurring
+      get :inbox, as: :filter_inbox
+      get :next_week
+      get :power_through
       patch :reorder
       patch :postpone_today
-      get :power_through
-      get :next_week
     end
     member do
       patch :toggle
@@ -117,18 +129,26 @@ Rails.application.routes.draw do
       member do
         patch :complete
         patch :skip
+        patch :toggle_checkbox
       end
     end
   end
 
-  resources :review_templates
+  resources :review_templates, except: [:destroy] do
+    member do
+      patch :archive
+      patch :unarchive
+    end
+  end
 
   # Habits
-  resources :habits do
+  resources :habits, except: [:destroy] do
     member do
       post :toggle
       post :increment
       post :decrement
+      patch :archive
+      patch :unarchive
     end
   end
 
@@ -137,6 +157,12 @@ Rails.application.routes.draw do
 
   # GitHub dashboard
   get "github/dashboard", to: "github#dashboard", as: :github_dashboard
+  post "github/promote", to: "github#promote", as: :github_promote
+
+  # Mail dashboard
+  get "mail/dashboard", to: "mail#dashboard", as: :mail_dashboard
+  post "mail/promote", to: "mail#promote", as: :mail_promote
+  post "mail/dismiss", to: "mail#dismiss", as: :mail_dismiss
 
   # Meetings
   get "meetings/banner", to: "meetings#banner", as: :meetings_banner
@@ -159,6 +185,9 @@ Rails.application.routes.draw do
       collection do
         get :callback
       end
+      member do
+        patch :toggle_mail
+      end
       resources :google_calendars, only: [:index, :update]
     end
     resources :github_accounts, only: [:index, :create, :destroy] do
@@ -170,10 +199,24 @@ Rails.application.routes.draw do
       collection do
         patch :update
         post :test
+        post :sync
+        post :create_pickup
+        post :import_ics
+      end
+      member do
+        delete :destroy_pickup
+      end
+    end
+    resources :configuration, only: [:index] do
+      collection do
+        patch :update
       end
     end
   end
 
   # Health check
   get "up" => "rails/health#show", as: :rails_health_check
+
+  # Job queue dashboard
+  mount MissionControl::Jobs::Engine, at: "/jobs"
 end

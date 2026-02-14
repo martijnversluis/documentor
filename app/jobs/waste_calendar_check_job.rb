@@ -4,6 +4,7 @@ class WasteCalendarCheckJob < ApplicationJob
   WASTE_TYPE_DESCRIPTIONS = {
     "Restafval" => "Grijze kliko aan de weg zetten",
     "REST" => "Grijze kliko aan de weg zetten",
+    "GREY" => "Grijze kliko aan de weg zetten",
     "GFT" => "Groene kliko aan de weg zetten",
     "GREEN" => "Groene kliko aan de weg zetten",
     "Papier" => "Blauwe kliko aan de weg zetten",

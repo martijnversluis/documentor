@@ -1,8 +1,19 @@
-<% filter_params = { today: params[:today], tomorrow: params[:tomorrow], yesterday: params[:yesterday], context: params[:context], someday: params[:someday], quick: params[:quick], waiting: params[:waiting], next_action: params[:next_action], recurring: params[:recurring], inbox: params[:inbox], overdue: params[:overdue] }.compact %>
-<% filter_label = @show_today ? "vandaag" : @show_tomorrow ? "morgen" : @show_yesterday ? "gisteren" : @show_someday ? "ooit/misschien" : @show_quick ? "quick win" : @show_waiting ? "wachtend" : @show_next ? "eerstvolgende" : @show_recurring ? "herhalend" : @show_inbox ? "inbox" : @show_overdue ? "verlopen" : @current_context ? "@#{@current_context}" : nil %>
-<% return_to = filter_params.any? ? action_items_path(filter_params) : nil %>
+<% content_for :return_path do %>
+  <% case @current_filter
+     when :today then today_action_items_path
+     when :tomorrow then tomorrow_action_items_path
+     when :yesterday then yesterday_action_items_path
+     when :overdue then overdue_action_items_path
+     when :waiting then waiting_action_items_path
+     when :someday then someday_action_items_path
+     when :next_actions then next_actions_action_items_path
+     when :quick_wins then quick_wins_action_items_path
+     when :recurring then recurring_action_items_path
+     when :inbox then filter_inbox_action_items_path
+     end %>
+<% end %>
 
-<div class="max-w-4xl mx-auto" data-controller="action-items-drop" data-action-items-drop-url-value="<%= action_items_path(filter_params.merge(from_index: "1")) %>">
+<div class="max-w-4xl mx-auto" data-controller="action-items-drop" data-action-items-drop-url-value="<%= today_action_items_path %>">
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-gray-900">Actiepunten</h1>
     <%= link_to next_week_action_items_path, class: "inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-purple-700 bg-purple-100 rounded-lg hover:bg-purple-200 transition-colors" do %>
@@ -14,71 +25,71 @@
   </div>
 
   <div class="flex flex-wrap gap-2 mb-4">
-    <%= link_to action_items_path(today: "1"), class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@show_today ? 'bg-blue-600 text-white ring-2 ring-blue-600 ring-offset-2' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'}" do %>
+    <%= link_to today_action_items_path, class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@current_filter == :today ? 'bg-blue-600 text-white ring-2 ring-blue-600 ring-offset-2' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'}", data: { due_date: "today" } do %>
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
       </svg>
       Vandaag (<span id="today-count"><%= @today_count %></span>)
     <% end %>
-    <%= link_to action_items_path(tomorrow: "1"), class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@show_tomorrow ? 'bg-sky-600 text-white ring-2 ring-sky-600 ring-offset-2' : 'bg-sky-100 text-sky-700 hover:bg-sky-200'}" do %>
+    <%= link_to tomorrow_action_items_path, class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@current_filter == :tomorrow ? 'bg-sky-600 text-white ring-2 ring-sky-600 ring-offset-2' : 'bg-sky-100 text-sky-700 hover:bg-sky-200'}", data: { due_date: "tomorrow" } do %>
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
       </svg>
       Morgen (<span id="tomorrow-count"><%= @tomorrow_count %></span>)
     <% end %>
-    <%= link_to action_items_path(yesterday: "1"), class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@show_yesterday ? 'bg-violet-600 text-white ring-2 ring-violet-600 ring-offset-2' : 'bg-violet-100 text-violet-700 hover:bg-violet-200'}" do %>
+    <%= link_to yesterday_action_items_path, class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@current_filter == :yesterday ? 'bg-violet-600 text-white ring-2 ring-violet-600 ring-offset-2' : 'bg-violet-100 text-violet-700 hover:bg-violet-200'}" do %>
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
       </svg>
       Gisteren (<span id="yesterday-count"><%= @yesterday_count %></span>)
     <% end %>
-    <%= link_to action_items_path(overdue: "1"), class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@show_overdue ? 'bg-red-600 text-white ring-2 ring-red-600 ring-offset-2' : 'bg-red-100 text-red-700 hover:bg-red-200'}" do %>
+    <%= link_to overdue_action_items_path, class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@current_filter == :overdue ? 'bg-red-600 text-white ring-2 ring-red-600 ring-offset-2' : 'bg-red-100 text-red-700 hover:bg-red-200'}" do %>
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
       </svg>
       Verlopen (<span id="overdue-count"><%= @overdue_count %></span>)
     <% end %>
-    <%= link_to action_items_path(next_action: "1"), class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@show_next ? 'bg-gray-900 text-white ring-2 ring-gray-900 ring-offset-2' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}" do %>
+    <%= link_to next_actions_action_items_path, class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@current_filter == :next_actions ? 'bg-gray-900 text-white ring-2 ring-gray-900 ring-offset-2' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}" do %>
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
       </svg>
       Eerstvolgende (<span id="next-count"><%= @next_count %></span>)
     <% end %>
-    <%= link_to action_items_path(waiting: "1"), class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@show_waiting ? 'bg-orange-600 text-white ring-2 ring-orange-600 ring-offset-2' : 'bg-orange-100 text-orange-700 hover:bg-orange-200'}" do %>
+    <%= link_to waiting_action_items_path, class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@current_filter == :waiting ? 'bg-orange-600 text-white ring-2 ring-orange-600 ring-offset-2' : 'bg-orange-100 text-orange-700 hover:bg-orange-200'}" do %>
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
       </svg>
       Wachten op (<span id="waiting-count"><%= @waiting_count %></span>)
     <% end %>
-    <%= link_to action_items_path(someday: "1"), class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@show_someday ? 'bg-indigo-600 text-white ring-2 ring-indigo-600 ring-offset-2' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'}" do %>
+    <%= link_to someday_action_items_path, class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@current_filter == :someday ? 'bg-indigo-600 text-white ring-2 ring-indigo-600 ring-offset-2' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'}" do %>
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
       </svg>
       Ooit/misschien (<span id="someday-count"><%= @someday_count %></span>)
     <% end %>
-    <%= link_to action_items_path(quick: "1"), class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@show_quick ? 'bg-emerald-600 text-white ring-2 ring-emerald-600 ring-offset-2' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'}" do %>
+    <%= link_to quick_wins_action_items_path, class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@current_filter == :quick_wins ? 'bg-emerald-600 text-white ring-2 ring-emerald-600 ring-offset-2' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'}" do %>
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
       </svg>
       Quick wins (<span id="quick-count"><%= @quick_count %></span>)
     <% end %>
-    <%= link_to action_items_path(recurring: "1"), class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@show_recurring ? 'bg-cyan-600 text-white ring-2 ring-cyan-600 ring-offset-2' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200'}" do %>
+    <%= link_to recurring_action_items_path, class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@current_filter == :recurring ? 'bg-cyan-600 text-white ring-2 ring-cyan-600 ring-offset-2' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200'}" do %>
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
       </svg>
       Herhalend (<span id="recurring-count"><%= @recurring_count %></span>)
     <% end %>
-    <%= link_to action_items_path(inbox: "1"), class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@show_inbox ? 'bg-rose-600 text-white ring-2 ring-rose-600 ring-offset-2' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'}" do %>
+    <%= link_to filter_inbox_action_items_path, class: "px-3 py-1.5 text-sm font-medium rounded-full inline-flex items-center gap-1 #{@current_filter == :inbox ? 'bg-rose-600 text-white ring-2 ring-rose-600 ring-offset-2' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'}" do %>
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
       </svg>
       Inbox (<span id="inbox-count"><%= @inbox_count %></span>)
     <% end %>
-    <%= link_to "Alle", action_items_path(all: "1"), class: "px-3 py-1.5 text-sm font-medium rounded-full #{params[:all] == '1' ? 'bg-gray-900 text-white ring-2 ring-gray-900 ring-offset-2' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
   </div>
+
   <div class="flex flex-wrap gap-2 mb-6">
     <% TaskContext.ordered.each do |ctx| %>
-      <%= link_to "@#{ctx.name}", action_items_path(context: ctx.name), class: "px-3 py-1.5 text-sm font-medium rounded-full #{@current_context == ctx.name ? 'bg-teal-600 text-white ring-2 ring-teal-600 ring-offset-2' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
+      <%= link_to "@#{ctx.name}", today_action_items_path(context: ctx.name), class: "px-3 py-1.5 text-sm font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200" %>
     <% end %>
     <%= link_to settings_contexts_path, class: "px-2 py-1.5 text-gray-400 hover:text-gray-600", title: "Contexts beheren" do %>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,12 +99,12 @@
     <% end %>
   </div>
 
-  <% unless @show_yesterday %>
+  <% unless @show_only_completed %>
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-      <%= form_with model: ActionItem.new, url: action_items_path(filter_params.merge(from_index: "1")), class: "flex items-center gap-3", data: { controller: "quick-add", action: "turbo:submit-end->quick-add#reset" } do |f| %>
+      <%= form_with model: ActionItem.new, url: action_items_path(filter: @current_filter, from_index: "1"), class: "flex items-center gap-3", data: { controller: "quick-add", action: "turbo:submit-end->quick-add#reset" } do |f| %>
         <%= f.text_field :description, placeholder: "Nieuw actiepunt toevoegen... (Enter om op te slaan)", class: "flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", data: { quick_add_target: "input" } %>
-        <% if filter_label %>
-          <span class="text-xs text-gray-400">+ <%= filter_label %></span>
+        <% if @filter_label %>
+          <span class="text-xs text-gray-400">+ <%= @filter_label %></span>
         <% end %>
       <% end %>
     </div>
@@ -106,7 +117,7 @@
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
         <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
           <h2 class="font-semibold text-gray-900">Openstaand (<%= @pending_items.count %>)</h2>
-          <% if @show_today && @today_count > 0 %>
+          <% if @current_filter == :today && @today_count > 0 %>
             <div class="flex items-center gap-2">
               <%= link_to power_through_action_items_path, class: "inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg" do %>
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +136,7 @@
         </div>
         <ul id="action-items-list" class="divide-y divide-gray-100" data-controller="sortable" data-sortable-url-value="<%= reorder_action_items_path %>">
           <% @pending_items.each do |item| %>
-            <%= render "action_items/index_item", item: item, return_to: return_to %>
+            <%= render "action_items/index_item", item: item, return_to: request.path %>
           <% end %>
         </ul>
       </div>
@@ -158,6 +169,41 @@
             Vernieuwen
           </button>
           <%= link_to settings_github_accounts_path, class: "text-sm text-gray-600 hover:text-gray-700" do %>
+            Beheren
+          <% end %>
+        </div>
+      </div>
+      <div data-lazy-load-target="content">
+        <div class="flex items-center justify-center py-4">
+          <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <% if work_mode? && GoogleAccount.exists?(mail_enabled: true) %>
+    <div class="bg-gradient-to-r from-red-50 to-white rounded-lg shadow-sm border border-red-200 border-l-4 border-l-red-500 mb-6" data-controller="lazy-load" data-lazy-load-url-value="<%= mail_dashboard_path %>">
+      <div class="px-4 py-3 border-b border-red-100 flex items-center justify-between">
+        <h2 class="font-semibold text-gray-900 flex items-center gap-2">
+          <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+          </svg>
+          Mail
+        </h2>
+        <div class="flex items-center gap-6">
+          <button type="button"
+                  data-action="click->lazy-load#refresh"
+                  class="text-sm text-gray-600 hover:text-gray-700 inline-flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" data-lazy-load-target="spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Vernieuwen
+          </button>
+          <%= link_to settings_google_accounts_path, class: "text-sm text-gray-600 hover:text-gray-700" do %>
             Beheren
           <% end %>
         </div>
@@ -296,15 +342,15 @@
   <% if @completed_items.any? %>
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
       <div class="px-4 py-3 border-b border-gray-100">
-        <h2 class="font-semibold text-gray-700"><%= @show_yesterday ? "Afgerond gisteren" : "Recent afgerond" %></h2>
+        <h2 class="font-semibold text-gray-700"><%= @current_filter == :yesterday ? "Afgerond gisteren" : "Recent afgerond" %></h2>
       </div>
       <ul id="completed-items-list" class="divide-y divide-gray-100">
         <% @completed_items.each do |item| %>
-          <%= render "action_items/completed_index_item", item: item, return_to: return_to %>
+          <%= render "action_items/completed_index_item", item: item, return_to: request.path %>
         <% end %>
       </ul>
     </div>
-  <% elsif @show_yesterday %>
+  <% elsif @current_filter == :yesterday %>
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
       <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>

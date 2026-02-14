@@ -36,6 +36,28 @@ class ReviewStepsController < ApplicationController
     end
   end
 
+  def toggle_checkbox
+    field = params[:field] || "description"
+    index = params[:checkbox_index].to_i
+    checked = params[:checked]
+
+    content = @review_step.send(field).to_s
+    checkbox_count = 0
+
+    new_content = content.gsub(/- \[([ xX])\]/) do |match|
+      if checkbox_count == index
+        checkbox_count += 1
+        checked ? "- [x]" : "- [ ]"
+      else
+        checkbox_count += 1
+        match
+      end
+    end
+
+    @review_step.update!(field => new_content)
+    head :ok
+  end
+
   private
 
   def set_review

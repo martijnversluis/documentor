@@ -41,9 +41,12 @@ class FoldersController < ApplicationController
 
   def destroy
     dossier = @folder.dossier
-    @folder.destroy!
 
-    redirect_to dossier, notice: "Map verwijderd"
+    if @folder.destroy
+      redirect_to dossier, notice: "Map verwijderd"
+    else
+      redirect_to dossier, alert: @folder.errors.full_messages.join(", ")
+    end
   end
 
   private

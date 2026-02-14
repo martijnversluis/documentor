@@ -1,46 +1,55 @@
+require "ximmio"
+
 class WasteCalendarService
-  HOMY_URL = "http://homy.test/api/waste_calendar".freeze
+  DEFAULT_COMPANY_CODE = "f8e2844a-095e-48f9-9f98-71fceb51d2c3".freeze
 
   def initialize(post_code: nil, house_number: nil)
     @post_code = post_code || AppSetting["waste_calendar_post_code"]
     @house_number = house_number || AppSetting["waste_calendar_house_number"]
+    @company_code = AppSetting["waste_calendar_company_code"].presence || DEFAULT_COMPANY_CODE
   end
 
   def fetch_pickups
-    return [] unless configured?
+    client = Ximmio::Client.new
 
-    response = connection.get do |req|
-      req.params["post_code"] = @post_code
-      req.params["house_number"] = @house_number
-    end
+    address_response = client.get_addresses(
+      company_code: @company_code,
+      post_code: @post_code.gsub(/\s+/, ""),
+      house_number: @house_number
+    )
 
-    return [] unless response.success?
+    address = address_response.addresses.first
+    return [] if address.nil?
 
-    data = JSON.parse(response.body)
-    data["pickups"].map do |pickup|
+    calendar_response = client.get_calendar(
+      unique_address_id: address.unique_id,
+      company_code: @company_code,
+      start_date: Date.today.to_s,
+      end_date: 4.weeks.from_now.to_date.to_s
+    )
+
+    calendar_response.calendar.map do |date_time, waste_type|
       {
-        date: Date.parse(pickup["date"]),
-        waste_type: pickup["waste_type"]
+        date: date_time.to_date,
+        waste_type: waste_type
       }
-    end
-  rescue StandardError => e
-    Rails.logger.error "WasteCalendarService error: #{e.message}"
-    []
+    end.sort_by { |p| p[:date] }
   end
 
   def tomorrows_pickups
-    fetch_pickups.select { |p| p[:date] == Date.tomorrow }
+    WastePickup.tomorrow.map do |pickup|
+      {
+        date: pickup.collection_date,
+        waste_type: pickup.waste_type
+      }
+    end
   end
 
   def configured?
     @post_code.present? && @house_number.present?
   end
 
-  private
-
-  def connection
-    @connection ||= Faraday.new(url: HOMY_URL) do |f|
-      f.request :retry
-    end
+  def sync!
+    SyncWasteCalendarJob.perform_now
   end
 end

@@ -1,4 +1,9 @@
 class Habit < ApplicationRecord
+  include Archivable
+
+  # Prevent accidental deletion - habits should only be archived
+  before_destroy :prevent_destruction
+
   has_many :habit_completions, dependent: :destroy
 
   FREQUENCIES = %w[daily weekdays weekly].freeze
@@ -156,5 +161,12 @@ class Habit < ApplicationRecord
     when "weekly" then "Wekelijks"
     else frequency
     end
+  end
+
+  private
+
+  def prevent_destruction
+    errors.add(:base, "Gewoontes kunnen niet verwijderd worden, alleen gearchiveerd")
+    throw(:abort)
   end
 end

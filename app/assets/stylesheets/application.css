@@ -35,3 +35,14 @@
 .prose a {
   text-decoration: underline;
 }
+
+/* GitHub-style task list checkboxes */
+.prose .task-list-item {
+  list-style: none;
+  margin-left: -1.25rem;
+}
+
+.prose .task-list-item input[type="checkbox"] {
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}

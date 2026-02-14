@@ -2,6 +2,10 @@ class Dossier < ApplicationRecord
   include PgSearch::Model
   include Taggable
   include PartyLinkable
+  include Archivable
+
+  # Prevent accidental deletion - dossiers should only be archived
+  before_destroy :prevent_destruction
 
   pg_search_scope :search,
     against: [:name, :description],
@@ -21,7 +25,6 @@ class Dossier < ApplicationRecord
   validates :name, presence: true
 
   scope :active, -> { where(archived_at: nil) }
-  scope :archived, -> { where.not(archived_at: nil) }
   scope :work, -> { where(work_dossier: true) }
   scope :personal, -> { where(work_dossier: false) }
   scope :ordered_by_name, -> { all.sort_by { |d| d.name_without_emoji.downcase } }
@@ -34,21 +37,16 @@ class Dossier < ApplicationRecord
     action_items.any? && action_items.pending.none?
   end
 
-  def archived?
-    archived_at.present?
-  end
-
-  def archive!
-    update!(archived_at: Time.current)
-  end
-
-  def unarchive!
-    update!(archived_at: nil)
-  end
-
   def timeline_items
     all_documents = documents.to_a + folders.flat_map(&:documents)
     all_notes = notes.to_a + folders.flat_map(&:notes)
     (all_documents + all_notes).sort_by(&:display_date).reverse
+  end
+
+  private
+
+  def prevent_destruction
+    errors.add(:base, "Dossiers kunnen niet verwijderd worden, alleen gearchiveerd")
+    throw(:abort)
   end
 end

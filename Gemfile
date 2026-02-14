@@ -23,6 +23,7 @@ gem "tzinfo-data", platforms: [:windows, :jruby]
 # Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
 gem "solid_cache"
 gem "solid_queue"
+gem "mission_control-jobs"
 gem "solid_cable"
 
 # Reduces boot times through caching; required in config/boot.rb
@@ -55,12 +56,22 @@ gem "image_processing", "~> 1.2"
 # ZIP file creation
 gem "rubyzip"
 
+# Text extraction from documents
+gem "pdf-reader"
+gem "docx"
+
 # Google Calendar API
 gem "google-apis-calendar_v3"
+
+# Gmail API
+gem "google-apis-gmail_v1"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: [:mri, :windows], require: "debug/prelude"
+
+  # Load environment variables from .env
+  gem "dotenv-rails"
 
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false

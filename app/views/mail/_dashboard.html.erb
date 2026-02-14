@@ -1,0 +1,81 @@
+<div data-controller="mail-items" data-mail-items-promote-url-value="<%= mail_promote_path %>" data-mail-items-dismiss-url-value="<%= mail_dismiss_path %>">
+  <% if messages.empty? %>
+    <div class="text-center py-4 text-gray-500 text-sm">
+      Geen ongelezen berichten
+    </div>
+  <% else %>
+    <ul class="divide-y divide-gray-100" data-mail-items-target="list">
+      <% messages.first(20).each do |msg| %>
+        <li class="px-4 py-2.5 hover:bg-gray-50 group"
+            data-mail-items-target="item"
+            data-item-id="mail-<%= msg[:id] %>"
+            data-item-subject="<%= msg[:subject] %>"
+            data-item-from="<%= msg[:from] %>"
+            data-item-thread-id="<%= msg[:thread_id] %>">
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 mt-0.5">
+              <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-600">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                </svg>
+              </span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <a href="https://mail.google.com/mail/u/0/#inbox/<%= msg[:thread_id] %>" target="_blank" rel="noopener noreferrer">
+                <p class="text-sm text-gray-900 truncate"><%= msg[:subject] %></p>
+                <p class="text-xs text-gray-500">
+                  <%= msg[:from] %>
+                  <% if msg[:date] %>
+                    <span class="mx-1">&middot;</span>
+                    <span><%= time_ago_in_words(msg[:date]) %> geleden</span>
+                  <% end %>
+                </p>
+              </a>
+              <% if msg[:cta].present? %>
+                <a href="<%= msg[:cta][:url] %>" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-50 rounded hover:bg-blue-100">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                  <%= truncate(msg[:cta][:text], length: 30) %>
+                </a>
+              <% end %>
+            </div>
+            <div class="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button type="button"
+                      data-action="click->mail-items#promote"
+                      class="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                      title="Promoveer naar actiepunt">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </button>
+              <button type="button"
+                      data-action="click->mail-items#snooze"
+                      class="p-1 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded"
+                      title="Snooze tot morgen">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </button>
+              <button type="button"
+                      data-action="click->mail-items#ignore"
+                      class="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                      title="Negeren">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+    <% if messages.size > 20 %>
+      <div class="px-4 py-2 text-center text-xs text-gray-500 border-t border-gray-100">
+        en <%= messages.size - 20 %> meer...
+      </div>
+    <% end %>
+  <% end %>
+</div>

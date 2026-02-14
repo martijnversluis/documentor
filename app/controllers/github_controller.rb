@@ -1,4 +1,18 @@
 class GithubController < ApplicationController
+  def promote
+    action_item = ActionItem.create!(
+      description: params[:description],
+      due_date: Date.current,
+      context: "werk",
+      position: 0,
+      notes: params[:url]
+    )
+
+    render json: { success: true, action_item_id: action_item.id }
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { success: false, error: e.message }, status: :unprocessable_entity
+  end
+
   def dashboard
     @github_account = GithubAccount.first
 

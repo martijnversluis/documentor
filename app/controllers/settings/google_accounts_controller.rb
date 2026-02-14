@@ -1,6 +1,6 @@
 module Settings
   class GoogleAccountsController < ApplicationController
-    before_action :set_google_account, only: [:destroy]
+    before_action :set_google_account, only: [:destroy, :toggle_mail]
 
     def index
       @google_accounts = GoogleAccount.includes(:google_calendars).order(:email)
@@ -29,13 +29,14 @@ module Settings
         Rails.logger.info "OAuth tokens received: access_token=#{tokens[:access_token].present?}, refresh_token=#{tokens[:refresh_token].present?}"
         Rails.logger.info "User info: #{user_info.inspect}"
 
-        # Find or create the account
-        account = GoogleAccount.find_or_initialize_by(email: user_info[:email])
+        # Find or create the account (including discarded ones)
+        account = GoogleAccount.unscoped.find_or_initialize_by(email: user_info[:email])
         account.assign_attributes(
           name: user_info[:name],
           access_token: tokens[:access_token],
           refresh_token: tokens[:refresh_token],
-          token_expires_at: tokens[:expires_at]
+          token_expires_at: tokens[:expires_at],
+          discarded_at: nil # Restore if previously discarded
         )
         account.save!
 
@@ -54,8 +55,14 @@ module Settings
 
     def destroy
       email = @google_account.email
-      @google_account.destroy!
+      @google_account.discard
       redirect_to settings_google_accounts_path, notice: "Account #{email} ontkoppeld"
+    end
+
+    def toggle_mail
+      @google_account.update!(mail_enabled: !@google_account.mail_enabled)
+      status = @google_account.mail_enabled? ? "ingeschakeld" : "uitgeschakeld"
+      redirect_to settings_google_accounts_path, notice: "Mail #{status} voor #{@google_account.email}"
     end
 
     private

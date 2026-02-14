@@ -5,7 +5,8 @@ class GoogleCalendarService
   SCOPES = [
     "https://www.googleapis.com/auth/calendar.readonly",
     "https://www.googleapis.com/auth/userinfo.email",
-    "https://www.googleapis.com/auth/userinfo.profile"
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/gmail.modify"
   ].freeze
 
   class AuthorizationError < StandardError; end
@@ -147,7 +148,7 @@ class GoogleCalendarService
       today_events.each do |event|
         next if event[:all_day]
         next unless event[:start_time].present? && event[:end_time].present?
-        next unless %w[accepted tentative].include?(event[:response_status])
+        next if event[:response_status] == "declined"
         next unless event[:conference_url].present? # Only show meetings with video link
 
         # Check if ongoing
@@ -472,6 +473,6 @@ class GoogleCalendarService
   end
 
   def self.credentials
-    Rails.application.credentials.dig(:google, :calendar) || {}
+    AppCredentials.google
   end
 end

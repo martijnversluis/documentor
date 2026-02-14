@@ -178,7 +178,7 @@ class GithubService
   end
 
   def self.credentials
-    Rails.application.credentials.dig(:github) || {}
+    AppCredentials.github
   end
 
   private

@@ -98,8 +98,8 @@
 
     <% if habit.persisted? %>
       <div class="ml-auto">
-        <%= button_to habit_path(habit), method: :delete, class: "px-4 py-2 text-red-600 text-sm font-medium hover:bg-red-50 rounded-lg cursor-pointer", form: { data: { turbo_confirm: "Weet je zeker dat je deze gewoonte wilt verwijderen?" } } do %>
-          Verwijderen
+        <%= button_to archive_habit_path(habit), method: :patch, class: "px-4 py-2 text-amber-600 text-sm font-medium hover:bg-amber-50 rounded-lg cursor-pointer" do %>
+          Archiveren
         <% end %>
       </div>
     <% end %>

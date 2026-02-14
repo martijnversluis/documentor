@@ -26,7 +26,7 @@
         data-action="dragenter->global-drop#dragenter dragover->global-drop#dragover dragleave->global-drop#dragleave drop->global-drop#drop"
         data-keyboard-shortcuts-next-meeting-url-value="<%= next_meeting_path %>"
         data-keyboard-shortcuts-next-review-url-value="<%= next_review_path %>"
-        data-keyboard-shortcuts-today-url-value="<%= action_items_path(filter: 'today') %>">
+        data-keyboard-shortcuts-today-url-value="<%= today_action_items_path %>">
 
     <!-- Global drop zone indicator -->
     <div data-global-drop-target="dropzone" class="hidden fixed inset-x-4 bottom-4 z-50 pointer-events-none">
@@ -44,7 +44,7 @@
             <% end %>
 
             <div class="hidden sm:ml-8 sm:flex sm:space-x-4">
-              <%= link_to "Actiepunten", action_items_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/action_items') || current_page?(root_path) ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
+              <%= link_to "Actiepunten", today_action_items_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/action_items') || current_page?(root_path) ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
               <%= link_to "Dossiers", dossiers_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/dossiers') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
               <%= link_to "Gewoontes", habits_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/habits') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
               <%= link_to "Reviews", reviews_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/reviews') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
@@ -59,10 +59,11 @@
                 <div class="absolute left-0 top-full w-40 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
                   <%= link_to "Afvalkalender", settings_waste_calendar_index_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/waste') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'} rounded-t-lg" %>
                   <%= link_to "Checklists", checklists_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/checklists') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <%= link_to "Configuratie", settings_configuration_index_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/configuration') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
                   <%= link_to "Contexts", settings_contexts_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/contexts') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
                   <%= link_to "Dossier templates", dossier_templates_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/dossier_templates') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
                   <%= link_to "GitHub", settings_github_accounts_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/github') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
-                  <%= link_to "Google Agenda's", settings_google_accounts_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/google') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <%= link_to "Google Account", settings_google_accounts_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/google') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
                   <%= link_to "Inbox regels", settings_inbox_rules_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/inbox_rules') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
                   <%= link_to "Partijen", parties_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/parties') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
                   <%= link_to "Review templates", review_templates_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/review_templates') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>

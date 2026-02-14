@@ -1,10 +1,12 @@
 class ReviewTemplatesController < ApplicationController
-  before_action :set_review_template, only: [:show, :edit, :update, :destroy]
+  before_action :set_review_template, only: [:show, :edit, :update, :archive, :unarchive]
 
   def index
-    @review_templates = ReviewTemplate.includes(:review_template_steps)
+    @review_templates = ReviewTemplate.not_archived
+                                      .includes(:review_template_steps)
                                       .order(:review_type, active: :desc, name: :asc)
     @templates_by_type = @review_templates.group_by(&:review_type)
+    @archived_templates = ReviewTemplate.archived.order(:review_type, :name)
   end
 
   def show
@@ -36,9 +38,14 @@ class ReviewTemplatesController < ApplicationController
     end
   end
 
-  def destroy
-    @review_template.destroy!
-    redirect_to review_templates_path, notice: "Review template verwijderd"
+  def archive
+    @review_template.archive!
+    redirect_to review_templates_path, notice: "Review template gearchiveerd"
+  end
+
+  def unarchive
+    @review_template.unarchive!
+    redirect_to review_templates_path, notice: "Review template hersteld"
   end
 
   private

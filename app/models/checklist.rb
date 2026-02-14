@@ -1,4 +1,9 @@
 class Checklist < ApplicationRecord
+  include Archivable
+
+  # Prevent accidental deletion - checklists should only be archived
+  before_destroy :prevent_destruction
+
   has_many :checklist_items, -> { order(:position) }, dependent: :destroy
   accepts_nested_attributes_for :checklist_items, allow_destroy: true, reject_if: :all_blank
 
@@ -21,5 +26,18 @@ class Checklist < ApplicationRecord
 
   def total_estimated_time
     checklist_items.sum(:estimated_minutes)
+  end
+
+  def items_by_section
+    # Sort sections: empty section first, then alphabetically
+    grouped = checklist_items.order(:position).group_by { |item| item.section.presence || "" }
+    grouped.sort_by { |section, _| section.empty? ? "" : section }.to_h
+  end
+
+  private
+
+  def prevent_destruction
+    errors.add(:base, "Checklists kunnen niet verwijderd worden, alleen gearchiveerd")
+    throw(:abort)
   end
 end

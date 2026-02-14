@@ -2,6 +2,9 @@ class Folder < ApplicationRecord
   include Taggable
   include PartyLinkable
 
+  # Prevent deletion of folders that contain documents or notes
+  before_destroy :ensure_empty
+
   belongs_to :dossier, touch: true
 
   has_many :documents, dependent: :destroy
@@ -13,5 +16,18 @@ class Folder < ApplicationRecord
 
   def timeline_items
     (documents.to_a + notes.to_a).sort_by { |item| item.occurred_at || item.created_at }.reverse
+  end
+
+  def empty?
+    documents.none? && notes.none?
+  end
+
+  private
+
+  def ensure_empty
+    return if empty?
+
+    errors.add(:base, "Map kan niet worden verwijderd omdat deze documenten of notities bevat")
+    throw(:abort)
   end
 end

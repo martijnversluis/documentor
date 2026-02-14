@@ -1,4 +1,9 @@
 class ReviewTemplate < ApplicationRecord
+  include Archivable
+
+  # Prevent accidental deletion - review templates should only be archived
+  before_destroy :prevent_destruction
+
   REVIEW_TYPES = %w[daily_start daily_end weekly monthly quarterly yearly].freeze
   REVIEW_TYPE_LABELS = {
     "daily_start" => "Dag start",
@@ -25,5 +30,12 @@ class ReviewTemplate < ApplicationRecord
 
   def review_type_label
     REVIEW_TYPE_LABELS[review_type]
+  end
+
+  private
+
+  def prevent_destruction
+    errors.add(:base, "Review templates kunnen niet verwijderd worden, alleen gearchiveerd")
+    throw(:abort)
   end
 end

@@ -8,4 +8,7 @@ export PORT="${PORT:-3000}"
 export RUBY_DEBUG_OPEN="true"
 export RUBY_DEBUG_LAZY="true"
 
+# Socket in project root for easy `overmind restart`
+export OVERMIND_SOCKET=.overmind.sock
+
 exec overmind start -f Procfile.dev "$@"

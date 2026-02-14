@@ -1,8 +1,9 @@
 class ChecklistsController < ApplicationController
-  before_action :set_checklist, only: [:show, :edit, :update, :destroy, :use]
+  before_action :set_checklist, only: [:show, :edit, :update, :archive, :unarchive, :use]
 
   def index
-    @checklists = Checklist.ordered.includes(:checklist_items)
+    @checklists = Checklist.not_archived.ordered.includes(:checklist_items)
+    @archived_checklists = Checklist.archived.ordered
   end
 
   def show
@@ -10,7 +11,6 @@ class ChecklistsController < ApplicationController
 
   def new
     @checklist = Checklist.new
-    @checklist.checklist_items.build
   end
 
   def create
@@ -24,7 +24,6 @@ class ChecklistsController < ApplicationController
   end
 
   def edit
-    @checklist.checklist_items.build if @checklist.checklist_items.empty?
   end
 
   def update
@@ -35,9 +34,14 @@ class ChecklistsController < ApplicationController
     end
   end
 
-  def destroy
-    @checklist.destroy!
-    redirect_to checklists_path, notice: "Checklist verwijderd"
+  def archive
+    @checklist.archive!
+    redirect_to checklists_path, notice: "Checklist gearchiveerd"
+  end
+
+  def unarchive
+    @checklist.unarchive!
+    redirect_to checklists_path, notice: "Checklist hersteld"
   end
 
   def use
@@ -62,7 +66,7 @@ class ChecklistsController < ApplicationController
   def checklist_params
     params.require(:checklist).permit(
       :name, :description,
-      checklist_items_attributes: [:id, :description, :context, :estimated_minutes, :position, :_destroy]
+      checklist_items_attributes: [:id, :description, :context, :estimated_minutes, :position, :section, :_destroy]
     )
   end
 end

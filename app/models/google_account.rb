@@ -3,9 +3,26 @@ class GoogleAccount < ApplicationRecord
   encrypts :refresh_token
 
   has_many :google_calendars, dependent: :destroy
-  has_many :meetings, dependent: :destroy
+  has_many :meetings, dependent: :nullify
 
-  validates :email, presence: true, uniqueness: true
+  validates :email, presence: true, uniqueness: { conditions: -> { kept } }
+
+  scope :kept, -> { where(discarded_at: nil) }
+  scope :discarded, -> { where.not(discarded_at: nil) }
+
+  default_scope { kept }
+
+  def discard
+    update(discarded_at: Time.current)
+  end
+
+  def undiscard
+    update(discarded_at: nil)
+  end
+
+  def discarded?
+    discarded_at.present?
+  end
 
   def token_expired?
     token_expires_at.present? && token_expires_at < Time.current

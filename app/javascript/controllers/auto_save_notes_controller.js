@@ -57,47 +57,42 @@ export default class extends Controller {
     if (!this.hasNotesTarget || !this.hasDisplayTarget) return
 
     const currentNotes = this.notesTarget.value
+    const needsSave = currentNotes !== this.lastSavedNotes
 
-    if (currentNotes !== this.lastSavedNotes) {
+    if (needsSave) {
       this.updateStatus("Opslaan...")
-      try {
-        const response = await fetch(this.urlValue, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Accept": "text/plain",
-            "X-CSRF-Token": document.querySelector("[name='csrf-token']").content
-          },
-          body: `${this.paramValue}=${encodeURIComponent(currentNotes)}`
-        })
+    }
 
-        if (response.ok) {
-          this.lastSavedNotes = currentNotes
-          const html = await response.text()
+    try {
+      // Always fetch rendered markdown to update display
+      const response = await fetch(this.urlValue, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Accept": "text/plain",
+          "X-CSRF-Token": document.querySelector("[name='csrf-token']").content
+        },
+        body: `${this.paramValue}=${encodeURIComponent(currentNotes)}`
+      })
 
-          if (currentNotes.trim()) {
-            this.displayTarget.innerHTML = html
-            this.displayTarget.classList.remove("text-gray-400")
-            this.displayTarget.classList.add("text-gray-700")
-          } else {
-            this.displayTarget.innerHTML = '<p class="italic">Klik om notities toe te voegen...</p>'
-            this.displayTarget.classList.add("text-gray-400")
-            this.displayTarget.classList.remove("text-gray-700")
-          }
-          this.updateStatus("")
+      if (response.ok) {
+        this.lastSavedNotes = currentNotes
+        const html = await response.text()
+
+        if (currentNotes.trim()) {
+          this.displayTarget.innerHTML = html
+          this.displayTarget.classList.remove("text-gray-400")
+          this.displayTarget.classList.add("text-gray-700")
+        } else {
+          this.displayTarget.innerHTML = '<p class="italic">Klik om notities toe te voegen...</p>'
+          this.displayTarget.classList.add("text-gray-400")
+          this.displayTarget.classList.remove("text-gray-700")
         }
-      } catch (error) {
-        console.error("Failed to save notes:", error)
-        this.updateStatus("Opslaan mislukt")
+        this.updateStatus("")
       }
-    } else {
-      // No changes, just update display and clear status
-      this.updateStatus("")
-      if (!currentNotes.trim()) {
-        this.displayTarget.innerHTML = '<p class="italic">Klik om notities toe te voegen...</p>'
-        this.displayTarget.classList.add("text-gray-400")
-        this.displayTarget.classList.remove("text-gray-700")
-      }
+    } catch (error) {
+      console.error("Failed to save notes:", error)
+      this.updateStatus("Opslaan mislukt")
     }
 
     this.displayTarget.classList.remove("hidden")

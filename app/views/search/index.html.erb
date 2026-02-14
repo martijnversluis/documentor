@@ -33,7 +33,10 @@
             <li class="px-4 py-3 hover:bg-gray-50">
               <%= link_to dossier, class: "block" do %>
                 <p class="font-medium text-gray-900"><%= dossier.name %></p>
-                <% if dossier.description.present? %>
+                <% snippet = highlight_snippet(dossier_searchable_content(dossier), @query) %>
+                <% if snippet %>
+                  <p class="text-sm text-gray-500 mt-1"><%= snippet %></p>
+                <% elsif dossier.description.present? %>
                   <p class="text-sm text-gray-500 truncate"><%= truncate(dossier.description, length: 100) %></p>
                 <% end %>
               <% end %>
@@ -57,6 +60,10 @@
                   in <%= document.folder&.name || document.dossier&.name %>
                   &middot; <%= document.display_date.strftime("%d-%m-%Y") %>
                 </p>
+                <% snippet = highlight_snippet(document_searchable_content(document), @query) %>
+                <% if snippet %>
+                  <p class="text-sm text-gray-600 mt-1 leading-relaxed"><%= snippet %></p>
+                <% end %>
               <% end %>
             </li>
           <% end %>
@@ -74,7 +81,10 @@
             <li class="px-4 py-3 hover:bg-gray-50">
               <%= link_to note, class: "block" do %>
                 <p class="font-medium text-gray-900"><%= note.title %></p>
-                <% if note.content.present? %>
+                <% snippet = highlight_snippet(note_searchable_content(note), @query) %>
+                <% if snippet %>
+                  <p class="text-sm text-gray-600 mt-1 leading-relaxed"><%= snippet %></p>
+                <% elsif note.content.present? %>
                   <p class="text-sm text-gray-500 truncate"><%= truncate(note.content, length: 100) %></p>
                 <% end %>
               <% end %>
@@ -102,6 +112,12 @@
                     &middot; <%= item.due_date.strftime("%d-%m-%Y") %>
                   <% end %>
                 </p>
+                <% if item.notes.present? %>
+                  <% snippet = highlight_snippet(action_item_searchable_content(item), @query) %>
+                  <% if snippet %>
+                    <p class="text-sm text-gray-600 mt-1 leading-relaxed"><%= snippet %></p>
+                  <% end %>
+                <% end %>
               <% end %>
             </li>
           <% end %>
@@ -121,10 +137,13 @@
                 <p class="font-medium text-gray-900"><%= meeting.title %></p>
                 <p class="text-sm text-gray-500">
                   <%= meeting.start_time.strftime("%d-%m-%Y %H:%M") %>
-                  <% if meeting.notes.present? %>
-                    &middot; <span class="text-gray-400">heeft notities</span>
-                  <% end %>
                 </p>
+                <% if meeting.notes.present? %>
+                  <% snippet = highlight_snippet(meeting_searchable_content(meeting), @query) %>
+                  <% if snippet %>
+                    <p class="text-sm text-gray-600 mt-1 leading-relaxed"><%= snippet %></p>
+                  <% end %>
+                <% end %>
               <% end %>
             </li>
           <% end %>

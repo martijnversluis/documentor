@@ -67,8 +67,28 @@
 
     <!-- Week overview -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-      <div class="px-4 py-3 border-b border-gray-100">
-        <h2 class="font-semibold text-gray-900">Deze week</h2>
+      <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+        <h2 class="font-semibold text-gray-900">Weekoverzicht</h2>
+        <div class="flex items-center gap-3">
+          <%= link_to habits_path(week: (@week_start - 1.week).iso8601), class: "p-1 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          <% end %>
+          <span class="text-sm text-gray-600 min-w-[140px] text-center">
+            <%= I18n.l(@week_start, format: "%-d %b") %> – <%= I18n.l(@week_start + 6.days, format: "%-d %b %Y") %>
+          </span>
+          <%= link_to habits_path(week: (@week_start + 1.week).iso8601), class: "p-1 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          <% end %>
+          <% if @week_start != Date.current.beginning_of_week %>
+            <%= link_to habits_path, class: "text-sm text-blue-600 hover:text-blue-800 ml-1" do %>
+              Vandaag
+            <% end %>
+          <% end %>
+        </div>
       </div>
       <div class="p-4">
         <div class="overflow-x-auto">
@@ -77,9 +97,10 @@
               <tr>
                 <th class="text-left text-sm font-medium text-gray-500 pb-3 pr-4">Gewoonte</th>
                 <% 7.times do |i| %>
-                  <% day = Date.current.beginning_of_week + i.days %>
+                  <% day = @week_start + i.days %>
                   <th class="text-center text-sm font-medium pb-3 px-2 <%= day == Date.current ? 'text-blue-600' : 'text-gray-500' %>">
-                    <%= I18n.l(day, format: "%a") %>
+                    <div><%= I18n.l(day, format: "%a") %></div>
+                    <div class="text-xs font-normal"><%= day.day %></div>
                   </th>
                 <% end %>
                 <th class="text-center text-sm font-medium text-gray-500 pb-3 pl-4">Streak</th>
@@ -95,7 +116,7 @@
                     </div>
                   </td>
                   <% 7.times do |i| %>
-                    <% day = Date.current.beginning_of_week + i.days %>
+                    <% day = @week_start + i.days %>
                     <td class="py-3 px-2">
                       <% if habit.scheduled_for?(day) %>
                         <div id="habit_<%= habit.id %>_date_<%= day %>" class="flex justify-center">
@@ -134,6 +155,28 @@
       <%= link_to new_habit_path, class: "inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700" do %>
         Eerste gewoonte toevoegen
       <% end %>
+    </div>
+  <% end %>
+
+  <% if @archived_habits.any? %>
+    <div class="mt-8">
+      <h2 class="text-lg font-semibold text-gray-700 mb-4">Gearchiveerde gewoontes</h2>
+      <div class="bg-gray-50 rounded-lg border border-gray-200 divide-y divide-gray-200">
+        <% @archived_habits.each do |habit| %>
+          <div class="p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-2 h-2 rounded-full <%= habit.color_classes[:bg] %>"></div>
+              <div>
+                <h3 class="font-medium text-gray-600"><%= habit.name %></h3>
+                <p class="text-sm text-gray-400"><%= habit.frequency_label %></p>
+              </div>
+            </div>
+            <%= button_to unarchive_habit_path(habit), method: :patch, class: "text-sm text-blue-600 hover:underline" do %>
+              Herstellen
+            <% end %>
+          </div>
+        <% end %>
+      </div>
     </div>
   <% end %>
 </div>

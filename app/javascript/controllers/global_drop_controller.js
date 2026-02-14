@@ -56,13 +56,28 @@ export default class extends Controller {
     const html = event.dataTransfer.getData("text/html")
     const uri = event.dataTransfer.getData("text/uri-list")
 
+    // Check if dropped on a due-date target
+    const dueDate = this.findDueDateFromTarget(event.target)
+
     if (files.length > 0) {
-      this.uploadFiles(files)
+      this.uploadFiles(files, dueDate)
     } else if (uri || this.isUrl(text)) {
       this.createActionItemFromUrl(uri || text.trim(), html)
     } else if (text && text.trim()) {
       this.createActionItemFromText(text.trim())
     }
+  }
+
+  findDueDateFromTarget(target) {
+    // Walk up the DOM tree to find a due-date data attribute
+    let element = target
+    while (element && element !== document.body) {
+      if (element.dataset && element.dataset.dueDate) {
+        return element.dataset.dueDate
+      }
+      element = element.parentElement
+    }
+    return null
   }
 
   isUrl(text) {
@@ -98,13 +113,17 @@ export default class extends Controller {
     }
   }
 
-  async uploadFiles(files) {
+  async uploadFiles(files, dueDate = null) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content
 
     for (const file of files) {
       const formData = new FormData()
       formData.append("document[file]", file)
       formData.append("document[name]", file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " "))
+      formData.append("create_action_item", "1")
+      if (dueDate) {
+        formData.append("due_date", dueDate)
+      }
 
       try {
         const response = await fetch(this.documentsUrlValue, {
@@ -117,7 +136,8 @@ export default class extends Controller {
         })
 
         if (response.ok) {
-          this.showNotification(`Document "${file.name}" toegevoegd aan inbox`)
+          const dueDateLabel = dueDate === "today" ? " (vandaag)" : dueDate === "tomorrow" ? " (morgen)" : ""
+          this.showNotification(`Document "${file.name}" toegevoegd aan inbox${dueDateLabel}`)
         }
       } catch (error) {
         console.error("Upload failed:", error)

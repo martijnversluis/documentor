@@ -65,7 +65,7 @@
   items.sort_by! { |i| -i[:updated_at].to_i }
 %>
 
-<div data-controller="github-items">
+<div data-controller="github-items" data-github-items-promote-url-value="<%= github_promote_path %>">
   <% if items.empty? %>
     <div class="text-center py-4 text-gray-500 text-sm">
       Geen openstaande items
@@ -75,7 +75,10 @@
       <% items.first(20).each do |item| %>
         <li class="px-4 py-2.5 hover:bg-gray-50 group"
             data-github-items-target="item"
-            data-item-id="<%= item[:id] %>">
+            data-item-id="<%= item[:id] %>"
+            data-item-title="<%= item[:title] %>"
+            data-item-url="<%= item[:url] %>"
+            data-item-repo="<%= item[:repo] %>">
           <div class="flex items-start gap-3">
             <div class="flex-shrink-0 mt-0.5">
               <% case item[:type] %>
@@ -118,6 +121,14 @@
             </a>
             <div class="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button type="button"
+                      data-action="click->github-items#promote"
+                      class="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                      title="Promoveer naar actiepunt">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </button>
+              <button type="button"
                       data-action="click->github-items#snooze"
                       class="p-1 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded"
                       title="Snooze tot morgen">
@@ -139,7 +150,7 @@
       <% end %>
     </ul>
     <% if items.size > 20 %>
-      <div class="px-4 py-2 text-center text-xs text-gray-500 border-t border-gray-100">
+      <div class="px-4 py-2 text-center text-xs text-gray-500 border-t border-gray-100" data-github-items-target="overflow">
         en <%= items.size - 20 %> meer...
       </div>
     <% end %>

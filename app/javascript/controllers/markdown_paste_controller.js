@@ -3,7 +3,6 @@ import TurndownService from "turndown"
 
 export default class extends Controller {
   connect() {
-    console.log("markdown-paste controller connected")
     this.turndownService = new TurndownService({
       headingStyle: "atx",
       codeBlockStyle: "fenced"

@@ -40,7 +40,13 @@ module ApplicationHelper
       strikethrough: true,
       no_intra_emphasis: true
     )
-    markdown.render(text).html_safe
+    html = markdown.render(text)
+
+    # Convert GitHub-style task lists to checkboxes
+    html = html.gsub(/<li>\s*\[ \]/, '<li class="task-list-item"><input type="checkbox" data-action="change->markdown-checkbox#toggle">')
+    html = html.gsub(/<li>\s*\[x\]/i, '<li class="task-list-item"><input type="checkbox" data-action="change->markdown-checkbox#toggle" checked>')
+
+    html.html_safe
   end
 
   def markdown_first_paragraph(text)
@@ -95,7 +101,8 @@ module ApplicationHelper
     "Plastic" => { bin: "#3D5C3D", lid: "#F7941D" },
     "Restafval" => { bin: "#3D5C3D", lid: "#4A4A4A" },
     "REST" => { bin: "#3D5C3D", lid: "#4A4A4A" },
-    "Rest" => { bin: "#3D5C3D", lid: "#4A4A4A" }
+    "Rest" => { bin: "#3D5C3D", lid: "#4A4A4A" },
+    "GREY" => { bin: "#3D5C3D", lid: "#4A4A4A" }
   }.freeze
 
   def waste_bin_icon(waste_type, size: 24)

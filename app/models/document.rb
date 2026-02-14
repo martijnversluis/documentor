@@ -33,6 +33,7 @@ class Document < ApplicationRecord
 
   before_validation :set_name_from_file
   before_validation :extract_date_from_eml
+  after_commit :extract_text_content, on: [:create, :update], if: :file_attachment_changed?
 
   def display_date
     occurred_at || created_at
@@ -70,5 +71,16 @@ class Document < ApplicationRecord
     rescue => e
       Rails.logger.warn "Could not extract date from EML: #{e.message}"
     end
+  end
+
+  def extract_text_content
+    ExtractDocumentTextJob.perform_later(id)
+  end
+
+  def file_attachment_changed?
+    return false unless file.attached?
+
+    # Check if file was just attached or changed
+    saved_change_to_attribute?(:id) || file.blob.created_at > 5.seconds.ago
   end
 end

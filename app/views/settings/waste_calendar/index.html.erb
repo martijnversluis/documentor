@@ -1,12 +1,11 @@
 <div class="max-w-2xl mx-auto">
   <div class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-900">Instellingen</h1>
+    <h1 class="text-2xl font-bold text-gray-900">Afvalkalender</h1>
   </div>
 
   <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
     <div class="px-4 py-3 border-b border-gray-100">
-      <h2 class="font-semibold text-gray-900">Afvalkalender</h2>
-      <p class="text-sm text-gray-500 mt-1">Configureer je adres voor automatische afval-herinneringen</p>
+      <h2 class="font-semibold text-gray-900">Adresgegevens</h2>
     </div>
 
     <div class="p-4">
@@ -22,49 +21,96 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-3">
-          <%= submit_tag "Opslaan", class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 cursor-pointer" %>
-          <% if @post_code.present? && @house_number.present? %>
-            <%= button_to "Test verbinding", test_settings_waste_calendar_index_path, method: :post, class: "px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 cursor-pointer" %>
-          <% end %>
-        </div>
+        <%= submit_tag "Opslaan", class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 cursor-pointer" %>
       <% end %>
-    </div>
-
-    <div class="px-4 py-3 border-t border-gray-100 bg-gray-50 rounded-b-lg">
-      <p class="text-sm text-gray-600">
-        De afvalkalender wordt dagelijks om 12:00 gecontroleerd. Als morgen de kliko wordt geleegd,
-        wordt automatisch een actiepunt aangemaakt.
-      </p>
     </div>
   </div>
 
-  <% if @post_code.present? && @house_number.present? %>
-    <% pickups = WasteCalendarService.new(post_code: @post_code, house_number: @house_number).fetch_pickups rescue [] %>
-    <% if pickups.any? %>
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div class="px-4 py-3 border-b border-gray-100">
-          <h2 class="font-semibold text-gray-900">Komende ophaaldata</h2>
-        </div>
-        <ul class="divide-y divide-gray-100">
-          <% pickups.first(6).each do |pickup| %>
-            <li class="px-4 py-3 flex items-center gap-3">
-              <%= waste_bin_icon(pickup[:waste_type], size: 28) %>
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+    <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+      <div>
+        <h2 class="font-semibold text-gray-900">Ophaaldata</h2>
+        <p class="text-sm text-gray-500">Voeg handmatig toe of importeer een ICS bestand</p>
+      </div>
+      <%= button_to "Sync", sync_settings_waste_calendar_index_path, method: :post, class: "px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 cursor-pointer" %>
+    </div>
+
+    <div class="p-4 border-b border-gray-100">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Manual entry -->
+        <%= form_tag create_pickup_settings_waste_calendar_index_path, method: :post, class: "flex items-end gap-2" do %>
+          <div class="flex-1">
+            <%= label_tag :collection_date, "Datum", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= date_field_tag :collection_date, Date.tomorrow, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+          </div>
+          <div class="flex-1">
+            <%= label_tag :waste_type, "Type", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= select_tag :waste_type, options_for_select([
+              ["Restafval (grijs)", "REST"],
+              ["GFT (groen)", "GFT"],
+              ["Papier (blauw)", "PAPIER"],
+              ["PMD (plastic/metaal)", "PMD"],
+              ["Glas", "GLAS"],
+              ["Textiel", "TEXTIEL"]
+            ]), class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+          </div>
+          <%= submit_tag "Toevoegen", class: "px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 cursor-pointer" %>
+        <% end %>
+
+        <!-- ICS import -->
+        <%= form_tag import_ics_settings_waste_calendar_index_path, method: :post, multipart: true, class: "flex items-end gap-2" do %>
+          <div class="flex-1">
+            <%= label_tag :ics_file, "ICS bestand", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= file_field_tag :ics_file, accept: ".ics", class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" %>
+          </div>
+          <%= submit_tag "Importeren", class: "px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 cursor-pointer" %>
+        <% end %>
+      </div>
+    </div>
+
+    <% if @pickups.any? %>
+      <ul class="divide-y divide-gray-100">
+        <% @pickups.each do |pickup| %>
+          <li class="px-4 py-3 flex items-center justify-between group">
+            <div class="flex items-center gap-3">
+              <%= waste_bin_icon(pickup.waste_type, size: 28) %>
               <div>
-                <p class="font-medium text-gray-900"><%= pickup[:waste_type] %></p>
+                <p class="font-medium text-gray-900"><%= pickup.waste_type %></p>
                 <p class="text-sm text-gray-500">
-                  <%= l(pickup[:date], format: "%A %d %B") %>
-                  <% if pickup[:date] == Date.tomorrow %>
+                  <%= l(pickup.collection_date, format: "%A %d %B") %>
+                  <% if pickup.collection_date == Date.tomorrow %>
                     <span class="ml-2 px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded">morgen</span>
-                  <% elsif pickup[:date] == Date.current %>
+                  <% elsif pickup.collection_date == Date.current %>
                     <span class="ml-2 px-1.5 py-0.5 bg-red-100 text-red-700 text-xs rounded">vandaag</span>
                   <% end %>
                 </p>
               </div>
-            </li>
-          <% end %>
-        </ul>
+            </div>
+            <%= button_to destroy_pickup_settings_waste_calendar_path(pickup), method: :delete, class: "p-1 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer", data: { turbo_confirm: "Weet je zeker dat je deze ophaaldatum wilt verwijderen?" } do %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="p-8 text-center text-gray-500">
+        <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>
+        <p>Geen ophaaldata gepland</p>
+        <p class="text-sm mt-1">Voeg ze handmatig toe of importeer een ICS bestand van je gemeente</p>
       </div>
     <% end %>
-  <% end %>
+  </div>
+
+  <div class="bg-gray-50 rounded-lg border border-gray-200 p-4">
+    <h3 class="text-sm font-medium text-gray-700 mb-2">Hoe werkt het?</h3>
+    <ul class="text-sm text-gray-600 space-y-1">
+      <li>Elke dag om 18:00 wordt gecontroleerd of morgen de kliko wordt geleegd</li>
+      <li>Als dat zo is, wordt automatisch een actiepunt aangemaakt</li>
+      <li>Download een ICS-bestand van je gemeente-website om snel alle data te importeren</li>
+    </ul>
+  </div>
 </div>

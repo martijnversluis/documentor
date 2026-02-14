@@ -7,7 +7,10 @@
   </div>
 
   <% if step.description.present? %>
-    <div class="p-6 prose prose-sm max-w-none border-b border-gray-100">
+    <div class="p-6 prose prose-sm max-w-none border-b border-gray-100"
+         data-controller="markdown-checkbox"
+         data-markdown-checkbox-url-value="<%= toggle_checkbox_review_review_step_path(review, step) %>"
+         data-markdown-checkbox-field-value="description">
       <%= markdown(step.description) %>
     </div>
   <% end %>

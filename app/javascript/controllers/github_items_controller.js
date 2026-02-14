@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["list", "item"]
+  static values = { promoteUrl: String }
 
   connect() {
     // Use setTimeout to ensure DOM is fully ready
@@ -34,16 +35,52 @@ export default class extends Controller {
     this.checkEmpty()
   }
 
+  async promote(event) {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const item = event.target.closest("[data-item-id]")
+    if (!item) return
+
+    const itemId = item.dataset.itemId
+    const title = item.dataset.itemTitle
+    const url = item.dataset.itemUrl
+    const repo = item.dataset.itemRepo
+
+    // Build description like: [owner/repo] Title
+    const description = `[${repo}] ${title}`
+
+    try {
+      const response = await fetch(this.promoteUrlValue, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content
+        },
+        body: JSON.stringify({ description, url })
+      })
+
+      if (response.ok) {
+        this.addToPromoted(itemId)
+        item.remove()
+        this.checkEmpty()
+      }
+    } catch (error) {
+      console.error("Failed to promote item:", error)
+    }
+  }
+
   filterItems() {
     const snoozed = this.getSnoozedItems()
     const ignored = this.getIgnoredItems()
+    const promoted = this.getPromotedItems()
 
     // Get all items within this controller's element
     const items = this.element.querySelectorAll("[data-item-id]")
 
     items.forEach(item => {
       const itemId = item.dataset.itemId
-      if (snoozed.includes(itemId) || ignored.includes(itemId)) {
+      if (snoozed.includes(itemId) || ignored.includes(itemId) || promoted.includes(itemId)) {
         item.remove()
       }
     })
@@ -55,6 +92,10 @@ export default class extends Controller {
     const list = this.element.querySelector("ul")
     if (list && list.querySelectorAll("[data-item-id]").length === 0) {
       list.innerHTML = '<li class="text-center py-4 text-gray-500 text-sm">Geen openstaande items</li>'
+
+      // Hide the "en X meer..." text since all visible items are gone
+      const moreText = this.element.querySelector("[data-github-items-target='overflow']")
+      if (moreText) moreText.remove()
     }
   }
 
@@ -118,5 +159,24 @@ export default class extends Controller {
   todayString() {
     const today = new Date()
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
+  }
+
+  // Promoted items - permanent until manually cleared
+  addToPromoted(itemId) {
+    const promoted = this.getPromotedItems()
+    if (!promoted.includes(itemId)) {
+      promoted.push(itemId)
+      // Keep only last 200 to prevent localStorage bloat
+      const toStore = promoted.slice(-200)
+      localStorage.setItem("github_promoted", JSON.stringify(toStore))
+    }
+  }
+
+  getPromotedItems() {
+    try {
+      return JSON.parse(localStorage.getItem("github_promoted")) || []
+    } catch {
+      return []
+    }
   }
 }
