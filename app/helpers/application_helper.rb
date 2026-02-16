@@ -3,6 +3,8 @@ module ApplicationHelper
     def link(link, title, content)
       if external_link?(link)
         %(<a href="#{link}" target="_blank" rel="noopener noreferrer"#{title_attr(title)}>#{content}</a>)
+      elsif link.start_with?("//")
+        %(<a href="#{link[1..]}" target="_blank"#{title_attr(title)}>#{content}</a>)
       else
         %(<a href="#{link}"#{title_attr(title)}>#{content}</a>)
       end
@@ -21,7 +23,7 @@ module ApplicationHelper
     private
 
     def external_link?(link)
-      link.start_with?("http://", "https://", "//")
+      link.start_with?("http://", "https://")
     end
 
     def title_attr(title)

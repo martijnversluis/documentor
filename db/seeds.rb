@@ -54,7 +54,7 @@ if ReviewTemplate.count == 0
       title: "Bekijk verlopen actiepunten",
       position: 3,
       description: <<~MD
-        Review alle items die over de deadline zijn.
+        Review [alle items die over de deadline zijn](//action_items/overdue).
 
         - Herplan of verwijder ze
         - Vraag je af: is dit nog relevant?
@@ -96,7 +96,7 @@ if ReviewTemplate.count == 0
       title: "Plan de komende week",
       position: 7,
       description: <<~MD
-        Kijk vooruit naar de komende week.
+        Kijk vooruit naar de [komende week](//action_items/week/next).
 
         - Welke afspraken heb je?
         - Welke deadlines komen eraan?
