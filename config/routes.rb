@@ -98,7 +98,12 @@ Rails.application.routes.draw do
       get :quick_wins
       get :recurring
       get :inbox, as: :filter_inbox
-      get :next_week
+      scope :week do
+        get :current, action: :week
+        get :next, action: :week
+        get :previous, action: :week
+        get ":number", action: :week, as: :number, constraints: { number: /\d+/ }
+      end
       get :power_through
       patch :reorder
       patch :postpone_today

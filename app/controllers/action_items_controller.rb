@@ -88,11 +88,25 @@ class ActionItemsController < ApplicationController
     render :index
   end
 
-  def next_week
+  def week
     today = Date.current
-    @start_date = today.next_week(:monday)
+
+    @start_date = case action_name_from_route
+    when "current"
+      today.beginning_of_week(:monday)
+    when "next"
+      today.next_week(:monday)
+    when "previous"
+      today.prev_week(:monday)
+    else
+      Date.commercial(today.year, params[:number].to_i, 1)
+    end
+
     @end_date = @start_date + 6.days
     @days = (@start_date..@end_date).to_a
+    @week_number = @start_date.cweek
+    @prev_week = (@start_date - 7.days).cweek
+    @next_week = (@start_date + 7.days).cweek
 
     @action_items_by_date = filtered_action_items(ActionItem.pending.active)
       .where(due_date: @start_date..@end_date)
@@ -295,6 +309,10 @@ class ActionItemsController < ApplicationController
   end
 
   private
+
+  def action_name_from_route
+    request.path.split("/week/").last.split("/").first
+  end
 
   def set_action_item
     @action_item = ActionItem.find(params[:id])

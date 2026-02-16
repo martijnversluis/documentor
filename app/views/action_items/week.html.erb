@@ -1,10 +1,22 @@
 <div class="max-w-6xl mx-auto">
   <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-2xl font-bold text-gray-900">Weekoverzicht</h1>
-      <p class="text-sm text-gray-500 mt-1">
-        <%= l(@start_date, format: "%-d %B") %> - <%= l(@end_date, format: "%-d %B %Y") %>
-      </p>
+    <div class="flex items-center gap-3">
+      <%= link_to number_action_items_path(@prev_week), class: "p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      <% end %>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Week <%= @week_number %></h1>
+        <p class="text-sm text-gray-500 mt-1">
+          <%= l(@start_date, format: "%-d %B") %> - <%= l(@end_date, format: "%-d %B %Y") %>
+        </p>
+      </div>
+      <%= link_to number_action_items_path(@next_week), class: "p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      <% end %>
     </div>
     <div class="flex items-center gap-4">
       <div class="flex items-center gap-6 text-sm">
