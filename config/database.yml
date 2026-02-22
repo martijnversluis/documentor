@@ -81,7 +81,4 @@ test:
 production:
   primary:
     <<: *default
-    database: documentor_production
-    username: documentor
-    password: <%= ENV["DOCUMENTOR_DATABASE_PASSWORD"] %>
-    host: <%= ENV.fetch("DB_HOST", "localhost") %>
+    url: <%= ENV["DATABASE_URL"] %>
