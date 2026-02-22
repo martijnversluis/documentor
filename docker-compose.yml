@@ -1,6 +1,9 @@
 services:
   web:
     build: .
+    networks:
+      - coolify
+      - default
     environment: &rails_env
       DATABASE_URL: ${DATABASE_URL}
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
@@ -19,6 +22,9 @@ services:
 
   jobs:
     build: .
+    networks:
+      - coolify
+      - default
     command: ["./bin/rails", "solid_queue:start"]
     depends_on:
       web:
@@ -27,6 +33,10 @@ services:
       <<: *rails_env
     volumes:
       - storage:/rails/storage
+
+networks:
+  coolify:
+    external: true
 
 volumes:
   storage:
