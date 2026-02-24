@@ -66,7 +66,7 @@ class ChecklistsController < ApplicationController
   def checklist_params
     params.require(:checklist).permit(
       :name, :description,
-      checklist_items_attributes: [:id, :description, :context, :estimated_minutes, :position, :section, :_destroy]
+      checklist_items_attributes: [:id, :description, :position, :section, :_destroy]
     )
   end
 end
