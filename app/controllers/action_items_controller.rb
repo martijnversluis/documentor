@@ -85,6 +85,15 @@ class ActionItemsController < ApplicationController
     @filter_label = "inbox"
     @pending_items = base_pending_scope.inbox
     @completed_items = recent_completed_items
+    @inbox_documents = Document.unscoped.inbox.includes(file_attachment: :blob).order(created_at: :desc)
+    @inbox_notes = Note.unscoped.inbox.order(created_at: :desc)
+
+    @duplicates = {}
+    @inbox_documents.each do |doc|
+      duplicate = Document.find_duplicate(doc)
+      @duplicates[doc.id] = duplicate if duplicate
+    end
+
     render :index
   end
 
@@ -284,7 +293,7 @@ class ActionItemsController < ApplicationController
         if params[:redirect_to].present?
           format.html { redirect_to params[:redirect_to] }
         else
-          format.html { redirect_back fallback_location: @action_item.dossier || inbox_path }
+          format.html { redirect_back fallback_location: @action_item.dossier || filter_inbox_action_items_path }
         end
         format.turbo_stream
       end
@@ -300,7 +309,7 @@ class ActionItemsController < ApplicationController
     @action_item.update(dossier_id: params[:dossier_id])
 
     respond_to do |format|
-      format.html { redirect_to inbox_path, notice: "Actiepunt toegewezen aan dossier" }
+      format.html { redirect_to params[:redirect_to] || filter_inbox_action_items_path, notice: "Actiepunt toegewezen aan dossier" }
       format.turbo_stream { render turbo_stream: turbo_stream.remove(@action_item) }
     end
   end

@@ -15,11 +15,14 @@
     <div class="flex-1 min-w-0" data-controller="expandable" data-expandable-max-height-value="72">
       <div class="text-sm prose prose-sm max-w-none transition-all duration-200 overflow-x-auto <%= action_item.completed? ? 'text-gray-400 line-through' : '' %>" data-expandable-target="content"><%= markdown(action_item.description) %></div>
       <button type="button" data-expandable-target="button" data-action="click->expandable#toggle" class="hidden text-xs text-blue-600 hover:text-blue-800 mt-1">Meer</button>
-      <% if action_item.due_date.present? %>
-        <span class="text-xs <%= action_item.overdue? ? 'text-red-600' : 'text-gray-500' %>">
-          <%= action_item.due_date.strftime("%d-%m-%Y") %>
-        </span>
-      <% end %>
+      <div class="flex items-center gap-2 flex-wrap">
+        <% if action_item.due_date.present? %>
+          <span class="text-xs <%= action_item.overdue? ? 'text-red-600' : 'text-gray-500' %>">
+            <%= action_item.due_date.strftime("%d-%m-%Y") %>
+          </span>
+        <% end %>
+        <span class="text-xs text-gray-400"><%= time_ago_in_words(action_item.created_at) %> geleden</span>
+      </div>
     </div>
 
     <div class="flex items-center gap-2">
