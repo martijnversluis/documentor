@@ -98,6 +98,10 @@
               <% else %>
                 <%= image_tag @current_item.file, class: "max-w-full h-auto" %>
               <% end %>
+            <% elsif @current_item.file.content_type.start_with?("video/") %>
+              <video controls class="max-w-full h-auto" poster="<%= url_for(@current_item.file.preview(resize_to_limit: [1280, 720])) %>">
+                <source src="<%= rails_service_blob_proxy_path(@current_item.file.signed_id, @current_item.file.filename) %>" type="<%= @current_item.file.content_type == 'video/quicktime' ? 'video/mp4' : @current_item.file.content_type %>">
+              </video>
             <% elsif @current_item.file.content_type == "application/pdf" %>
               <iframe src="<%= rails_blob_path(@current_item.file, disposition: "inline") %>" class="w-full h-[600px]"></iframe>
             <% elsif @current_item.file.content_type == "text/plain" %>

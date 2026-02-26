@@ -69,6 +69,13 @@
                     <% end %>
                   </div>
                 </div>
+              <% elsif document.file.attached? && document.file.content_type.start_with?("video/") %>
+                <div class="flex-shrink-0 relative group/thumb mt-0.5">
+                  <%= image_tag document.file.preview(resize_to_limit: [40, 40]), class: "w-8 h-8 object-cover rounded border border-gray-200" %>
+                  <div class="hidden group-hover/thumb:block absolute z-50 left-0 top-full mt-1 p-1 bg-white rounded-lg shadow-xl border border-gray-200">
+                    <%= image_tag document.file.preview(resize_to_limit: [320, 320]), class: "max-w-[320px] max-h-[320px] rounded" %>
+                  </div>
+                </div>
               <% end %>
               <%= link_to document, class: "block flex-1 min-w-0" do %>
                 <p class="font-medium text-gray-900"><%= document.name %></p>

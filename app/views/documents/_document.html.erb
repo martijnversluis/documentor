@@ -15,6 +15,13 @@
           <% end %>
         </div>
       </div>
+    <% elsif document.file.attached? && document.file.content_type.start_with?("video/") %>
+      <div class="relative mr-3 flex-shrink-0 group/thumb">
+        <%= image_tag document.file.preview(resize_to_limit: [40, 40]), class: "w-8 h-8 object-cover rounded border border-gray-200" %>
+        <div class="hidden group-hover/thumb:block absolute z-50 left-0 top-full mt-1 p-1 bg-white rounded-lg shadow-xl border border-gray-200">
+          <%= image_tag document.file.preview(resize_to_limit: [320, 320]), class: "max-w-[320px] max-h-[320px] rounded" %>
+        </div>
+      </div>
     <% else %>
       <svg class="w-5 h-5 text-blue-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
