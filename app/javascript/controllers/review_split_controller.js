@@ -9,7 +9,7 @@ export default class extends Controller {
 
     const stepFrame = document.getElementById("current-step")
     if (stepFrame) {
-      this.observer = new MutationObserver(() => this.loadFirstLink())
+      this.observer = new MutationObserver(() => this.onStepChange())
       this.observer.observe(stepFrame, { childList: true })
     }
 
@@ -60,12 +60,26 @@ export default class extends Controller {
 
   hideSpinner() {
     this.spinnerTarget.classList.add("hidden")
+    try {
+      const main = this.iframeTarget.contentDocument?.querySelector("main")
+      if (main) main.scrollIntoView()
+    } catch (_) {
+      // cross-origin, can't access iframe content
+    }
   }
 
   loadInIframe(href, label) {
     this.iframeTarget.src = href
     this.urlTarget.textContent = label
     this.showSpinner()
+  }
+
+  onStepChange() {
+    const stepFrame = document.getElementById("current-step")
+    if (stepFrame) {
+      stepFrame.scrollIntoView({ behavior: "smooth", block: "start" })
+    }
+    this.loadFirstLink()
   }
 
   loadFirstLink() {
