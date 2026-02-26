@@ -34,7 +34,7 @@ class ActionItem < ApplicationRecord
   scope :tomorrow, -> { pending.where(due_date: Date.tomorrow) }
   scope :upcoming, -> { pending.where(due_date: Date.current..7.days.from_now.to_date) }
   scope :ordered, -> { order(Arel.sql("position IS NULL, position ASC, due_date IS NULL, due_date ASC, created_at ASC")) }
-  scope :inbox, -> { where(dossier_id: nil) }
+  scope :inbox, -> { where(dossier_id: nil, due_date: nil) }
   scope :assigned, -> { where.not(dossier_id: nil) }
   scope :with_context, ->(context) { where(context: context) }
   scope :waiting, -> { where.not(waiting_for_party_id: nil).or(where.not(waiting_for_description: [nil, ""])) }
