@@ -9,6 +9,8 @@ export default class extends Controller {
 
   connect() {
     this.dragCounter = 0
+    const path = window.location.pathname
+    this.active = path.startsWith("/action_items") || path === "/inbox" || path === "/"
   }
 
   isInternalDrag(event) {
@@ -21,6 +23,7 @@ export default class extends Controller {
   }
 
   dragenter(event) {
+    if (!this.active) return
     if (this.isInternalDrag(event)) return
 
     event.preventDefault()
@@ -29,12 +32,14 @@ export default class extends Controller {
   }
 
   dragover(event) {
+    if (!this.active) return
     if (this.isInternalDrag(event)) return
 
     event.preventDefault()
   }
 
   dragleave(event) {
+    if (!this.active) return
     if (this.isInternalDrag(event)) return
 
     event.preventDefault()
@@ -45,6 +50,7 @@ export default class extends Controller {
   }
 
   drop(event) {
+    if (!this.active) return
     if (this.isInternalDrag(event)) return
 
     event.preventDefault()
@@ -56,11 +62,8 @@ export default class extends Controller {
     const html = event.dataTransfer.getData("text/html")
     const uri = event.dataTransfer.getData("text/uri-list")
 
-    // Check if dropped on a due-date target
-    const dueDate = this.findDueDateFromTarget(event.target)
-
     if (files.length > 0) {
-      this.uploadFiles(files, dueDate)
+      this.uploadFiles(files)
     } else if (uri || this.isUrl(text)) {
       this.createActionItemFromUrl(uri || text.trim(), html)
     } else if (text && text.trim()) {
@@ -113,17 +116,14 @@ export default class extends Controller {
     }
   }
 
-  async uploadFiles(files, dueDate = null) {
+  async uploadFiles(files) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content
+    let uploaded = 0
 
     for (const file of files) {
       const formData = new FormData()
       formData.append("document[file]", file)
       formData.append("document[name]", file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " "))
-      formData.append("create_action_item", "1")
-      if (dueDate) {
-        formData.append("due_date", dueDate)
-      }
 
       try {
         const response = await fetch(this.documentsUrlValue, {
@@ -136,12 +136,16 @@ export default class extends Controller {
         })
 
         if (response.ok) {
-          const dueDateLabel = dueDate === "today" ? " (vandaag)" : dueDate === "tomorrow" ? " (morgen)" : ""
-          this.showNotification(`Document "${file.name}" toegevoegd aan inbox${dueDateLabel}`)
+          uploaded++
+          this.showNotification(`Document "${file.name}" toegevoegd aan inbox`)
         }
       } catch (error) {
         console.error("Upload failed:", error)
       }
+    }
+
+    if (uploaded > 0) {
+      setTimeout(() => Turbo.visit("/action_items/inbox"), 500)
     }
   }
 
