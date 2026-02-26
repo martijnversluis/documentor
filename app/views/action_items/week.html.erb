@@ -165,9 +165,9 @@
                   <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
                   </svg>
-                  <%= link_to item, class: "text-gray-700 hover:text-purple-600" do %>
-                    <%= item.description.split(/\n\s*\n/).first.truncate(80) %>
-                  <% end %>
+                  <span class="prose prose-sm line-clamp-1 [&>p]:inline [&_a]:text-gray-700 [&_a:hover]:text-purple-600">
+                    <%= markdown_first_paragraph(item.description) %>
+                  </span>
                   <% if item.dossier.present? %>
                     <span class="text-xs text-blue-600">(<%= item.dossier.name %>)</span>
                   <% end %>
