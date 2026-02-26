@@ -53,8 +53,24 @@
         </div>
         <ul class="divide-y divide-gray-100">
           <% @documents.each do |document| %>
-            <li class="px-4 py-3 hover:bg-gray-50">
-              <%= link_to document, class: "block" do %>
+            <li class="px-4 py-3 hover:bg-gray-50 flex items-start gap-3">
+              <% if document.file.attached? && document.file.content_type.start_with?("image/") %>
+                <div class="flex-shrink-0 relative group/thumb mt-0.5">
+                  <% if document.file.content_type.in?(%w[image/heic image/heif]) %>
+                    <%= image_tag document.file.variant(resize_to_limit: [40, 40], format: :jpeg), class: "w-8 h-8 object-cover rounded border border-gray-200" %>
+                  <% else %>
+                    <%= image_tag document.file.variant(resize_to_limit: [40, 40]), class: "w-8 h-8 object-cover rounded border border-gray-200" %>
+                  <% end %>
+                  <div class="hidden group-hover/thumb:block absolute z-50 left-0 top-full mt-1 p-1 bg-white rounded-lg shadow-xl border border-gray-200">
+                    <% if document.file.content_type.in?(%w[image/heic image/heif]) %>
+                      <%= image_tag document.file.variant(resize_to_limit: [320, 320], format: :jpeg), class: "max-w-[320px] max-h-[320px] rounded" %>
+                    <% else %>
+                      <%= image_tag document.file.variant(resize_to_limit: [320, 320]), class: "max-w-[320px] max-h-[320px] rounded" %>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+              <%= link_to document, class: "block flex-1 min-w-0" do %>
                 <p class="font-medium text-gray-900"><%= document.name %></p>
                 <p class="text-sm text-gray-500">
                   in <%= document.folder&.name || document.dossier&.name %>

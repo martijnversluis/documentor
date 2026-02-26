@@ -1,8 +1,25 @@
 <%= turbo_frame_tag dom_id(document) do %>
   <div id="<%= dom_id(document) %>_highlight" class="flex items-center px-4 py-3 hover:bg-gray-50 group cursor-grab active:cursor-grabbing rounded transition-all" draggable="true" data-document-id="<%= document.id %>" data-action="dragstart->drag-drop#dragstart">
-    <svg class="w-5 h-5 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-    </svg>
+    <% if document.file.attached? && document.file.content_type.start_with?("image/") %>
+      <div class="relative mr-3 flex-shrink-0 group/thumb">
+        <% if document.file.content_type.in?(%w[image/heic image/heif]) %>
+          <%= image_tag document.file.variant(resize_to_limit: [40, 40], format: :jpeg), class: "w-8 h-8 object-cover rounded border border-gray-200" %>
+        <% else %>
+          <%= image_tag document.file.variant(resize_to_limit: [40, 40]), class: "w-8 h-8 object-cover rounded border border-gray-200" %>
+        <% end %>
+        <div class="hidden group-hover/thumb:block absolute z-50 left-0 top-full mt-1 p-1 bg-white rounded-lg shadow-xl border border-gray-200">
+          <% if document.file.content_type.in?(%w[image/heic image/heif]) %>
+            <%= image_tag document.file.variant(resize_to_limit: [320, 320], format: :jpeg), class: "max-w-[320px] max-h-[320px] rounded" %>
+          <% else %>
+            <%= image_tag document.file.variant(resize_to_limit: [320, 320]), class: "max-w-[320px] max-h-[320px] rounded" %>
+          <% end %>
+        </div>
+      </div>
+    <% else %>
+      <svg class="w-5 h-5 text-blue-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+    <% end %>
     <div class="flex-1 min-w-0">
       <%= link_to document.name, document, class: "text-sm font-medium text-gray-900 hover:text-blue-600", data: { turbo_frame: "_top" } %>
       <p class="text-xs text-gray-500">
