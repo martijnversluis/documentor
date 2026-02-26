@@ -11,7 +11,7 @@
           <%= link_to @note.dossier.name, @note.dossier, class: "hover:text-gray-700" %>
           <span>/</span>
         <% else %>
-          <%= link_to "Inbox", inbox_path, class: "hover:text-gray-700" %>
+          <%= link_to "Inbox", filter_inbox_action_items_path, class: "hover:text-gray-700" %>
           <span>/</span>
         <% end %>
       </div>

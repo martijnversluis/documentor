@@ -11,7 +11,7 @@ module Inbox
         create_action_item_if_requested
 
         respond_to do |format|
-          format.html { redirect_to inbox_path, notice: "Document toegevoegd aan inbox" }
+          format.html { redirect_to filter_inbox_action_items_path, notice: "Document toegevoegd aan inbox" }
           format.turbo_stream { head :ok }
           format.json { render json: { id: @document.id, name: @document.name } }
         end

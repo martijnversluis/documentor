@@ -45,7 +45,7 @@ class DocumentsController < ApplicationController
     dossier = @document.folder&.dossier || @document.dossier
     @document.destroy!
 
-    redirect_to dossier || inbox_path, notice: "Document verwijderd"
+    redirect_to params[:redirect_to] || dossier || filter_inbox_action_items_path, notice: "Document verwijderd"
   end
 
   def move
@@ -60,7 +60,7 @@ class DocumentsController < ApplicationController
 
   def assign
     @document.update(dossier_id: params[:dossier_id], folder_id: nil)
-    redirect_to inbox_path, notice: "Document toegewezen aan dossier"
+    redirect_to params[:redirect_to] || filter_inbox_action_items_path, notice: "Document toegewezen aan dossier"
   end
 
   def download
@@ -108,6 +108,6 @@ class DocumentsController < ApplicationController
   end
 
   def document_params
-    params.require(:document).permit(:name, :file, :occurred_at, :tag_list, :remarks, :dossier_id, :expires_at, :expiration_description)
+    params.require(:document).permit(:name, :file, :occurred_at, :tag_list, :remarks, :dossier_id)
   end
 end

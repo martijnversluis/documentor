@@ -11,11 +11,11 @@ module Inbox
 
       if @action_item.save
         respond_to do |format|
-          format.html { redirect_to inbox_path, notice: "Actiepunt toegevoegd aan inbox" }
+          format.html { redirect_to filter_inbox_action_items_path, notice: "Actiepunt toegevoegd aan inbox" }
           format.turbo_stream
         end
       else
-        redirect_to inbox_path, alert: @action_item.errors.full_messages.join(", ")
+        redirect_to filter_inbox_action_items_path, alert: @action_item.errors.full_messages.join(", ")
       end
     end
 

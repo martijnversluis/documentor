@@ -40,7 +40,7 @@ class NotesController < ApplicationController
     dossier = @note.folder&.dossier || @note.dossier
     @note.destroy!
 
-    redirect_to dossier || inbox_path, notice: "Notitie verwijderd"
+    redirect_to params[:redirect_to] || dossier || filter_inbox_action_items_path, notice: "Notitie verwijderd"
   end
 
   def move
@@ -55,7 +55,7 @@ class NotesController < ApplicationController
 
   def assign
     @note.update(dossier_id: params[:dossier_id], folder_id: nil)
-    redirect_to inbox_path, notice: "Notitie toegewezen aan dossier"
+    redirect_to params[:redirect_to] || filter_inbox_action_items_path, notice: "Notitie toegewezen aan dossier"
   end
 
   private

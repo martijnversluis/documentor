@@ -9,7 +9,7 @@ module Inbox
 
       if @note.save
         respond_to do |format|
-          format.html { redirect_to inbox_path, notice: "Notitie toegevoegd aan inbox" }
+          format.html { redirect_to filter_inbox_action_items_path, notice: "Notitie toegevoegd aan inbox" }
           format.turbo_stream { head :ok }
         end
       else
