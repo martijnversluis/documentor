@@ -11,7 +11,8 @@ Rails.application.routes.draw do
     resources :action_items, only: [:create]
   end
 
-  get "inbox", to: "inbox#index", as: :inbox
+  get "inbox", to: redirect("/action_items/inbox")
+  get "inbox/triage", to: "inbox#triage", as: :inbox_triage
   scope :inbox, as: :inbox do
     resources :documents, only: [:new, :create], controller: "inbox/documents"
     resources :notes, only: [:new, :create], controller: "inbox/notes"
