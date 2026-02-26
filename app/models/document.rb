@@ -27,29 +27,22 @@ class Document < ApplicationRecord
 
   scope :inbox, -> { where(dossier_id: nil, folder_id: nil) }
   scope :assigned, -> { where.not(dossier_id: nil).or(where.not(folder_id: nil)) }
-  scope :expiring_soon, ->(days = 30) { where(expires_at: Date.current..days.days.from_now) }
-  scope :expired, -> { where("expires_at < ?", Date.current) }
-  scope :with_expiration, -> { where.not(expires_at: nil) }
 
   before_validation :set_name_from_file
   before_validation :extract_date_from_eml
   after_commit :extract_text_content, on: [:create, :update], if: :file_attachment_changed?
 
+  def self.find_duplicate(document)
+    return nil unless document.file.attached?
+
+    Document.joins(file_attachment: :blob)
+      .where(active_storage_blobs: { checksum: document.file.blob.checksum })
+      .where.not(id: document.id)
+      .first
+  end
+
   def display_date
     occurred_at || created_at
-  end
-
-  def expired?
-    expires_at.present? && expires_at < Date.current
-  end
-
-  def expiring_soon?(days = 30)
-    expires_at.present? && expires_at >= Date.current && expires_at <= days.days.from_now
-  end
-
-  def days_until_expiration
-    return nil unless expires_at.present?
-    (expires_at - Date.current).to_i
   end
 
   private

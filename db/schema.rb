@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_14_145415) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_26_155614) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -116,8 +116,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_14_145415) do
     t.datetime "updated_at", null: false
     t.text "source_description"
     t.text "remarks"
-    t.date "expires_at"
-    t.text "expiration_description"
     t.index ["dossier_id"], name: "index_documents_on_dossier_id"
     t.index ["folder_id"], name: "index_documents_on_folder_id"
   end
