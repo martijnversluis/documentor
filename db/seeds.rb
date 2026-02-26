@@ -6,6 +6,52 @@
 if ReviewTemplate.count == 0
   puts "Creating review templates..."
 
+  # Daily Start
+  daily_start = ReviewTemplate.create!(
+    review_type: "daily_start",
+    name: "Dag start",
+    active: true
+  )
+
+  daily_start.review_template_steps.create!([
+    {
+      title: "Bureau opgeruimd?",
+      position: 0
+    },
+    {
+      title: "Dag einde van gisteren afgerond?",
+      position: 1
+    },
+    {
+      title: "Hoofd leeg?",
+      position: 2
+    }
+  ])
+
+  # Daily End
+  daily_end = ReviewTemplate.create!(
+    review_type: "daily_end",
+    name: "Dag einde",
+    active: true
+  )
+
+  daily_end.review_template_steps.create!([
+    {
+      title: "Lijst afgewerkt?",
+      position: 0,
+      description: "Zijn [taken](//action_items/today) afgewerkt of verplaatst naar morgen? Wat moet er vanavond nog worden gedaan?"
+    },
+    {
+      title: "Hoofd leeg?",
+      position: 1
+    },
+    {
+      title: "Agenda voor morgen bekeken?",
+      position: 2,
+      description: "Bekijk de [agenda voor morgen](//action_items/tomorrow)"
+    }
+  ])
+
   # Weekly Review
   weekly = ReviewTemplate.create!(
     review_type: "weekly",
@@ -19,19 +65,19 @@ if ReviewTemplate.count == 0
       title: "Verzamel losse papieren en materialen",
       position: 0,
       description: <<~MD
-        Verzamel alles wat rondslingert en verwerk het naar je inbox.
 
         - Bureau opruimen
         - Notities uit zakken/tas
         - Bonnetjes en visitekaartjes
         - Downloads folder checken
+        Verzamel alles wat rondslingert en verwerk het naar je [inbox](//inbox).
       MD
     },
     {
       title: "Verwerk je inbox",
       position: 1,
       description: <<~MD
-        Verwerk alle items in je inbox tot deze leeg is.
+        Verwerk alle items in je [inbox](//inbox) tot deze leeg is.
 
         Voor elk item: Is het actionable?
         - **Nee**: Weg, archief, of someday/maybe
@@ -54,17 +100,28 @@ if ReviewTemplate.count == 0
       title: "Bekijk verlopen actiepunten",
       position: 3,
       description: <<~MD
-        Review [alle items die over de deadline zijn](//action_items/overdue).
+        Review alle [verlopen items](//action_items/overdue).
 
         - Herplan of verwijder ze
         - Vraag je af: is dit nog relevant?
       MD
     },
     {
-      title: "Controleer wacht-op items",
+      title: "Bekijk eerstvolgende acties. ",
       position: 4,
       description: <<~MD
-        Loop door je wacht-op lijst.
+        Bekijk de [eerstvolgende acties](//action_items/next_actions).
+
+        Voor elk item: Is het actionable?
+        - **Nee**: Weg, archief, of someday/maybe
+        - **Ja**: Doe het (<2 min), delegeer, of plan het
+      MD
+    },
+    {
+      title: "Controleer wacht-op items",
+      position: 5,
+      description: <<~MD
+        Loop door je [wacht-op lijst](//action_items/waiting).
 
         - Moet je ergens achteraan?
         - Zijn er items die je kunt afronden?
@@ -73,9 +130,9 @@ if ReviewTemplate.count == 0
     },
     {
       title: "Review je projecten",
-      position: 5,
+      position: 6,
       description: <<~MD
-        Heeft elk actief project een duidelijke volgende actie?
+        Heeft elk actief [project](//dossiers) een duidelijke volgende actie?
 
         - Zijn er projecten die je moet toevoegen?
         - Zijn er projecten die je kunt afsluiten?
@@ -84,9 +141,9 @@ if ReviewTemplate.count == 0
     },
     {
       title: "Bekijk someday/maybe",
-      position: 6,
+      position: 7,
       description: <<~MD
-        Scan je someday/maybe lijst.
+        Scan je [someday/maybe lijst](//action_items/someday).
 
         - Is er iets dat je nu wilt oppakken?
         - Zijn er items die niet meer relevant zijn?
@@ -94,7 +151,7 @@ if ReviewTemplate.count == 0
     },
     {
       title: "Plan de komende week",
-      position: 7,
+      position: 8,
       description: <<~MD
         Kijk vooruit naar de [komende week](//action_items/week/next).
 
@@ -115,58 +172,51 @@ if ReviewTemplate.count == 0
 
   monthly.review_template_steps.create!([
     {
-      title: "Voltooi wekelijkse review",
+      title: "Projecten-review",
       position: 0,
-      description: "Zorg dat je wekelijkse review volledig is afgerond voordat je doorgaat."
+      description: <<~MD
+        [Bekijk projecten](//dossiers)
+
+        - Welke projecten zijn afgerond?
+        - Welke lopen vast of slepen?
+        - Moeten projecten worden stopgezet, vereenvoudigd of opgesplitst?
+      MD
     },
     {
-      title: "Review maanddoelen",
+      title: "Backlog & Someday/Maybe",
       position: 1,
       description: <<~MD
-        Kijk terug naar afgelopen maand.
+        [Bekijk someday/maybe](//action_items/someday)
 
-        - Heb je je doelen behaald?
-        - Wat ging goed?
-        - Wat kan beter?
+        - Is er iets dat nu actief moet worden?
+        - Staat er iets op mijn lijst dat eigenlijk niet meer relevant is?
       MD
     },
     {
-      title: "Stel doelen voor volgende maand",
+      title: "Rollen & verantwoordelijkheden",
       position: 2,
       description: <<~MD
-        Wat wil je volgende maand bereiken?
+        Werk / persoon / man / vader / gezondheid / relaties / creatief / leren
 
-        Maak het specifiek en meetbaar.
+        Krijgt elke belangrijke rol genoeg aandacht?
       MD
     },
     {
-      title: "Review lopende projecten",
+      title: "Capaciteit-check",
       position: 3,
       description: <<~MD
-        Zijn er projecten die vastlopen?
-
-        - Heb je hulp nodig?
-        - Moet je iets delegeren?
-        - Zijn er blokkades?
+        - Heb ik structureel te veel / te weinig op mijn bord?
+        - Waar zeg ik te vaak "ja" tegen?
       MD
     },
     {
-      title: "Opschonen someday/maybe",
+      title: "Vooruitkijken (1-2 maanden)",
       position: 4,
       description: <<~MD
-        Verwijder items die niet meer relevant zijn.
+        [Bekijk volgende maand](//action_items/month/next)
 
-        Promoveer items naar actieve projecten als de tijd rijp is.
-      MD
-    },
-    {
-      title: "Review je systeem",
-      position: 5,
-      description: <<~MD
-        Werkt je huidige systeem?
-
-        - Mis je bepaalde lijsten of contexten?
-        - Zijn er verbeteringen mogelijk?
+        - Grote deadlines of gebeurtenissen komende 1–2 maanden
+        - Wat vraagt nu alvast aandacht?
       MD
     }
   ])
@@ -181,47 +231,43 @@ if ReviewTemplate.count == 0
 
   quarterly.review_template_steps.create!([
     {
-      title: "Voltooi maandelijkse review",
+      title: "Doelen & outcomes",
       position: 0,
-      description: "Zorg dat je maandelijkse review volledig is afgerond."
+      description: <<~MD
+        - Wat wilde ik dit kwartaal bereiken?
+        - Wat is écht gelukt (niet alleen afgerond, maar met effect)?
+      MD
     },
     {
-      title: "Review kwartaaldoelen",
+      title: "Patronen herkennen",
       position: 1,
       description: <<~MD
-        Evalueer het afgelopen kwartaal.
-
-        - Welke grote mijlpalen heb je bereikt?
-        - Wat heeft je tegengehouden?
+        - Waar ging mijn tijd naartoe?
+        - Wat gaf energie / wat trok energie weg?
       MD
     },
     {
-      title: "Review jaardoelen voortgang",
+      title: "Prioriteiten herijken",
       position: 2,
       description: <<~MD
-        Hoe sta je ervoor met je jaardoelen?
-
-        - Ben je op schema?
-        - Moeten doelen worden aangepast?
+        - Welke 3–5 thema's zijn nu het belangrijkst?
+        - Wat moet dit kwartaal expliciet lager prioriteit krijgen?
       MD
     },
     {
-      title: "Stel kwartaaldoelen",
+      title: "Systemen & werkwijze",
       position: 3,
       description: <<~MD
-        Wat wil je komend kwartaal bereiken?
-
-        Focus op 2-3 grote prioriteiten.
+        - Werkt mijn GTD-systeem nog?
+        - Waar zit frictie (te veel lijsten, te weinig overzicht, etc.)?
       MD
     },
     {
-      title: "Review grote projecten",
+      title: "Risico's & kansen",
       position: 4,
       description: <<~MD
-        Bekijk je belangrijkste projecten.
-
-        - Zijn ze nog in lijn met je doelen?
-        - Moeten prioriteiten verschuiven?
+        - Wat zie ik aankomen dat aandacht vraagt?
+        - Waar kan ik met weinig moeite veel impact maken?
       MD
     }
   ])
@@ -236,75 +282,47 @@ if ReviewTemplate.count == 0
 
   yearly.review_template_steps.create!([
     {
-      title: "Reflecteer op het afgelopen jaar",
+      title: "Terugblik",
       position: 0,
       description: <<~MD
-        Kijk terug op het afgelopen jaar.
-
-        - Wat waren je grootste successen?
-        - Wat waren de moeilijkste momenten?
-        - Wat heb je geleerd?
+        - Wat waren de hoogte- en dieptepunten?
+        - Waar ben ik trots op?
+        - Wat heb ik geleerd?
       MD
     },
     {
-      title: "Review jaardoelen",
+      title: "Waarden & identiteit",
       position: 1,
       description: <<~MD
-        Evalueer je jaardoelen.
-
-        - Welke doelen heb je behaald?
-        - Welke niet, en waarom?
+        - Wat vond ik dit jaar echt belangrijk?
+        - Waar leefde ik in lijn met mijn waarden – en waar niet?
       MD
     },
     {
-      title: "Dankbaarheid",
+      title: "Levensgebieden",
       position: 2,
       description: <<~MD
-        Waar ben je dankbaar voor dit jaar?
+        Werk, relaties, gezondheid, financiën, creativiteit, persoonlijke groei
 
-        - Mensen die je hebben geholpen
-        - Kansen die je hebt gekregen
-        - Lessen die je hebt geleerd
+        Wat staat er goed voor? Wat vraagt aandacht?
       MD
     },
     {
-      title: "Loslaten",
+      title: "Langetermijnrichting",
       position: 3,
       description: <<~MD
-        Wat wil je loslaten?
-
-        - Oude projecten die niet meer relevant zijn
-        - Gewoontes die je niet meer dienen
-        - Zorgen die je niet kunt controleren
+        - Waar wil ik over 3–5 jaar staan?
+        - Wat betekent dat concreet voor komend jaar?
       MD
     },
     {
-      title: "Visie voor het nieuwe jaar",
+      title: "Intenties voor het nieuwe jaar",
       position: 4,
       description: <<~MD
-        Hoe wil je dat het nieuwe jaar eruitziet?
-
-        - Werk en carriere
-        - Persoonlijke ontwikkeling
-        - Relaties en gezondheid
-      MD
-    },
-    {
-      title: "Stel jaardoelen",
-      position: 5,
-      description: <<~MD
-        Kies 3-5 belangrijke doelen voor het nieuwe jaar.
-
-        Maak ze specifiek, meetbaar en realistisch.
-      MD
-    },
-    {
-      title: "Eerste stappen",
-      position: 6,
-      description: <<~MD
-        Wat zijn de eerste concrete stappen?
-
-        Plan de eerste acties voor je belangrijkste doelen.
+        Geen takenlijst, maar:
+        - Thema's
+        - Focuswoorden
+        - Dingen die ik bewuster niet meer ga doen
       MD
     }
   ])
