@@ -29,8 +29,8 @@
           <span class="text-gray-600"><%= @total_tasks %> taken</span>
         </span>
       </div>
-      <%= link_to action_items_path(today: "1"), class: "text-sm text-gray-600 hover:text-gray-900" do %>
-        &larr; Terug naar actiepunten
+      <%= link_to current_month_action_items_path, class: "text-sm text-gray-600 hover:text-gray-900" do %>
+        Maandoverzicht &rarr;
       <% end %>
     </div>
   </div>

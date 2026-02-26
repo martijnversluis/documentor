@@ -1,0 +1,135 @@
+<div class="max-w-7xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-3">
+      <%= link_to number_month_action_items_path(@prev_month.year, @prev_month.month), class: "p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      <% end %>
+      <h1 class="text-2xl font-bold text-gray-900 capitalize"><%= @month_name %></h1>
+      <%= link_to number_month_action_items_path(@next_month.year, @next_month.month), class: "p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      <% end %>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-6 text-sm">
+        <span class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+          <span class="text-gray-600"><%= @total_events %> agenda-items</span>
+        </span>
+        <span class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-green-500"></span>
+          <span class="text-gray-600"><%= @total_tasks %> taken</span>
+        </span>
+      </div>
+      <%= link_to current_action_items_path, class: "text-sm text-gray-600 hover:text-gray-900" do %>
+        &larr; Weekoverzicht
+      <% end %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <%# Day-of-week headers %>
+    <div class="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
+      <% %w[Ma Di Wo Do Vr Za Zo].each do |dag| %>
+        <div class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wide"><%= dag %></div>
+      <% end %>
+    </div>
+
+    <%# Calendar weeks %>
+    <% @weeks.each do |week| %>
+      <div class="grid grid-cols-7 border-b border-gray-100 last:border-b-0">
+        <% week.each do |day| %>
+          <% in_month = day.month == @start_date.month && day.year == @start_date.year %>
+          <% is_today = day == Date.current %>
+          <% events = in_month ? (@calendar_events_by_date[day] || []) : [] %>
+          <% tasks = in_month ? (@action_items_by_date[day] || []) : [] %>
+          <% is_weekend = day.wday.in?([0, 6]) %>
+
+          <div class="min-h-[100px] border-r border-gray-100 last:border-r-0 <%= 'bg-gray-50' if !in_month || is_weekend %> <%= 'ring-2 ring-inset ring-blue-400' if is_today %>">
+            <div class="px-1.5 py-1 flex items-center justify-between">
+              <span class="text-xs font-medium <%= is_today ? 'text-blue-600' : in_month ? 'text-gray-700' : 'text-gray-300' %>">
+                <%= day.day %>
+              </span>
+              <% if in_month && (events.any? || tasks.any?) %>
+                <div class="flex items-center gap-0.5">
+                  <% if events.any? %>
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                  <% end %>
+                  <% if tasks.any? %>
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+
+            <% if in_month %>
+              <div class="px-1 pb-1 space-y-0.5">
+                <% events.first(3).each do |event| %>
+                  <div class="text-xs px-1 py-0.5 rounded bg-blue-50 text-blue-700 truncate" title="<%= event[:title] %>">
+                    <% if event[:start_time] && !event[:all_day] %>
+                      <span class="font-medium"><%= event[:start_time].strftime("%H:%M") %></span>
+                    <% end %>
+                    <%= event[:title] %>
+                  </div>
+                <% end %>
+                <% if events.size > 3 %>
+                  <div class="text-xs text-blue-500 px-1">+<%= events.size - 3 %> meer</div>
+                <% end %>
+
+                <% tasks.first(3).each do |item| %>
+                  <%= link_to item, class: "block text-xs px-1 py-0.5 rounded bg-green-50 text-green-700 truncate hover:bg-green-100 transition-colors", title: item.description do %>
+                    <%= item.description.split(/\n\s*\n/).first.truncate(40) %>
+                  <% end %>
+                <% end %>
+                <% if tasks.size > 3 %>
+                  <div class="text-xs text-green-500 px-1">+<%= tasks.size - 3 %> meer</div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Recurring items section %>
+  <% if @recurring_items.any? %>
+    <div class="mt-6 bg-white rounded-lg shadow-sm border border-purple-200 overflow-hidden">
+      <div class="px-4 py-3 border-b border-purple-100 bg-gradient-to-r from-purple-50 to-white">
+        <h2 class="font-semibold text-gray-900 flex items-center gap-2">
+          <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          Terugkerende taken
+        </h2>
+      </div>
+      <div class="divide-y divide-gray-100">
+        <% @recurring_items.group_by(&:recurrence).each do |recurrence, items| %>
+          <div class="px-4 py-3">
+            <h3 class="text-xs font-medium text-purple-600 uppercase tracking-wide mb-2">
+              <%= { 'daily' => 'Dagelijks', 'workdays' => 'Werkdagen', 'weekly' => 'Wekelijks', 'monthly' => 'Maandelijks', 'quarterly' => 'Per kwartaal', 'yearly' => 'Jaarlijks' }[recurrence] %>
+            </h3>
+            <ul class="space-y-1">
+              <% items.each do |item| %>
+                <li class="flex items-center gap-2 text-sm">
+                  <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+                  </svg>
+                  <%= link_to item, class: "text-gray-700 hover:text-purple-600" do %>
+                    <%= item.description.split(/\n\s*\n/).first.truncate(80) %>
+                  <% end %>
+                  <% if item.dossier.present? %>
+                    <span class="text-xs text-blue-600">(<%= item.dossier.name %>)</span>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

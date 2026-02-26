@@ -104,6 +104,13 @@ Rails.application.routes.draw do
         get :previous, action: :week
         get ":number", action: :week, as: :number, constraints: { number: /\d+/ }
       end
+      scope :month, as: :month do
+        get :current, action: :month
+        get :next, action: :month
+        get :previous, action: :month
+        get ":year/:number", action: :month, as: :number,
+            constraints: { year: /\d{4}/, number: /\d{1,2}/ }
+      end
       get :power_through
       patch :reorder
       patch :postpone_today

@@ -145,6 +145,67 @@ class ActionItemsController < ApplicationController
     @total_tasks = @action_items_by_date.values.sum(&:size)
   end
 
+  def month
+    today = Date.current
+
+    @start_date = case month_action_name
+    when "current"
+      today.beginning_of_month
+    when "next"
+      today.next_month.beginning_of_month
+    when "previous"
+      today.prev_month.beginning_of_month
+    else
+      Date.new(params[:year].to_i, params[:number].to_i, 1)
+    end
+
+    @end_date = @start_date.end_of_month
+    @month_name = l(@start_date, format: "%B %Y")
+
+    calendar_start = @start_date.beginning_of_week(:monday)
+    calendar_end = @end_date.end_of_week(:monday)
+    @weeks = (calendar_start..calendar_end).each_slice(7).to_a
+
+    @prev_month = @start_date.prev_month
+    @next_month = @start_date.next_month
+
+    @action_items_by_date = filtered_action_items(ActionItem.pending.active)
+      .where(due_date: @start_date..@end_date)
+      .includes(:dossier)
+      .ordered
+      .group_by(&:due_date)
+
+    @calendar_events_by_date = {}
+    (@start_date..@end_date).each { |day| @calendar_events_by_date[day] = [] }
+
+    GoogleAccount.includes(:google_calendars).find_each do |account|
+      next unless account.enabled_calendars.any?
+
+      begin
+        service = GoogleCalendarService.new(account)
+        (@start_date..@end_date).each do |day|
+          events = service.events(date: day)
+          @calendar_events_by_date[day].concat(events)
+        end
+      rescue GoogleCalendarService::TokenRefreshError => e
+        Rails.logger.warn "Failed to load calendar events for #{account.email}: #{e.message}"
+      rescue StandardError => e
+        Rails.logger.error "Calendar error for #{account.email}: #{e.message}"
+      end
+    end
+
+    @calendar_events_by_date.each do |day, events|
+      events.sort_by! { |e| e[:start_time] || day.beginning_of_day }
+    end
+
+    @recurring_items = filtered_action_items(ActionItem.pending.active.recurring)
+      .includes(:dossier)
+      .ordered
+
+    @total_events = @calendar_events_by_date.values.sum(&:size)
+    @total_tasks = @action_items_by_date.values.sum(&:size)
+  end
+
   def show
     @recent_documents = Document.where("created_at > ?", 24.hours.ago)
                                 .where.not(id: @action_item.document_ids)
@@ -312,6 +373,10 @@ class ActionItemsController < ApplicationController
 
   def action_name_from_route
     request.path.split("/week/").last.split("/").first
+  end
+
+  def month_action_name
+    request.path.split("/month/").last.split("/").first
   end
 
   def set_action_item
