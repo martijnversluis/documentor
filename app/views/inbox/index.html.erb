@@ -60,9 +60,14 @@
                 <p class="text-xs text-gray-500"><%= document.display_date.strftime("%d-%m-%Y %H:%M") %></p>
               </div>
               <div class="flex items-center gap-2">
-                <%= form_with url: assign_document_path(document), method: :patch, class: "flex items-center gap-2" do |f| %>
-                  <%= f.select :dossier_id, @dossiers.map { |d| [d.name, d.id] }, { prompt: "Kies dossier..." }, class: "text-sm border-gray-300 rounded-lg" %>
-                  <%= f.submit "Toewijzen", class: "px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 cursor-pointer" %>
+                <%= form_with url: assign_document_path(document), method: :patch, class: "flex items-center gap-2", data: { controller: "auto-submit" } do |f| %>
+                  <%= render "shared/dossier_select",
+                             field_name: "dossier_id",
+                             selected_id: nil,
+                             include_blank: "Kies dossier...",
+                             auto_submit: true,
+                             input_class: "min-w-[200px]",
+                             show_all: true %>
                 <% end %>
                 <%= button_to document_path(document), method: :delete, class: "text-gray-400 hover:text-red-600", data: { turbo_confirm: "Weet je zeker dat je dit document wilt verwijderen?" } do %>
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,9 +94,14 @@
                 <p class="text-xs text-gray-500"><%= note.display_date.strftime("%d-%m-%Y %H:%M") %></p>
               </div>
               <div class="flex items-center gap-2">
-                <%= form_with url: assign_note_path(note), method: :patch, class: "flex items-center gap-2" do |f| %>
-                  <%= f.select :dossier_id, @dossiers.map { |d| [d.name, d.id] }, { prompt: "Kies dossier..." }, class: "text-sm border-gray-300 rounded-lg" %>
-                  <%= f.submit "Toewijzen", class: "px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 cursor-pointer" %>
+                <%= form_with url: assign_note_path(note), method: :patch, class: "flex items-center gap-2", data: { controller: "auto-submit" } do |f| %>
+                  <%= render "shared/dossier_select",
+                             field_name: "dossier_id",
+                             selected_id: nil,
+                             include_blank: "Kies dossier...",
+                             auto_submit: true,
+                             input_class: "min-w-[200px]",
+                             show_all: true %>
                 <% end %>
                 <%= button_to note_path(note), method: :delete, class: "text-gray-400 hover:text-red-600", data: { turbo_confirm: "Weet je zeker dat je deze notitie wilt verwijderen?" } do %>
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
