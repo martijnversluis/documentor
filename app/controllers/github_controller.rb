@@ -3,10 +3,12 @@ class GithubController < ApplicationController
     action_item = ActionItem.create!(
       description: params[:description],
       due_date: Date.current,
-      context: "werk",
       position: 0,
       notes: params[:url]
     )
+
+    matching_dossier = InboxRule.find_matching_dossier(action_item.description)
+    action_item.update!(dossier: matching_dossier) if matching_dossier
 
     render json: { success: true, action_item_id: action_item.id }
   rescue ActiveRecord::RecordInvalid => e
