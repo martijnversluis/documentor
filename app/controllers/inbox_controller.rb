@@ -7,7 +7,7 @@ class InboxController < ApplicationController
     @all_items = (action_items + documents + notes).sort_by(&:created_at).reverse
 
     if @all_items.empty?
-      redirect_to filter_inbox_action_items_path, notice: "Inbox is leeg!"
+      @total_count = 0
       return
     end
 
