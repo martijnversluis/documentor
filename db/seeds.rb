@@ -88,7 +88,7 @@ if ReviewTemplate.count == 0
       title: "Leeg je hoofd",
       position: 2,
       description: <<~MD
-        Schrijf alles op wat nog in je hoofd zit.
+        Schrijf alles op wat nog in je hoofd zit via de [inbox triage](//inbox/triage).
 
         - Nieuwe projecten?
         - Taken die je bent vergeten?
