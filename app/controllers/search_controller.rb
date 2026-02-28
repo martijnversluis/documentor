@@ -3,11 +3,11 @@ class SearchController < ApplicationController
     @query = params[:q]
 
     if @query.present?
-      @dossiers = Dossier.active.search(@query).with_pg_search_rank.reorder(Arel.sql("pg_search_rank DESC, created_at DESC")).limit(20).to_a
-      @documents = Document.unscoped.search(@query).with_pg_search_rank.reorder(Arel.sql("pg_search_rank DESC, COALESCE(occurred_at, created_at) DESC")).limit(20).to_a
-      @notes = Note.unscoped.search(@query).with_pg_search_rank.reorder(Arel.sql("pg_search_rank DESC, COALESCE(occurred_at, created_at) DESC")).limit(20).to_a
-      @action_items = ActionItem.search(@query).with_pg_search_rank.reorder(Arel.sql("pg_search_rank DESC, created_at DESC")).limit(20).to_a
-      @meetings = Meeting.search(@query).with_pg_search_rank.reorder(Arel.sql("pg_search_rank DESC, start_time DESC")).limit(20).to_a
+      @dossiers = search_with_fallback(Dossier.active, :name, :description, order: "created_at DESC")
+      @documents = search_with_fallback(Document.unscoped, :name, :content_text, :remarks, order: "COALESCE(occurred_at, created_at) DESC")
+      @notes = search_with_fallback(Note.unscoped, :title, :content, order: "COALESCE(occurred_at, created_at) DESC")
+      @action_items = search_with_fallback(ActionItem, :description, order: "created_at DESC")
+      @meetings = search_with_fallback(Meeting, :title, :notes, order: "start_time DESC")
     else
       @dossiers = []
       @documents = []
@@ -23,7 +23,7 @@ class SearchController < ApplicationController
 
     if query.length >= 2
       # Search dossiers
-      Dossier.active.search(query).with_pg_search_rank.reorder(Arel.sql("pg_search_rank DESC")).limit(2).each do |dossier|
+      search_with_fallback(Dossier.active, :name, :description, limit: 2).each do |dossier|
         results << {
           type: "dossier",
           name: dossier.name,
@@ -33,7 +33,7 @@ class SearchController < ApplicationController
       end
 
       # Search documents
-      Document.unscoped.search(query).with_pg_search_rank.reorder(Arel.sql("pg_search_rank DESC")).limit(2).each do |doc|
+      search_with_fallback(Document.unscoped, :name, :content_text, :remarks, limit: 2).each do |doc|
         results << {
           type: "document",
           name: doc.name,
@@ -44,7 +44,7 @@ class SearchController < ApplicationController
       end
 
       # Search notes
-      Note.unscoped.search(query).with_pg_search_rank.reorder(Arel.sql("pg_search_rank DESC")).limit(2).each do |note|
+      search_with_fallback(Note.unscoped, :title, :content, limit: 2).each do |note|
         results << {
           type: "note",
           name: note.title,
@@ -55,7 +55,7 @@ class SearchController < ApplicationController
       end
 
       # Search action items
-      ActionItem.search(query).with_pg_search_rank.reorder(Arel.sql("pg_search_rank DESC")).limit(2).each do |item|
+      search_with_fallback(ActionItem, :description, limit: 2).each do |item|
         results << {
           type: "action_item",
           name: item.description.truncate(50),
@@ -66,7 +66,7 @@ class SearchController < ApplicationController
       end
 
       # Search meetings
-      Meeting.search(query).with_pg_search_rank.reorder(Arel.sql("pg_search_rank DESC")).limit(2).each do |meeting|
+      search_with_fallback(Meeting, :title, :notes, limit: 2).each do |meeting|
         results << {
           type: "meeting",
           name: meeting.title.truncate(50),
@@ -81,5 +81,22 @@ class SearchController < ApplicationController
     end
 
     render json: results
+  end
+
+  private
+
+  def search_with_fallback(scope, *columns, order: nil, limit: 20)
+    query = @query || params[:q].to_s.strip
+    results = scope.search(query).with_pg_search_rank.reorder(Arel.sql("pg_search_rank DESC#{", #{order}" if order}")).limit(limit).to_a
+
+    if results.size < limit
+      ilike_conditions = columns.map { |col| "#{col} ILIKE :pattern" }.join(" OR ")
+      fallback = scope.where(ilike_conditions, pattern: "%#{query}%")
+      fallback = fallback.where.not(id: results.map(&:id)) if results.any?
+      fallback = fallback.reorder(Arel.sql(order)) if order
+      results += fallback.limit(limit - results.size).to_a
+    end
+
+    results
   end
 end
