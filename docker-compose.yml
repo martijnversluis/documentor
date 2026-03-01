@@ -1,6 +1,7 @@
 services:
   web:
     build: .
+    image: documentor
     networks:
       - coolify
       - default
@@ -21,7 +22,7 @@ services:
       start_period: 30s
 
   jobs:
-    build: .
+    image: documentor
     networks:
       - coolify
       - default
