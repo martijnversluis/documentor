@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_28_113435) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_02_125153) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -44,6 +44,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_28_113435) do
     t.bigint "parent_id"
     t.text "notes"
     t.bigint "meeting_id"
+    t.string "status_text"
     t.index ["dossier_id"], name: "index_action_items_on_dossier_id"
     t.index ["meeting_id"], name: "index_action_items_on_meeting_id"
     t.index ["parent_id"], name: "index_action_items_on_parent_id"

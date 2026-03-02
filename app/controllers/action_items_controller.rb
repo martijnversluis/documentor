@@ -402,7 +402,7 @@ class ActionItemsController < ApplicationController
   end
 
   def action_item_params
-    params.require(:action_item).permit(:description, :due_date, :recurrence, :context, :dossier_id, :waiting_for_party_id, :waiting_for_description, :someday, :estimated_minutes, :next_action, :parent_id, :notes)
+    params.require(:action_item).permit(:description, :due_date, :recurrence, :context, :dossier_id, :waiting_for_party_id, :waiting_for_description, :someday, :estimated_minutes, :next_action, :parent_id, :notes, :status_text)
   end
 
   def base_scope
