@@ -2,7 +2,7 @@ class DossiersController < ApplicationController
   before_action :set_dossier, only: [:show, :edit, :update, :destroy, :archive, :unarchive, :merge_into]
 
   def index
-    @dossiers = filtered_dossiers(Dossier.active).ordered_by_name
+    @dossiers = filtered_dossiers(Dossier.active.includes(:action_items)).ordered_by_name
   end
 
   def archived

@@ -1,0 +1,9 @@
+<%= turbo_stream.replace @action_item do %>
+  <%= render "action_items/action_item", action_item: @action_item, link_to_dossier: @action_item.dossier.nil? %>
+<% end %>
+
+<% if @action_item.dossier.present? %>
+  <%= turbo_stream.replace "dossier-next-actions" do %>
+    <%= render "dossiers/next_actions", dossier: @action_item.dossier %>
+  <% end %>
+<% end %>

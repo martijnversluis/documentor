@@ -118,6 +118,7 @@ Rails.application.routes.draw do
     end
     member do
       patch :toggle
+      patch :toggle_next_action
       patch :assign
       patch :update_completion_notes
       patch :update_notes

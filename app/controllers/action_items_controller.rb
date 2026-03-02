@@ -1,5 +1,5 @@
 class ActionItemsController < ApplicationController
-  before_action :set_action_item, only: [:show, :edit, :update, :destroy, :toggle, :assign, :update_completion_notes, :update_notes, :extract_notes]
+  before_action :set_action_item, only: [:show, :edit, :update, :destroy, :toggle, :toggle_next_action, :assign, :update_completion_notes, :update_notes, :extract_notes]
   before_action :load_filter_counts, only: [:today, :tomorrow, :yesterday, :overdue, :waiting, :someday, :next_actions, :quick_wins, :recurring, :inbox]
 
   def today
@@ -302,6 +302,15 @@ class ActionItemsController < ApplicationController
         format.html { redirect_to params[:redirect_to].presence || today_action_items_path, alert: e.record.errors.full_messages.join(", ") }
         format.turbo_stream { render turbo_stream: turbo_stream.append("flash", partial: "shared/flash", locals: { message: e.record.errors.full_messages.join(", "), type: "alert" }) }
       end
+    end
+  end
+
+  def toggle_next_action
+    @action_item.update!(next_action: !@action_item.next_action)
+
+    respond_to do |format|
+      format.html { redirect_back fallback_location: today_action_items_path }
+      format.turbo_stream
     end
   end
 
