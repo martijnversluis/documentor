@@ -117,16 +117,5 @@
     <% end %>
   </div>
 
-  <div class="hidden w-3/5 min-w-0" data-review-split-target="panel">
-    <div class="sticky top-4 h-[calc(100vh-2rem)] bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col">
-      <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-gray-50 rounded-t-lg">
-        <span class="text-sm text-gray-500 truncate" data-review-split-target="url">Klik op een link om deze hier te openen</span>
-        <svg data-review-split-target="spinner" class="hidden animate-spin h-4 w-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-        </svg>
-      </div>
-      <iframe data-review-split-target="iframe" class="flex-1 w-full rounded-b-lg" sandbox="allow-same-origin allow-scripts allow-popups allow-forms"></iframe>
-    </div>
-  </div>
+  <%= render "shared/split_view_panel", controller_name: "review-split" %>
 </div>
