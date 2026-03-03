@@ -1,7 +1,6 @@
 services:
   web:
-    build: .
-    image: documentor
+    image: ghcr.io/martijnversluis/documentor:latest
     networks:
       - coolify
       - default
@@ -22,7 +21,7 @@ services:
       start_period: 30s
 
   jobs:
-    image: documentor
+    image: ghcr.io/martijnversluis/documentor:latest
     networks:
       - coolify
       - default
