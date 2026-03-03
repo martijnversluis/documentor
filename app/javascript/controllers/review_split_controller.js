@@ -1,4 +1,4 @@
-import SplitViewController from "./split_view_controller"
+import SplitViewController from "controllers/split_view_controller"
 
 export default class extends SplitViewController {
   static values = {
