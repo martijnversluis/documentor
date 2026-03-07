@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_02_125153) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_07_181500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -330,6 +330,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_02_125153) do
     t.index ["review_type", "period_key"], name: "index_reviews_on_review_type_and_period_key", unique: true
   end
 
+  create_table "solid_cache_entries", force: :cascade do |t|
+    t.binary "key", null: false
+    t.binary "value", null: false
+    t.datetime "created_at", null: false
+    t.bigint "key_hash", null: false
+    t.integer "byte_size", null: false
+    t.index ["byte_size"], name: "index_solid_cache_entries_on_byte_size"
+    t.index ["key_hash", "byte_size"], name: "index_solid_cache_entries_on_key_hash_and_byte_size"
+    t.index ["key_hash"], name: "index_solid_cache_entries_on_key_hash", unique: true
+  end
+
   create_table "solid_queue_blocked_executions", force: :cascade do |t|
     t.bigint "job_id", null: false
     t.string "queue_name", null: false
@@ -451,6 +462,34 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_02_125153) do
     t.index ["key"], name: "index_solid_queue_semaphores_on_key", unique: true
   end
 
+  create_table "subscription_documents", force: :cascade do |t|
+    t.bigint "subscription_id", null: false
+    t.bigint "document_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["document_id"], name: "index_subscription_documents_on_document_id"
+    t.index ["subscription_id", "document_id"], name: "idx_on_subscription_id_document_id_b18a312703", unique: true
+    t.index ["subscription_id"], name: "index_subscription_documents_on_subscription_id"
+  end
+
+  create_table "subscriptions", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.date "starts_on"
+    t.date "ends_on"
+    t.boolean "auto_renew", default: false, null: false
+    t.integer "cost_cents"
+    t.string "cost_frequency"
+    t.string "portal_url"
+    t.bigint "dossier_id"
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "contract_duration"
+    t.string "reference"
+    t.index ["dossier_id"], name: "index_subscriptions_on_dossier_id"
+  end
+
   create_table "taggings", force: :cascade do |t|
     t.bigint "tag_id", null: false
     t.string "taggable_type", null: false
@@ -516,5 +555,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_02_125153) do
   add_foreign_key "solid_queue_ready_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "subscription_documents", "documents"
+  add_foreign_key "subscription_documents", "subscriptions"
+  add_foreign_key "subscriptions", "dossiers"
   add_foreign_key "taggings", "tags"
 end
