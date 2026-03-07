@@ -1,6 +1,7 @@
 services:
   web:
     image: ghcr.io/martijnversluis/documentor:latest
+    pull_policy: always
     expose:
       - "80"
     networks:
@@ -24,6 +25,7 @@ services:
 
   jobs:
     image: ghcr.io/martijnversluis/documentor:latest
+    pull_policy: always
     networks:
       - coolify
       - default
