@@ -1,6 +1,8 @@
 services:
   web:
     image: ghcr.io/martijnversluis/documentor:latest
+    expose:
+      - "80"
     networks:
       - coolify
       - default
