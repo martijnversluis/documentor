@@ -1,7 +1,7 @@
 <li id="<%= dom_id(item) %>" class="hover:bg-gray-50 group" draggable="true" data-sortable-id="<%= item.id %>">
   <div class="p-4 <%= 'pl-8' if local_assigns[:nested] %>">
     <div class="flex items-start gap-4">
-      <div class="flex-shrink-0 mt-1 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-gray-500" data-drag-handle>
+      <div class="flex-shrink-0 mt-1 cursor-grab hidden sm:block sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-gray-300 hover:text-gray-500" data-drag-handle>
         <svg class="w-4 h-4 pointer-events-none" fill="currentColor" viewBox="0 0 24 24">
           <circle cx="9" cy="6" r="1.5"></circle>
           <circle cx="15" cy="6" r="1.5"></circle>
@@ -101,7 +101,7 @@
             </div>
           </div>
 
-          <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div class="flex items-center gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
             <button type="button"
                     data-controller="sub-item-form"
                     data-action="click->sub-item-form#toggle"

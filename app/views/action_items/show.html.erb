@@ -7,7 +7,7 @@
       </div>
       <div class="flex items-center justify-between">
         <h1 class="text-2xl font-bold text-gray-900">Actiepunt</h1>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <%= button_to toggle_action_item_path(@action_item), method: :patch, data: { turbo: false }, class: "inline-flex items-center gap-2 px-4 py-2 #{@action_item.completed? ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-green-600 text-white hover:bg-green-700'} text-sm font-medium rounded-lg cursor-pointer" do %>
             <% if @action_item.completed? %>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,7 +27,7 @@
             </svg>
             Bewerken
           <% end %>
-          <button data-action="split-view#toggle" class="p-1.5 rounded hover:bg-gray-100" title="Split view">
+          <button data-action="split-view#toggle" class="hidden sm:block p-1.5 rounded hover:bg-gray-100" title="Split view">
             <svg data-split-view-target="toggleIcon" class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7"></path>
             </svg>
@@ -122,19 +122,25 @@
       <div class="border-t border-gray-100 pt-4" data-controller="auto-save-notes" data-auto-save-notes-url-value="<%= update_notes_action_item_path(@action_item) %>">
         <div class="flex items-center justify-between mb-2">
           <h3 class="text-sm font-medium text-gray-700">Notities</h3>
-          <% if @action_item.notes.present? %>
-            <%= button_to extract_notes_action_item_path(@action_item), method: :post, class: "text-xs text-blue-600 hover:text-blue-800 font-medium", data: { turbo_confirm: "Notities verplaatsen naar een losse notitie in het dossier?" } do %>
-              Naar notitie verplaatsen
+          <div class="flex items-center gap-2">
+            <button type="button" data-auto-save-notes-target="editButton" data-action="click->auto-save-notes#edit" class="text-xs text-gray-400 hover:text-gray-600" title="Bewerken">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+              </svg>
+            </button>
+            <% if @action_item.notes.present? %>
+              <%= button_to extract_notes_action_item_path(@action_item), method: :post, class: "text-xs text-blue-600 hover:text-blue-800 font-medium", data: { turbo_confirm: "Notities verplaatsen naar een losse notitie in het dossier?" } do %>
+                Naar notitie verplaatsen
+              <% end %>
             <% end %>
-          <% end %>
+          </div>
         </div>
-        <div class="prose prose-sm max-w-none cursor-pointer hover:bg-gray-50 rounded p-2 -m-2 min-h-[60px] <%= @action_item.notes.blank? ? 'text-gray-400' : 'text-gray-700' %>"
-             data-auto-save-notes-target="display"
-             data-action="click->auto-save-notes#edit">
+        <div class="prose prose-sm max-w-none rounded p-2 -m-2 min-h-[60px] <%= @action_item.notes.blank? ? 'text-gray-400' : 'text-gray-700' %>"
+             data-auto-save-notes-target="display">
           <% if @action_item.notes.present? %>
             <%= markdown(@action_item.notes) %>
           <% else %>
-            <p class="italic">Klik om notities toe te voegen...</p>
+            <p class="italic">Nog geen notities</p>
           <% end %>
         </div>
         <%= text_area_tag :notes, @action_item.notes,

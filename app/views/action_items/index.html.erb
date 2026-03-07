@@ -14,16 +14,16 @@
 <% end %>
 
 <div class="max-w-4xl mx-auto" data-controller="action-items-drop" data-action-items-drop-url-value="<%= today_action_items_path %>">
-  <div class="flex items-center justify-between mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
     <h1 class="text-2xl font-bold text-gray-900">Actiepunten</h1>
     <div class="flex items-center gap-2">
-      <%= link_to current_action_items_path, class: "inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-purple-700 bg-purple-100 rounded-lg hover:bg-purple-200 transition-colors" do %>
+      <%= link_to current_action_items_path, class: "hidden sm:inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-purple-700 bg-purple-100 rounded-lg hover:bg-purple-200 transition-colors" do %>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
         </svg>
         Weekoverzicht
       <% end %>
-      <%= link_to current_month_action_items_path, class: "inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-purple-700 bg-purple-100 rounded-lg hover:bg-purple-200 transition-colors" do %>
+      <%= link_to current_month_action_items_path, class: "hidden sm:inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-purple-700 bg-purple-100 rounded-lg hover:bg-purple-200 transition-colors" do %>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
         </svg>
@@ -173,7 +173,7 @@
       </div>
       <ul class="divide-y divide-gray-100">
         <% @inbox_documents.each do |document| %>
-          <li class="p-4 flex items-center justify-between gap-4">
+          <li class="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
             <% if document.file.attached? && document.file.content_type.start_with?("image/") %>
               <div class="flex-shrink-0 relative group/thumb">
                 <% if document.file.content_type.in?(%w[image/heic image/heif]) %>
@@ -223,7 +223,7 @@
                            selected_id: nil,
                            include_blank: "Kies dossier...",
                            auto_submit: true,
-                           input_class: "min-w-[200px]",
+                           input_class: "w-full sm:min-w-[200px]",
                            show_all: true %>
               <% end %>
               <%= button_to document_path(document), method: :delete, class: "text-gray-400 hover:text-red-600", data: { turbo_confirm: "Weet je zeker dat je dit document wilt verwijderen?" } do %>
@@ -245,7 +245,7 @@
       </div>
       <ul class="divide-y divide-gray-100">
         <% @inbox_notes.each do |note| %>
-          <li class="p-4 flex items-center justify-between gap-4">
+          <li class="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
             <div class="flex-1 min-w-0">
               <%= link_to note.title, note, class: "font-medium text-gray-900 hover:text-blue-600" %>
               <p class="text-xs text-gray-500">
@@ -260,7 +260,7 @@
                            selected_id: nil,
                            include_blank: "Kies dossier...",
                            auto_submit: true,
-                           input_class: "min-w-[200px]",
+                           input_class: "w-full sm:min-w-[200px]",
                            show_all: true %>
               <% end %>
               <%= button_to note_path(note), method: :delete, class: "text-gray-400 hover:text-red-600", data: { turbo_confirm: "Weet je zeker dat je deze notitie wilt verwijderen?" } do %>

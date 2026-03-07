@@ -35,7 +35,7 @@
       </div>
     </div>
 
-    <nav class="bg-white shadow-sm border-b border-gray-200">
+    <nav class="bg-white shadow-sm border-b border-gray-200" data-controller="mobile-menu">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <div class="flex">
@@ -46,19 +46,23 @@
             <div class="hidden sm:ml-8 sm:flex sm:space-x-4">
               <%= link_to "Actiepunten", today_action_items_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/action_items') || current_page?(root_path) ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
               <%= link_to "Dossiers", dossiers_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/dossiers') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
-              <%= link_to "Gewoontes", habits_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/habits') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
-              <%= link_to "Reviews", reviews_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/reviews') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
               <%= link_to "Meetings", meetings_path, class: "inline-flex items-center px-3 py-2 text-sm font-medium #{request.path.start_with?('/meetings') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}" %>
               <div class="relative group flex items-center">
-                <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium <%= request.path.start_with?('/parties', '/tags', '/dossier_templates', '/checklists', '/expiring_items', '/settings') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900' %>">
-                  Instellingen
+                <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium <%= request.path.start_with?('/habits', '/reviews', '/subscriptions', '/checklists', '/expiring_items', '/parties', '/tags', '/dossier_templates', '/settings', '/review_templates') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900' %>">
+                  Meer
                   <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                   </svg>
                 </button>
-                <div class="absolute left-0 top-full w-40 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
-                  <%= link_to "Afvalkalender", settings_waste_calendar_index_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/waste') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'} rounded-t-lg" %>
+                <div class="absolute left-0 top-full w-44 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                  <%= link_to "Abonnementen", subscriptions_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/subscriptions') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'} rounded-t-lg" %>
                   <%= link_to "Checklists", checklists_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/checklists') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <%= link_to "Gewoontes", habits_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/habits') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <%= link_to "Reviews", reviews_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/reviews') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <%= link_to "Verloopdatums", expiring_items_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/expiring_items') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
+                  <div class="border-t border-gray-100 my-1"></div>
+                  <p class="px-4 py-1 text-xs font-medium text-gray-400 uppercase">Instellingen</p>
+                  <%= link_to "Afvalkalender", settings_waste_calendar_index_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/waste') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
                   <%= link_to "Configuratie", settings_configuration_index_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/configuration') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
                   <%= link_to "Contexts", settings_contexts_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/contexts') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
                   <%= link_to "Dossier templates", dossier_templates_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/dossier_templates') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
@@ -67,28 +71,37 @@
                   <%= link_to "Inbox regels", settings_inbox_rules_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/settings/inbox_rules') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
                   <%= link_to "Partijen", parties_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/parties') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
                   <%= link_to "Review templates", review_templates_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/review_templates') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
-                  <%= link_to "Tags", tags_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/tags') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}" %>
-                  <%= link_to "Verloopdatums", expiring_items_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/expiring_items') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'} rounded-b-lg" %>
+                  <%= link_to "Tags", tags_path, class: "block px-4 py-2 text-sm #{request.path.start_with?('/tags') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'} rounded-b-lg" %>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2 lg:gap-4">
+            <%# Search bar: icon on mobile/tablet, full bar on lg+ %>
             <button type="button"
                     data-action="click->command-palette#open"
-                    class="w-64 flex items-center gap-2 pl-3 pr-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    class="hidden lg:flex w-64 items-center gap-2 pl-3 pr-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
               <span class="flex-1 text-left">Zoeken...</span>
-              <kbd class="hidden sm:inline-flex px-1.5 py-0.5 text-xs text-gray-400 bg-gray-100 rounded">⌘K</kbd>
+              <kbd class="px-1.5 py-0.5 text-xs text-gray-400 bg-gray-100 rounded">⌘K</kbd>
+            </button>
+
+            <%# Compact search icon on mobile/tablet %>
+            <button type="button"
+                    data-action="click->command-palette#open"
+                    class="lg:hidden p-2 text-gray-500 hover:text-gray-700">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
             </button>
 
             <div class="flex items-center gap-2">
               <% if work_mode_auto? && work_status[:status] != :unknown %>
                 <% status = work_status %>
-                <span class="hidden sm:inline text-xs <%= status[:status] == :free ? 'text-green-600' : status[:status] == :working ? 'text-amber-600' : 'text-gray-400' %>">
+                <span class="hidden lg:inline text-xs <%= status[:status] == :free ? 'text-green-600' : status[:status] == :working ? 'text-amber-600' : 'text-gray-400' %>">
                   <% if status[:status] == :working %>
                     <%= status[:label] %><% if status[:times] %> · <%= status[:times] %><% end %>
                   <% elsif status[:status] == :free %>
@@ -104,9 +117,43 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                   </svg>
                 </div>
-                <span class="hidden sm:inline"><%= work_mode? ? 'Werk' : 'Vrij' %></span>
+                <span class="hidden lg:inline"><%= work_mode? ? 'Werk' : 'Vrij' %></span>
               <% end %>
             </div>
+
+            <%# Hamburger button %>
+            <button type="button" data-action="click->mobile-menu#toggle" class="sm:hidden p-2 text-gray-500 hover:text-gray-700">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <%# Mobile menu panel %>
+      <div class="hidden sm:hidden border-t border-gray-200" data-mobile-menu-target="menu">
+        <div class="px-4 py-3 space-y-1">
+          <%= link_to "Abonnementen", subscriptions_path, class: "block px-3 py-2 text-sm font-medium rounded-lg #{request.path.start_with?('/subscriptions') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'}", data: { action: "click->mobile-menu#close" } %>
+          <%= link_to "Actiepunten", today_action_items_path, class: "block px-3 py-2 text-sm font-medium rounded-lg #{request.path.start_with?('/action_items') || current_page?(root_path) ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'}", data: { action: "click->mobile-menu#close" } %>
+          <%= link_to "Checklists", checklists_path, class: "block px-3 py-2 text-sm font-medium rounded-lg #{request.path.start_with?('/checklists') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'}", data: { action: "click->mobile-menu#close" } %>
+          <%= link_to "Dossiers", dossiers_path, class: "block px-3 py-2 text-sm font-medium rounded-lg #{request.path.start_with?('/dossiers') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'}", data: { action: "click->mobile-menu#close" } %>
+          <%= link_to "Gewoontes", habits_path, class: "block px-3 py-2 text-sm font-medium rounded-lg #{request.path.start_with?('/habits') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'}", data: { action: "click->mobile-menu#close" } %>
+          <%= link_to "Meetings", meetings_path, class: "block px-3 py-2 text-sm font-medium rounded-lg #{request.path.start_with?('/meetings') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'}", data: { action: "click->mobile-menu#close" } %>
+          <%= link_to "Reviews", reviews_path, class: "block px-3 py-2 text-sm font-medium rounded-lg #{request.path.start_with?('/reviews') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'}", data: { action: "click->mobile-menu#close" } %>
+          <%= link_to "Verloopdatums", expiring_items_path, class: "block px-3 py-2 text-sm font-medium rounded-lg #{request.path.start_with?('/expiring_items') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'}", data: { action: "click->mobile-menu#close" } %>
+          <div class="border-t border-gray-100 mt-2 pt-2">
+            <p class="px-3 py-1 text-xs font-medium text-gray-400 uppercase">Instellingen</p>
+            <%= link_to "Afvalkalender", settings_waste_calendar_index_path, class: "block px-3 py-2 text-sm #{request.path.start_with?('/settings/waste') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'} rounded-lg", data: { action: "click->mobile-menu#close" } %>
+            <%= link_to "Configuratie", settings_configuration_index_path, class: "block px-3 py-2 text-sm #{request.path.start_with?('/settings/configuration') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'} rounded-lg", data: { action: "click->mobile-menu#close" } %>
+            <%= link_to "Contexts", settings_contexts_path, class: "block px-3 py-2 text-sm #{request.path.start_with?('/settings/contexts') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'} rounded-lg", data: { action: "click->mobile-menu#close" } %>
+            <%= link_to "Dossier templates", dossier_templates_path, class: "block px-3 py-2 text-sm #{request.path.start_with?('/dossier_templates') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'} rounded-lg", data: { action: "click->mobile-menu#close" } %>
+            <%= link_to "GitHub", settings_github_accounts_path, class: "block px-3 py-2 text-sm #{request.path.start_with?('/settings/github') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'} rounded-lg", data: { action: "click->mobile-menu#close" } %>
+            <%= link_to "Google Account", settings_google_accounts_path, class: "block px-3 py-2 text-sm #{request.path.start_with?('/settings/google') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'} rounded-lg", data: { action: "click->mobile-menu#close" } %>
+            <%= link_to "Inbox regels", settings_inbox_rules_path, class: "block px-3 py-2 text-sm #{request.path.start_with?('/settings/inbox_rules') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'} rounded-lg", data: { action: "click->mobile-menu#close" } %>
+            <%= link_to "Partijen", parties_path, class: "block px-3 py-2 text-sm #{request.path.start_with?('/parties') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'} rounded-lg", data: { action: "click->mobile-menu#close" } %>
+            <%= link_to "Review templates", review_templates_path, class: "block px-3 py-2 text-sm #{request.path.start_with?('/review_templates') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'} rounded-lg", data: { action: "click->mobile-menu#close" } %>
+            <%= link_to "Tags", tags_path, class: "block px-3 py-2 text-sm #{request.path.start_with?('/tags') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'} rounded-lg", data: { action: "click->mobile-menu#close" } %>
           </div>
         </div>
       </div>

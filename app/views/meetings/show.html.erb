@@ -35,25 +35,30 @@
 
     <div class="p-6 border-b border-gray-200" data-controller="auto-save-notes" data-auto-save-notes-url-value="<%= meeting_path(@meeting) %>" data-auto-save-notes-param-value="meeting[notes]">
       <div class="flex items-center justify-between mb-3">
-        <h2 class="text-sm font-medium text-gray-700">Notities</h2>
+        <div class="flex items-center gap-2">
+          <h2 class="text-sm font-medium text-gray-700">Notities</h2>
+          <button type="button" data-auto-save-notes-target="editButton" data-action="click->auto-save-notes#edit" class="text-gray-400 hover:text-gray-600" title="Bewerken">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+            </svg>
+          </button>
+        </div>
         <span data-auto-save-notes-target="status" class="text-xs text-gray-400"></span>
       </div>
 
-      <%# Markdown display (click to edit) %>
+      <%# Markdown display %>
       <div data-auto-save-notes-target="display"
-           data-action="click->auto-save-notes#edit"
-           style="min-height: 32rem;"
-           class="px-3 py-2 text-sm border border-gray-200 rounded-lg cursor-text hover:border-gray-300 hover:bg-gray-50 transition-colors prose prose-sm max-w-none <%= @meeting.notes.blank? ? 'text-gray-400' : 'text-gray-700' %>">
+           class="px-3 py-2 text-sm border border-gray-200 rounded-lg transition-colors prose prose-sm max-w-none min-h-[16rem] sm:min-h-[32rem] <%= @meeting.notes.blank? ? 'text-gray-400' : 'text-gray-700' %>">
         <% if @meeting.notes.present? %>
           <%= markdown(@meeting.notes) %>
         <% else %>
-          <p class="italic">Klik om notities toe te voegen...</p>
+          <p class="italic">Nog geen notities</p>
         <% end %>
       </div>
 
       <%# Textarea (hidden by default) %>
       <%= text_area_tag "meeting[notes]", @meeting.notes,
-        rows: 28,
+        rows: 12,
         placeholder: "Maak hier aantekeningen tijdens de meeting...",
         class: "hidden w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y font-mono",
         data: { auto_save_notes_target: "notes", action: "input->auto-save-notes#scheduleAutoSave blur->auto-save-notes#blur" } %>
