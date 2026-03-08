@@ -1,6 +1,11 @@
 Rails.application.routes.draw do
   root "action_items#today"
 
+  # Authentication
+  get "login", to: "sessions#new"
+  post "login", to: "sessions#create"
+  delete "logout", to: "sessions#destroy"
+
   # API for Chrome extension
   namespace :api do
     resources :dossiers, only: [:index] do
@@ -86,6 +91,18 @@ Rails.application.routes.draw do
   end
 
   resources :expiring_items, except: [:show]
+
+  resources :subscriptions do
+    collection do
+      get :archived
+    end
+    member do
+      patch :archive
+      patch :unarchive
+    end
+    resources :documents, only: [:create, :destroy], controller: "subscription_documents"
+    resources :party_links, only: [:create, :destroy]
+  end
 
   resources :action_items, only: [:show, :edit, :update, :destroy, :create] do
     collection do

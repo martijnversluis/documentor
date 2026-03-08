@@ -1,6 +1,5 @@
 class ApplicationController < ActionController::Base
-  # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
-  allow_browser versions: :modern
+  before_action :require_login
 
   helper_method :work_mode?, :work_mode_auto?, :work_status, :ongoing_meetings
 
@@ -45,6 +44,13 @@ class ApplicationController < ActionController::Base
   end
 
   private
+
+  def require_login
+    return if session[:authenticated]
+
+    session[:return_to] = request.fullpath if request.get?
+    redirect_to login_path
+  end
 
   def auto_work_mode
     # Cache the result for 5 minutes to avoid constant API calls
