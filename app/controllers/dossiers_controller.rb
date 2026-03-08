@@ -11,7 +11,7 @@ class DossiersController < ApplicationController
 
   def show
     @folders = @dossier.folders.includes(documents: [:tags, :parties], notes: [:tags, :parties])
-    @direct_documents = @dossier.documents.includes(:tags, :parties).where(folder_id: nil)
+    @direct_documents = @dossier.documents.without_subscriptions.includes(:tags, :parties).where(folder_id: nil)
     @direct_notes = @dossier.notes.includes(:tags, :parties).where(folder_id: nil)
   end
 

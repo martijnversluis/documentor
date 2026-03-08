@@ -9,6 +9,8 @@ module PartyLinksHelper
       note_party_links_path(linkable)
     when Folder
       folder_party_links_path(linkable)
+    when Subscription
+      subscription_party_links_path(linkable)
     end
   end
 
@@ -22,6 +24,8 @@ module PartyLinksHelper
       note_party_link_path(linkable, party_link)
     when Folder
       folder_party_link_path(linkable, party_link)
+    when Subscription
+      subscription_party_link_path(linkable, party_link)
     end
   end
 end

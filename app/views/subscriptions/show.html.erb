@@ -1,0 +1,146 @@
+<div class="max-w-4xl mx-auto space-y-6"
+     data-controller="document-drop"
+     data-document-drop-url-value="<%= subscription_documents_path(@subscription) %>"
+     data-action="dragenter->document-drop#dragenter dragover->document-drop#dragover dragleave->document-drop#dragleave drop->document-drop#drop">
+
+  <!-- Drop zone indicator -->
+  <div data-document-drop-target="dropzone" class="hidden fixed inset-x-4 bottom-4 z-50 pointer-events-none">
+    <div class="border-2 border-dashed border-blue-500 rounded-lg p-4 bg-blue-50 bg-opacity-90 text-center">
+      <p class="text-sm font-medium text-blue-700">Sleep hier om documenten toe te voegen</p>
+    </div>
+  </div>
+  <div class="flex items-center justify-between">
+    <div>
+      <div class="flex items-center space-x-2 text-sm text-gray-500 mb-1">
+        <%= link_to "Abonnementen", subscriptions_path, class: "hover:text-gray-700" %>
+        <span>/</span>
+      </div>
+      <h1 class="text-2xl font-bold text-gray-900"><%= @subscription.name %></h1>
+      <%= render "party_links/party_links", linkable: @subscription %>
+    </div>
+    <div class="flex items-center space-x-2">
+      <%= link_to edit_subscription_path(@subscription), class: "inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50" do %>
+        Bewerken
+      <% end %>
+      <% if @subscription.archived? %>
+        <%= button_to unarchive_subscription_path(@subscription), method: :patch, class: "inline-flex items-center px-3 py-2 border border-green-300 text-sm font-medium rounded-lg text-green-700 bg-white hover:bg-green-50" do %>
+          Herstellen
+        <% end %>
+      <% else %>
+        <%= button_to archive_subscription_path(@subscription), method: :patch, data: { turbo_confirm: "Weet je zeker dat je dit abonnement wilt archiveren?" }, class: "inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50" do %>
+          Archiveren
+        <% end %>
+      <% end %>
+      <%= button_to @subscription, method: :delete, data: { turbo_confirm: "Weet je zeker dat je dit abonnement wilt verwijderen?" }, class: "inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-lg text-red-700 bg-white hover:bg-red-50" do %>
+        Verwijderen
+      <% end %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="p-4 border-b border-gray-200">
+      <h2 class="font-semibold text-gray-900">Details</h2>
+    </div>
+    <dl class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <% if @subscription.reference.present? %>
+        <div>
+          <dt class="text-sm font-medium text-gray-500">Referentie</dt>
+          <dd class="mt-1 text-sm text-gray-900"><%= @subscription.reference %></dd>
+        </div>
+      <% end %>
+
+      <% if @subscription.cost_display.present? %>
+        <div>
+          <dt class="text-sm font-medium text-gray-500">Kosten</dt>
+          <dd class="mt-1 text-sm text-gray-900"><%= @subscription.cost_display %></dd>
+        </div>
+      <% end %>
+
+      <% if @subscription.contract_duration_display.present? %>
+        <div>
+          <dt class="text-sm font-medium text-gray-500">Contractduur</dt>
+          <dd class="mt-1 text-sm text-gray-900"><%= @subscription.contract_duration_display %></dd>
+        </div>
+      <% end %>
+
+      <% if @subscription.starts_on.present? %>
+        <div>
+          <dt class="text-sm font-medium text-gray-500">Ingangsdatum</dt>
+          <dd class="mt-1 text-sm text-gray-900"><%= @subscription.starts_on.strftime("%d-%m-%Y") %></dd>
+        </div>
+      <% end %>
+
+      <div>
+        <dt class="text-sm font-medium text-gray-500">Einddatum</dt>
+        <dd class="mt-1 text-sm text-gray-900">
+          <% if @subscription.ends_on.present? %>
+            <%= @subscription.ends_on.strftime("%d-%m-%Y") %>
+            <% unless @subscription.active? %>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 ml-1">Verlopen</span>
+            <% end %>
+          <% else %>
+            <span class="text-gray-500">Doorlopend</span>
+          <% end %>
+        </dd>
+      </div>
+
+      <div>
+        <dt class="text-sm font-medium text-gray-500">Automatische verlenging</dt>
+        <dd class="mt-1 text-sm text-gray-900"><%= @subscription.auto_renew? ? "Ja" : "Nee" %></dd>
+      </div>
+
+      <% if @subscription.dossier.present? %>
+        <div>
+          <dt class="text-sm font-medium text-gray-500">Dossier</dt>
+          <dd class="mt-1 text-sm text-gray-900">
+            <%= link_to @subscription.dossier.name, @subscription.dossier, class: "text-blue-600 hover:text-blue-800" %>
+          </dd>
+        </div>
+      <% end %>
+    </dl>
+  </div>
+
+  <% if @subscription.portal_url.present? %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div class="p-4 border-b border-gray-200">
+        <h2 class="font-semibold text-gray-900">Portaal</h2>
+      </div>
+      <div class="p-4">
+        <%= link_to @subscription.portal_url, @subscription.portal_url, target: "_blank", rel: "noopener", class: "text-sm text-blue-600 hover:text-blue-800 break-all" %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+      <h2 class="font-semibold text-gray-900">Documenten</h2>
+      <%= form_with url: subscription_documents_path(@subscription), method: :post, class: "flex items-center gap-2" do %>
+        <%= file_field_tag :files, multiple: true, class: "text-sm text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border file:border-gray-300 file:text-sm file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50 file:cursor-pointer" %>
+        <%= submit_tag "Uploaden", class: "px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 cursor-pointer" %>
+      <% end %>
+    </div>
+    <% if @subscription.documents.any? %>
+      <div class="divide-y divide-gray-100">
+        <% @subscription.documents.includes(:tags, :parties, file_attachment: :blob).each do |document| %>
+          <%= render "documents/document", document: document, unlink_path: subscription_document_path(@subscription, document) %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="p-4 text-sm text-gray-500">Nog geen documenten gekoppeld.</div>
+    <% end %>
+  </div>
+
+  <%= turbo_frame_tag "modal" %>
+
+
+  <% if @subscription.description.present? %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div class="p-4 border-b border-gray-200">
+        <h2 class="font-semibold text-gray-900">Beschrijving</h2>
+      </div>
+      <div class="p-4 prose prose-sm max-w-none text-gray-700">
+        <%= markdown(@subscription.description) %>
+      </div>
+    </div>
+  <% end %>
+</div>

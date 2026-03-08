@@ -21,6 +21,7 @@ class Dossier < ApplicationRecord
   has_many :documents, dependent: :destroy
   has_many :notes, dependent: :destroy
   has_many :action_items, dependent: :destroy
+  has_many :subscriptions, dependent: :nullify
 
   validates :name, presence: true
 
@@ -38,7 +39,7 @@ class Dossier < ApplicationRecord
   end
 
   def timeline_items
-    all_documents = documents.to_a + folders.flat_map(&:documents)
+    all_documents = documents.without_subscriptions.to_a + folders.flat_map(&:documents)
     all_notes = notes.to_a + folders.flat_map(&:notes)
     (all_documents + all_notes).sort_by(&:display_date).reverse
   end

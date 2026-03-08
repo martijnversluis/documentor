@@ -18,6 +18,8 @@ class Document < ApplicationRecord
   belongs_to :folder, optional: true, touch: true
   has_many :action_item_documents, dependent: :destroy
   has_many :action_items, through: :action_item_documents
+  has_many :subscription_documents, dependent: :destroy
+  has_many :subscriptions, through: :subscription_documents
 
   has_one_attached :file
 
@@ -27,6 +29,7 @@ class Document < ApplicationRecord
 
   scope :inbox, -> { where(dossier_id: nil, folder_id: nil) }
   scope :assigned, -> { where.not(dossier_id: nil).or(where.not(folder_id: nil)) }
+  scope :without_subscriptions, -> { where.not(id: SubscriptionDocument.select(:document_id)) }
 
   before_validation :set_name_from_file
   before_validation :extract_date_from_eml

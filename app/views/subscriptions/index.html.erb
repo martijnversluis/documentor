@@ -1,0 +1,43 @@
+<div class="max-w-4xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Abonnementen</h1>
+      <p class="text-sm text-gray-500 mt-1">Abonnementen, polissen en contracten</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <% if Subscription.archived.any? %>
+        <%= link_to archived_subscriptions_path, class: "inline-flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-900" do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+          </svg>
+          Archief
+        <% end %>
+      <% end %>
+      <%= link_to new_subscription_path, class: "inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Toevoegen
+      <% end %>
+    </div>
+  </div>
+
+  <% if @subscriptions.any? %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 divide-y divide-gray-100">
+      <% @subscriptions.each do |subscription| %>
+        <%= render "subscription", subscription: subscription %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">Geen abonnementen</h3>
+      <p class="mt-1 text-sm text-gray-500">Voeg je abonnementen, polissen en contracten toe.</p>
+      <%= link_to new_subscription_path, class: "mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700" do %>
+        Eerste abonnement toevoegen
+      <% end %>
+    </div>
+  <% end %>
+</div>

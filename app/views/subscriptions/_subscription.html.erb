@@ -1,0 +1,32 @@
+<%= link_to subscription, class: "block p-4 hover:bg-gray-50 transition-colors", id: dom_id(subscription) do %>
+  <div class="flex items-center justify-between">
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2">
+        <h3 class="text-sm font-medium text-gray-900 truncate"><%= subscription.name %></h3>
+        <% unless subscription.active? %>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Verlopen</span>
+        <% end %>
+        <% if subscription.auto_renew? %>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Auto-verlenging</span>
+        <% end %>
+      </div>
+      <div class="flex items-center gap-3 mt-1">
+        <% if subscription.cost_display.present? %>
+          <span class="text-sm text-gray-600"><%= subscription.cost_display %></span>
+        <% end %>
+        <% if subscription.ends_on.present? %>
+          <span class="text-xs text-gray-500">t/m <%= subscription.ends_on.strftime("%d-%m-%Y") %></span>
+        <% end %>
+        <% if subscription.dossier.present? %>
+          <span class="text-xs text-gray-500"><%= subscription.dossier.name %></span>
+        <% end %>
+        <% subscription.parties.each do |party| %>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border border-gray-300 text-gray-600"><%= party.name %></span>
+        <% end %>
+      </div>
+    </div>
+    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+    </svg>
+  </div>
+<% end %>

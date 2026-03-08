@@ -37,6 +37,8 @@ class PartyLinksController < ApplicationController
       @linkable = Note.find(params[:note_id])
     elsif params[:folder_id]
       @linkable = Folder.find(params[:folder_id])
+    elsif params[:subscription_id]
+      @linkable = Subscription.find(params[:subscription_id])
     end
   end
 end
