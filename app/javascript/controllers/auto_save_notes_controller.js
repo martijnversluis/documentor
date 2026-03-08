@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["notes", "status", "display"]
+  static targets = ["notes", "status", "display", "editButton"]
   static values = {
     url: String,
     param: { type: String, default: "notes" },
@@ -28,6 +28,7 @@ export default class extends Controller {
 
       this.displayTarget.classList.add("hidden")
       this.notesTarget.classList.remove("hidden")
+      if (this.hasEditButtonTarget) this.editButtonTarget.classList.add("hidden")
 
       // Set textarea height to match the display content
       this.notesTarget.style.height = `${minHeight}px`
@@ -84,7 +85,7 @@ export default class extends Controller {
           this.displayTarget.classList.remove("text-gray-400")
           this.displayTarget.classList.add("text-gray-700")
         } else {
-          this.displayTarget.innerHTML = '<p class="italic">Klik om notities toe te voegen...</p>'
+          this.displayTarget.innerHTML = '<p class="italic">Nog geen notities</p>'
           this.displayTarget.classList.add("text-gray-400")
           this.displayTarget.classList.remove("text-gray-700")
         }
@@ -97,6 +98,7 @@ export default class extends Controller {
 
     this.displayTarget.classList.remove("hidden")
     this.notesTarget.classList.add("hidden")
+    if (this.hasEditButtonTarget) this.editButtonTarget.classList.remove("hidden")
   }
 
   scheduleAutoSave() {

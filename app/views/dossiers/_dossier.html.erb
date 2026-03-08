@@ -30,7 +30,7 @@
           </span>
         <% end %>
       </div>
-      <% next_actions = dossier.action_items.select { |ai| ai.next_action? && ai.completed_at.nil? && ai.parent_id.nil? }.first(2) %>
+      <% next_actions = dossier.action_items.select { |ai| ai.next_action? && ai.completed_at.nil? && ai.parent_id.nil? }.sort_by { |ai| [ai.position || Float::INFINITY, ai.due_date || Date.new(9999), ai.created_at] }.first(2) %>
       <% if next_actions.any? %>
         <div class="mt-2 space-y-1">
           <% next_actions.each do |item| %>
