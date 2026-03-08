@@ -53,6 +53,9 @@ gem "redcarpet"
 # Image processing for Active Storage variants (HEIC conversion, thumbnails, etc.)
 gem "image_processing", "~> 1.2"
 
+# S3-compatible object storage (Hetzner)
+gem "aws-sdk-s3", require: false
+
 # ZIP file creation
 gem "rubyzip"
 
