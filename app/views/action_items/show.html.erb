@@ -136,7 +136,8 @@
           </div>
         </div>
         <div class="prose prose-sm max-w-none rounded p-2 -m-2 min-h-[60px] <%= @action_item.notes.blank? ? 'text-gray-400' : 'text-gray-700' %>"
-             data-auto-save-notes-target="display">
+             data-auto-save-notes-target="display"
+             data-action="change->auto-save-notes#toggleCheckbox">
           <% if @action_item.notes.present? %>
             <%= markdown(@action_item.notes) %>
           <% else %>

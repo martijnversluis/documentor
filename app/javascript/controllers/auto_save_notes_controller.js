@@ -39,6 +39,29 @@ export default class extends Controller {
     }
   }
 
+  toggleCheckbox(event) {
+    if (!this.hasNotesTarget) return
+
+    const checkbox = event.target
+    const checkboxes = this.displayTarget.querySelectorAll('input[type="checkbox"]')
+    const index = Array.from(checkboxes).indexOf(checkbox)
+    if (index === -1) return
+
+    const content = this.notesTarget.value
+    let checkboxCount = 0
+    const newContent = content.replace(/- \[([ xX])\]/g, (match) => {
+      if (checkboxCount === index) {
+        checkboxCount++
+        return checkbox.checked ? "- [x]" : "- [ ]"
+      }
+      checkboxCount++
+      return match
+    })
+
+    this.notesTarget.value = newContent
+    this.saveNotes()
+  }
+
   autoResize() {
     if (this.hasNotesTarget) {
       this.notesTarget.style.height = "auto"
