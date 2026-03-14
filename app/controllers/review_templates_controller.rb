@@ -28,12 +28,28 @@ class ReviewTemplatesController < ApplicationController
   end
 
   def edit
+    @active_review = Review.by_type(@review_template.review_type).in_progress.first
   end
 
   def update
     if @review_template.update(review_template_params)
-      redirect_to review_templates_path, notice: "Review template bijgewerkt"
+      notice = "Review template bijgewerkt"
+
+      if params[:rebuild_active_review] == "1"
+        review = Review.by_type(@review_template.review_type).in_progress.first
+        if review
+          review.transaction do
+            review.review_steps.destroy_all
+            review.update!(started_at: nil, paused_at: nil, current_step_position: 0)
+            review.start!
+          end
+          notice += " en lopende review opnieuw opgebouwd"
+        end
+      end
+
+      redirect_to review_templates_path, notice: notice
     else
+      @active_review = Review.by_type(@review_template.review_type).in_progress.first
       render :edit, status: :unprocessable_entity
     end
   end

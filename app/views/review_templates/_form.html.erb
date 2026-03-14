@@ -33,6 +33,14 @@
       <span class="text-xs text-gray-500">- Alleen actieve templates worden gebruikt voor nieuwe reviews</span>
     </div>
 
+    <% if local_assigns[:active_review] %>
+      <div class="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+        <%= check_box_tag :rebuild_active_review, "1", false, class: "w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500" %>
+        <%= label_tag :rebuild_active_review, "Lopende review opnieuw opbouwen", class: "text-sm font-medium text-gray-700" %>
+        <span class="text-xs text-gray-500">- Vervangt alle stappen in de huidige lopende <%= active_review.review_type_label.downcase %> review</span>
+      </div>
+    <% end %>
+
     <div class="border-t border-gray-200 pt-6">
       <div class="flex items-center justify-between mb-4">
         <h3 class="font-semibold text-gray-900">Stappen</h3>
