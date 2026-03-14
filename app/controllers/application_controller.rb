@@ -20,27 +20,13 @@ class ApplicationController < ActionController::Base
   def work_status
     return @work_status if defined?(@work_status)
 
-    @work_status = Rails.cache.fetch("work_status", expires_in: 5.minutes) do
-      if work_mode_auto?
-        GoogleCalendarService.work_status
-      else
-        { status: :unknown, label: nil }
-      end
-    rescue StandardError => e
-      Rails.logger.warn "Work status check failed: #{e.message}"
-      { status: :unknown, label: nil }
-    end
+    @work_status = Rails.cache.read("work_status") || { status: :unknown, label: nil }
   end
 
   def ongoing_meetings
     return @ongoing_meetings if defined?(@ongoing_meetings)
 
-    @ongoing_meetings = Rails.cache.fetch("ongoing_meetings", expires_in: 1.minute) do
-      GoogleCalendarService.ongoing_meetings
-    rescue StandardError => e
-      Rails.logger.warn "Ongoing meetings check failed: #{e.message}"
-      []
-    end
+    @ongoing_meetings = Rails.cache.read("ongoing_meetings") || []
   end
 
   private
@@ -53,20 +39,11 @@ class ApplicationController < ActionController::Base
   end
 
   def auto_work_mode
-    # Cache the result for 5 minutes to avoid constant API calls
-    cache_key = "auto_work_mode"
-    cached = Rails.cache.read(cache_key)
+    cached = Rails.cache.read("auto_work_mode")
     return cached unless cached.nil?
 
-    result = begin
-      GoogleCalendarService.should_be_working?
-    rescue StandardError => e
-      Rails.logger.warn "Auto work mode check failed: #{e.message}"
-      false
-    end
-
-    Rails.cache.write(cache_key, result, expires_in: 5.minutes)
-    result
+    # Cache miss: return false, background job will populate cache
+    false
   end
 
   # Filter dossiers based on work mode

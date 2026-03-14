@@ -44,15 +44,11 @@ class MeetingsController < ApplicationController
   end
 
   def banner
-    # Bypass cache to always get fresh data
-    @ongoing_meetings = GoogleCalendarService.ongoing_meetings
-  rescue StandardError => e
-    Rails.logger.warn "Failed to fetch ongoing meetings: #{e.message}"
-    @ongoing_meetings = []
+    @ongoing_meetings = Rails.cache.read("ongoing_meetings") || []
   end
 
   def next_meeting
-    meetings = GoogleCalendarService.ongoing_meetings
+    meetings = Rails.cache.read("ongoing_meetings") || []
     next_meeting = meetings.first
 
     render json: {
@@ -60,9 +56,6 @@ class MeetingsController < ApplicationController
       title: next_meeting&.dig(:title),
       start_time: next_meeting&.dig(:start_time)
     }
-  rescue StandardError => e
-    Rails.logger.warn "Failed to fetch next meeting: #{e.message}"
-    render json: { conference_url: nil }
   end
 
   private

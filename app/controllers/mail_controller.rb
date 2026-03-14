@@ -9,21 +9,12 @@ class MailController < ApplicationController
 
     cache_key = "mail_dashboard_#{@google_account.id}"
 
-    # Clear cache if refresh requested
-    Rails.cache.delete(cache_key) if params[:refresh].present?
-
-    # Cache for 2 minutes
-    @messages = Rails.cache.fetch(cache_key, expires_in: 2.minutes) do
-      service = GmailService.new(@google_account)
-      service.unread_messages
-    rescue GmailService::AuthorizationError => e
-      { error: e.message }
-    rescue GmailService::TokenRefreshError => e
-      { error: "Kon token niet vernieuwen: #{e.message}" }
-    rescue StandardError => e
-      Rails.logger.error "Gmail dashboard error: #{e.class} - #{e.message}"
-      { error: "Kon mail niet ophalen. Mogelijk moet je opnieuw inloggen met Gmail-rechten." }
+    if params[:refresh].present?
+      Rails.cache.delete(cache_key)
+      RefreshExternalDataJob.perform_later
     end
+
+    @messages = Rails.cache.read(cache_key) || { error: "Data wordt geladen..." }
 
     if @messages.is_a?(Hash) && @messages[:error]
       render partial: "mail/error", locals: { error: @messages[:error] }

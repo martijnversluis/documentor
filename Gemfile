@@ -47,6 +47,9 @@ gem "acts_as_list"
 # CORS for API access from Chrome extension
 gem "rack-cors"
 
+# Request timeout to prevent hanging requests
+gem "rack-timeout"
+
 # Markdown rendering
 gem "redcarpet"
 
