@@ -5,6 +5,7 @@ class RefreshExternalDataJob < ApplicationJob
     refresh_work_mode
     refresh_work_status
     refresh_ongoing_meetings
+    refresh_calendar_events
     refresh_github_dashboards
     refresh_mail_dashboards
   end
@@ -30,6 +31,30 @@ class RefreshExternalDataJob < ApplicationJob
     Rails.cache.write("ongoing_meetings", result, expires_in: CACHE_TTL)
   rescue StandardError => e
     Rails.logger.warn "RefreshExternalDataJob: ongoing meetings check failed: #{e.message}"
+  end
+
+  def refresh_calendar_events
+    [Date.yesterday, Date.current, Date.tomorrow].each do |date|
+      events = fetch_all_calendar_events(date, date)
+      Rails.cache.write("calendar_events_#{date}", events, expires_in: CACHE_TTL)
+    end
+  rescue StandardError => e
+    Rails.logger.warn "RefreshExternalDataJob: calendar events failed: #{e.message}"
+  end
+
+  def fetch_all_calendar_events(start_date, end_date)
+    events = []
+
+    GoogleAccount.includes(:google_calendars).find_each do |account|
+      next unless account.enabled_calendars.any?
+
+      service = GoogleCalendarService.new(account)
+      events.concat(service.events_for_range(start_date: start_date, end_date: end_date))
+    rescue StandardError => e
+      Rails.logger.warn "RefreshExternalDataJob: calendar events for #{account.email} failed: #{e.message}"
+    end
+
+    events.sort_by { |e| e[:start_time] || start_date.beginning_of_day }
   end
 
   def refresh_github_dashboards

@@ -80,14 +80,19 @@ class GoogleCalendarService
 
   # Get events for a specific date from enabled calendars
   def events(date:, calendar_ids: nil)
+    events_for_range(start_date: date, end_date: date, calendar_ids: calendar_ids)
+  end
+
+  # Get events for a date range from enabled calendars (single API call per calendar)
+  def events_for_range(start_date:, end_date:, calendar_ids: nil)
     refresh_token_if_needed!
     service = calendar_service
 
     calendar_ids ||= @account.enabled_calendars.pluck(:calendar_id)
     return [] if calendar_ids.empty?
 
-    time_min = date.in_time_zone.beginning_of_day.rfc3339
-    time_max = date.in_time_zone.end_of_day.rfc3339
+    time_min = start_date.in_time_zone.beginning_of_day.rfc3339
+    time_max = end_date.in_time_zone.end_of_day.rfc3339
 
     all_events = []
 
@@ -104,7 +109,6 @@ class GoogleCalendarService
         calendar = @account.google_calendars.find_by(calendar_id: calendar_id)
 
         result.items.each do |event|
-          # Get user's response status
           response_status = extract_response_status(event, @account.email)
 
           all_events << {
@@ -131,7 +135,7 @@ class GoogleCalendarService
       end
     end
 
-    all_events.sort_by { |e| e[:start_time] || date.beginning_of_day }
+    all_events.sort_by { |e| e[:start_time] || start_date.beginning_of_day }
   end
 
   # Class method to get all ongoing and upcoming meetings where user is attending

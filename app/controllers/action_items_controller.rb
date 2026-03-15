@@ -127,28 +127,8 @@ class ActionItemsController < ApplicationController
       .includes(:dossier)
       .ordered
 
-    @calendar_events_by_date = {}
-    @days.each { |day| @calendar_events_by_date[day] = [] }
-
-    GoogleAccount.includes(:google_calendars).find_each do |account|
-      next unless account.enabled_calendars.any?
-
-      begin
-        service = GoogleCalendarService.new(account)
-        @days.each do |day|
-          events = service.events(date: day)
-          @calendar_events_by_date[day].concat(events)
-        end
-      rescue GoogleCalendarService::TokenRefreshError => e
-        Rails.logger.warn "Failed to load calendar events for #{account.email}: #{e.message}"
-      rescue StandardError => e
-        Rails.logger.error "Calendar error for #{account.email}: #{e.message}"
-      end
-    end
-
-    @calendar_events_by_date.each do |day, events|
-      events.sort_by! { |e| e[:start_time] || day.beginning_of_day }
-    end
+    all_events = load_calendar_events_for_range(@start_date, @end_date)
+    @calendar_events_by_date = group_events_by_date(all_events, @days)
 
     @total_events = @calendar_events_by_date.values.sum(&:size)
     @total_tasks = @action_items_by_date.values.sum(&:size)
@@ -184,28 +164,9 @@ class ActionItemsController < ApplicationController
       .ordered
       .group_by(&:due_date)
 
-    @calendar_events_by_date = {}
-    (@start_date..@end_date).each { |day| @calendar_events_by_date[day] = [] }
-
-    GoogleAccount.includes(:google_calendars).find_each do |account|
-      next unless account.enabled_calendars.any?
-
-      begin
-        service = GoogleCalendarService.new(account)
-        (@start_date..@end_date).each do |day|
-          events = service.events(date: day)
-          @calendar_events_by_date[day].concat(events)
-        end
-      rescue GoogleCalendarService::TokenRefreshError => e
-        Rails.logger.warn "Failed to load calendar events for #{account.email}: #{e.message}"
-      rescue StandardError => e
-        Rails.logger.error "Calendar error for #{account.email}: #{e.message}"
-      end
-    end
-
-    @calendar_events_by_date.each do |day, events|
-      events.sort_by! { |e| e[:start_time] || day.beginning_of_day }
-    end
+    all_events = load_calendar_events_for_range(@start_date, @end_date)
+    days = (@start_date..@end_date).to_a
+    @calendar_events_by_date = group_events_by_date(all_events, days)
 
     @recurring_items = filtered_action_items(ActionItem.pending.active.recurring)
       .includes(:dossier)
@@ -474,6 +435,30 @@ class ActionItemsController < ApplicationController
   end
 
   def load_calendar_events(date)
+    Rails.cache.fetch("calendar_events_#{date}", expires_in: 10.minutes) do
+      fetch_calendar_events_for_range(date, date)
+    end
+  end
+
+  def load_calendar_events_for_range(start_date, end_date)
+    Rails.cache.fetch("calendar_events_#{start_date}_#{end_date}", expires_in: 10.minutes) do
+      fetch_calendar_events_for_range(start_date, end_date)
+    end
+  end
+
+  def group_events_by_date(events, days)
+    grouped = {}
+    days.each { |day| grouped[day] = [] }
+
+    events.each do |event|
+      event_date = (event[:start_time] || event[:end_time])&.to_date
+      grouped[event_date]&.push(event) if event_date
+    end
+
+    grouped
+  end
+
+  def fetch_calendar_events_for_range(start_date, end_date)
     events = []
 
     GoogleAccount.includes(:google_calendars).find_each do |account|
@@ -481,7 +466,7 @@ class ActionItemsController < ApplicationController
 
       begin
         service = GoogleCalendarService.new(account)
-        events.concat(service.events(date: date))
+        events.concat(service.events_for_range(start_date: start_date, end_date: end_date))
       rescue GoogleCalendarService::TokenRefreshError => e
         Rails.logger.warn "Failed to load calendar events for #{account.email}: #{e.message}"
       rescue StandardError => e
@@ -489,7 +474,7 @@ class ActionItemsController < ApplicationController
       end
     end
 
-    events.sort_by { |e| e[:start_time] || date.beginning_of_day }
+    events.sort_by { |e| e[:start_time] || start_date.beginning_of_day }
   end
 
   def load_habits_for_today
