@@ -30,9 +30,11 @@ class GithubController < ApplicationController
       RefreshExternalDataJob.perform_later
     end
 
-    @data = Rails.cache.read(cache_key) || { error: "Data wordt geladen..." }
+    @data = Rails.cache.read(cache_key)
 
-    if @data[:error]
+    if @data.nil?
+      render partial: "github/loading"
+    elsif @data[:error]
       render partial: "github/error", locals: { error: @data[:error] }
     else
       render partial: "github/dashboard", locals: { data: @data, account: @github_account }

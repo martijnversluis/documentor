@@ -10,6 +10,10 @@ export default class extends Controller {
     this.load()
   }
 
+  disconnect() {
+    if (this.retryTimer) clearTimeout(this.retryTimer)
+  }
+
   refresh() {
     // Add spinning animation to refresh button
     if (this.hasSpinnerTarget) {
@@ -42,6 +46,11 @@ export default class extends Controller {
       if (response.ok) {
         const html = await response.text()
         target.innerHTML = html
+
+        // Auto-retry when response indicates data is still loading
+        if (target.querySelector("[data-lazy-load-retry]")) {
+          this.retryTimer = setTimeout(() => this.load(), 3000)
+        }
       } else {
         target.innerHTML = '<div class="text-center py-4 text-red-500 text-sm">Kon data niet laden</div>'
       }

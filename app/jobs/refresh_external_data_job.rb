@@ -70,6 +70,9 @@ class RefreshExternalDataJob < ApplicationJob
     GoogleAccount.where(mail_enabled: true).find_each do |account|
       messages = GmailService.new(account).unread_messages
       Rails.cache.write("mail_dashboard_#{account.id}", messages, expires_in: CACHE_TTL)
+    rescue GmailService::AuthorizationError, GmailService::TokenRefreshError => e
+      Rails.logger.warn "RefreshExternalDataJob: Mail auth failed for account #{account.id}: #{e.message}"
+      Rails.cache.write("mail_dashboard_#{account.id}", { auth_error: e.message }, expires_in: CACHE_TTL)
     rescue StandardError => e
       Rails.logger.warn "RefreshExternalDataJob: Mail dashboard failed for account #{account.id}: #{e.message}"
     end

@@ -14,10 +14,12 @@ class MailController < ApplicationController
       RefreshExternalDataJob.perform_later
     end
 
-    @messages = Rails.cache.read(cache_key) || { error: "Data wordt geladen..." }
+    @messages = Rails.cache.read(cache_key)
 
-    if @messages.is_a?(Hash) && @messages[:error]
-      render partial: "mail/error", locals: { error: @messages[:error] }
+    if @messages.nil?
+      render partial: "mail/loading"
+    elsif @messages.is_a?(Hash) && @messages[:auth_error]
+      render partial: "mail/error", locals: { error: @messages[:auth_error], show_reconnect: true }
     else
       render partial: "mail/dashboard", locals: { messages: @messages, account: @google_account }
     end
