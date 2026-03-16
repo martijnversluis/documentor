@@ -34,8 +34,8 @@ class GithubController < ApplicationController
 
     if @data.nil?
       render partial: "github/loading"
-    elsif @data[:error]
-      render partial: "github/error", locals: { error: @data[:error] }
+    elsif @data.is_a?(Hash) && @data[:auth_error]
+      render partial: "github/error", locals: { error: @data[:auth_error], show_reconnect: true }
     else
       render partial: "github/dashboard", locals: { data: @data, account: @github_account }
     end

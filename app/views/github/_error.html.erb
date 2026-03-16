@@ -1,4 +1,6 @@
 <div class="text-center py-4 text-red-500 text-sm">
   <p><%= error %></p>
-  <%= link_to "Opnieuw koppelen", settings_github_accounts_path, class: "text-red-600 hover:text-red-800 underline" %>
+  <% if local_assigns[:show_reconnect] %>
+    <%= link_to "Opnieuw koppelen", settings_github_accounts_path, class: "text-red-600 hover:text-red-800 underline" %>
+  <% end %>
 </div>

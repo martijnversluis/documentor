@@ -61,6 +61,9 @@ class RefreshExternalDataJob < ApplicationJob
     GithubAccount.find_each do |account|
       data = GithubService.new(account).dashboard_data
       Rails.cache.write("github_dashboard_#{account.id}", data, expires_in: CACHE_TTL)
+    rescue GithubService::AuthorizationError => e
+      Rails.logger.warn "RefreshExternalDataJob: GitHub auth failed for account #{account.id}: #{e.message}"
+      Rails.cache.write("github_dashboard_#{account.id}", { auth_error: e.message }, expires_in: CACHE_TTL)
     rescue StandardError => e
       Rails.logger.warn "RefreshExternalDataJob: GitHub dashboard failed for account #{account.id}: #{e.message}"
     end
