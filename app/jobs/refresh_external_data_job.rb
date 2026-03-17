@@ -8,6 +8,7 @@ class RefreshExternalDataJob < ApplicationJob
     refresh_calendar_events
     refresh_github_dashboards
     refresh_mail_dashboards
+    sync_calendar_lists
   end
 
   private
@@ -67,6 +68,20 @@ class RefreshExternalDataJob < ApplicationJob
     rescue StandardError => e
       Rails.logger.warn "RefreshExternalDataJob: GitHub dashboard failed for account #{account.id}: #{e.message}"
     end
+  end
+
+  def sync_calendar_lists
+    return if Rails.cache.read("calendar_lists_synced_at").present?
+
+    GoogleAccount.find_each do |account|
+      account.sync_calendars!
+    rescue StandardError => e
+      Rails.logger.warn "RefreshExternalDataJob: calendar sync for #{account.email} failed: #{e.message}"
+    end
+
+    Rails.cache.write("calendar_lists_synced_at", Time.current, expires_in: 1.hour)
+  rescue StandardError => e
+    Rails.logger.warn "RefreshExternalDataJob: calendar list sync failed: #{e.message}"
   end
 
   def refresh_mail_dashboards

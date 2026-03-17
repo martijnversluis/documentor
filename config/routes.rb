@@ -219,7 +219,11 @@ Rails.application.routes.draw do
       member do
         patch :toggle_mail
       end
-      resources :google_calendars, only: [:index, :update]
+      resources :google_calendars, only: [:index, :update] do
+        collection do
+          post :sync
+        end
+      end
     end
     resources :github_accounts, only: [:index, :create, :destroy] do
       collection do

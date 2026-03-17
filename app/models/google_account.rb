@@ -31,4 +31,20 @@ class GoogleAccount < ApplicationRecord
   def enabled_calendars
     google_calendars.where(enabled: true)
   end
+
+  def sync_calendars!
+    service = GoogleCalendarService.new(self)
+    calendars = service.calendars
+
+    calendars.each do |cal|
+      calendar = google_calendars.find_or_initialize_by(calendar_id: cal[:id])
+      attrs = { name: cal[:name], color: cal[:color] }
+      attrs[:enabled] = cal[:primary] if calendar.new_record?
+      calendar.update!(attrs)
+    end
+
+    # Remove calendars that no longer exist
+    existing_ids = calendars.map { |c| c[:id] }
+    google_calendars.where.not(calendar_id: existing_ids).destroy_all
+  end
 end

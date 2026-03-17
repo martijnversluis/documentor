@@ -41,7 +41,7 @@ module Settings
         account.save!
 
         # Sync calendars
-        sync_calendars(account)
+        account.sync_calendars!
 
         redirect_to settings_google_accounts_path, notice: "Google account #{account.email} gekoppeld"
       rescue ActiveRecord::RecordInvalid => e
@@ -71,22 +71,5 @@ module Settings
       @google_account = GoogleAccount.find(params[:id])
     end
 
-    def sync_calendars(account)
-      service = GoogleCalendarService.new(account)
-      calendars = service.calendars
-
-      calendars.each do |cal|
-        calendar = account.google_calendars.find_or_initialize_by(calendar_id: cal[:id])
-        calendar.update!(
-          name: cal[:name],
-          color: cal[:color],
-          enabled: cal[:primary] # Enable primary calendar by default
-        )
-      end
-
-      # Remove calendars that no longer exist
-      existing_ids = calendars.map { |c| c[:id] }
-      account.google_calendars.where.not(calendar_id: existing_ids).destroy_all
-    end
   end
 end

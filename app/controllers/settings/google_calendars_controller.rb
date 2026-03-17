@@ -16,6 +16,13 @@ module Settings
       end
     end
 
+    def sync
+      @google_account.sync_calendars!
+      redirect_to settings_google_account_google_calendars_path(@google_account), notice: "Agenda's gesynchroniseerd"
+    rescue StandardError => e
+      redirect_to settings_google_account_google_calendars_path(@google_account), alert: "Synchronisatie mislukt: #{e.message}"
+    end
+
     private
 
     def set_google_account

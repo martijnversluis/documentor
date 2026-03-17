@@ -12,9 +12,17 @@
   </div>
 
   <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-    <div class="px-4 py-3 border-b border-gray-100">
-      <h2 class="font-semibold text-gray-900">Selecteer agenda's</h2>
-      <p class="text-sm text-gray-500 mt-1">Kies welke agenda's je wilt zien in Documentor</p>
+    <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+      <div>
+        <h2 class="font-semibold text-gray-900">Selecteer agenda's</h2>
+        <p class="text-sm text-gray-500 mt-1">Kies welke agenda's je wilt zien in Documentor</p>
+      </div>
+      <%= button_to sync_settings_google_account_google_calendars_path(@google_account), method: :post, class: "inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 cursor-pointer", title: "Agenda's synchroniseren met Google" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        Synchroniseren
+      <% end %>
     </div>
 
     <% if @calendars.any? %>
