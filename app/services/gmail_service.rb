@@ -198,6 +198,7 @@ class GmailService
       'a[style*="background"]',
       # Common service-specific patterns
       'a[href*="sentry.io"]',
+      'a[href*="calendar.google.com"]',
       'a[href*="github.com"]',
       'a[href*="stripe.com/dashboard"]',
       'a[href*="linear.app"]',
