@@ -461,7 +461,7 @@ class GoogleCalendarService
 
     # Get popup reminders (not email), take the last one (closest to event)
     overrides = event.reminders.overrides || []
-    popup_reminders = overrides.select { |r| r.method == "popup" }
+    popup_reminders = overrides.select { |r| r.reminder_method == "popup" }
 
     return nil if popup_reminders.empty?
 
