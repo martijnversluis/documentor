@@ -2,57 +2,11 @@ class ExpirationCheckJob < ApplicationJob
   queue_as :default
 
   def perform
-    check_expiring_documents
-    check_expired_documents
     check_expiring_items
     check_expired_items
   end
 
   private
-
-  # === Documents ===
-
-  def check_expiring_documents
-    Document.expiring_soon.find_each do |document|
-      create_document_warning(document, expired: false)
-    end
-  end
-
-  def check_expired_documents
-    Document.expired.find_each do |document|
-      create_document_warning(document, expired: true)
-    end
-  end
-
-  def create_document_warning(document, expired:)
-    description = expired ? "**#{document.name}** is verlopen" : "**#{document.name}** verloopt binnenkort"
-
-    return if action_item_exists?(description)
-
-    notes = build_document_notes(document)
-
-    ActionItem.create!(
-      description: description,
-      due_date: expired ? Date.current : document.expires_at,
-      dossier: document.dossier,
-      notes: notes,
-      position: expired ? 0 : 1
-    )
-
-    Rails.logger.info "Created expiration warning for document: #{document.name}"
-  rescue ActiveRecord::RecordInvalid => e
-    Rails.logger.error "Failed to create document expiration warning: #{e.message}"
-  end
-
-  def build_document_notes(document)
-    days = document.days_until_expiration
-    notes = ["expiration_tracking:document:#{document.id}"]
-    notes << format_days_message(days, document.expires_at)
-    notes << "" << document.expiration_description if document.expiration_description.present?
-    notes.join("\n")
-  end
-
-  # === Expiring Items (physical documents) ===
 
   def check_expiring_items
     ExpiringItem.find_each do |item|
