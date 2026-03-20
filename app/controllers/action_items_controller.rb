@@ -330,6 +330,12 @@ class ActionItemsController < ApplicationController
     redirect_to today_action_items_path, notice: message
   end
 
+  def reschedule_overdue
+    count = filtered_action_items(ActionItem.pending.active.overdue).update_all(due_date: Date.current)
+    message = count == 1 ? "1 actiepunt verplaatst naar vandaag" : "#{count} actiepunten verplaatst naar vandaag"
+    redirect_to today_action_items_path, notice: message
+  end
+
   def power_through
     @all_items = filtered_action_items(ActionItem.pending.active.today.root_items).includes(:dossier, :children).ordered.to_a
 

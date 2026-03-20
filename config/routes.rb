@@ -132,6 +132,7 @@ Rails.application.routes.draw do
       get :power_through
       patch :reorder
       patch :postpone_today
+      patch :reschedule_overdue
     end
     member do
       patch :toggle
