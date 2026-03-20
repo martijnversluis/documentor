@@ -63,9 +63,13 @@
 
   # Sort by updated_at desc
   items.sort_by! { |i| -i[:updated_at].to_i }
+
+  # Filter out hidden items (snoozed/ignored/promoted)
+  hidden_ids = GithubHiddenItem.hidden_item_ids
+  items.reject! { |i| hidden_ids.include?(i[:id]) }
 %>
 
-<div data-controller="github-items" data-github-items-promote-url-value="<%= github_promote_path %>">
+<div data-controller="github-items" data-github-items-promote-url-value="<%= github_promote_path %>" data-github-items-snooze-url-value="<%= github_snooze_path %>" data-github-items-ignore-url-value="<%= github_ignore_path %>">
   <% if items.empty? %>
     <div class="text-center py-4 text-gray-500 text-sm">
       Geen openstaande items

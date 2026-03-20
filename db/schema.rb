@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_07_181500) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_20_081331) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -166,6 +166,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_07_181500) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["username"], name: "index_github_accounts_on_username", unique: true
+  end
+
+  create_table "github_hidden_items", force: :cascade do |t|
+    t.string "item_id", null: false
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["item_id"], name: "index_github_hidden_items_on_item_id", unique: true
   end
 
   create_table "google_accounts", force: :cascade do |t|

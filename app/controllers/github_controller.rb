@@ -10,9 +10,21 @@ class GithubController < ApplicationController
     matching_dossier = InboxRule.find_matching_dossier(action_item.description)
     action_item.update!(dossier: matching_dossier) if matching_dossier
 
+    GithubHiddenItem.upsert({ item_id: params[:item_id], action: "promote" }, unique_by: :item_id) if params[:item_id].present?
+
     render json: { success: true, action_item_id: action_item.id }
   rescue ActiveRecord::RecordInvalid => e
     render json: { success: false, error: e.message }, status: :unprocessable_entity
+  end
+
+  def snooze
+    GithubHiddenItem.upsert({ item_id: params[:item_id], action: "snooze" }, unique_by: :item_id)
+    render json: { success: true }
+  end
+
+  def ignore
+    GithubHiddenItem.upsert({ item_id: params[:item_id], action: "ignore" }, unique_by: :item_id)
+    render json: { success: true }
   end
 
   def dashboard

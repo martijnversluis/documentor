@@ -189,6 +189,8 @@ Rails.application.routes.draw do
   # GitHub dashboard
   get "github/dashboard", to: "github#dashboard", as: :github_dashboard
   post "github/promote", to: "github#promote", as: :github_promote
+  post "github/snooze", to: "github#snooze", as: :github_snooze
+  post "github/ignore", to: "github#ignore", as: :github_ignore
 
   # Mail dashboard
   get "mail/dashboard", to: "mail#dashboard", as: :mail_dashboard
