@@ -1,0 +1,8 @@
+<%= turbo_stream.remove @action_item %>
+
+<%= turbo_stream.replace "today-count" do %>
+  <span id="today-count"><%= ActionItem.pending.active.today.count %></span>
+<% end %>
+<%= turbo_stream.replace "tomorrow-count" do %>
+  <span id="tomorrow-count"><%= ActionItem.pending.active.tomorrow.count %></span>
+<% end %>

@@ -65,6 +65,14 @@ class ActionItem < ApplicationRecord
     !completed? && due_date.present? && due_date < Date.current
   end
 
+  def next_postpone_date
+    if dossier&.work_dossier?
+      next_workday
+    else
+      Date.tomorrow
+    end
+  end
+
   def due_today?
     !completed? && due_date == Date.current
   end
@@ -118,6 +126,12 @@ class ActionItem < ApplicationRecord
   end
 
   private
+
+  def next_workday
+    date = Date.tomorrow
+    date += 1.day while date.wday == 0 || date.wday == 6
+    date
+  end
 
   def schedule_next_occurrence
     next_due_date = calculate_next_due_date

@@ -136,6 +136,7 @@ Rails.application.routes.draw do
     end
     member do
       patch :toggle
+      patch :postpone
       patch :toggle_next_action
       patch :assign
       patch :update_completion_notes
