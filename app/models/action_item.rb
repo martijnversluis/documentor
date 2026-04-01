@@ -66,6 +66,8 @@ class ActionItem < ApplicationRecord
   end
 
   def next_postpone_date
+    return Date.current if overdue?
+
     if dossier&.work_dossier?
       next_workday
     else

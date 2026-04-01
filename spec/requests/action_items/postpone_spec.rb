@@ -38,6 +38,24 @@ RSpec.describe "ActionItems#postpone", type: :request do
       end
     end
 
+    it "moves an overdue item to today" do
+      item = dossier.action_items.create!(description: "Verlopen item", due_date: Date.yesterday)
+
+      patch postpone_action_item_path(item), as: :turbo_stream
+
+      item.reload
+      expect(item.due_date).to eq(Date.current)
+    end
+
+    it "moves an overdue work dossier item to today" do
+      item = work_dossier.action_items.create!(description: "Verlopen werk item", due_date: Date.yesterday)
+
+      patch postpone_action_item_path(item), as: :turbo_stream
+
+      item.reload
+      expect(item.due_date).to eq(Date.current)
+    end
+
     it "returns a turbo stream response that removes the item" do
       item = dossier.action_items.create!(description: "Test", due_date: Date.current)
 

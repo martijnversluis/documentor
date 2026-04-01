@@ -112,7 +112,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
               </svg>
             </button>
-            <%= button_to postpone_action_item_path(item), method: :patch, class: "text-gray-400 hover:text-orange-600", title: item.dossier&.work_dossier? ? "Verschuif naar eerstvolgende werkdag" : "Verschuif naar morgen", form: { data: { turbo_stream: true } } do %>
+            <%= button_to postpone_action_item_path(item), method: :patch, class: "text-gray-400 hover:text-orange-600", title: item.overdue? ? "Verschuif naar vandaag" : (item.dossier&.work_dossier? ? "Verschuif naar eerstvolgende werkdag" : "Verschuif naar morgen"), form: { data: { turbo_stream: true } } do %>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
               </svg>
