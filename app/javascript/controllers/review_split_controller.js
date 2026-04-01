@@ -16,9 +16,7 @@ export default class extends SplitViewController {
       this.observer.observe(stepFrame, { childList: true })
     }
 
-    if (sessionStorage.getItem(this.storageKeyValue) === "true") {
-      this.loadFirstLink()
-    }
+    this.loadFirstLink()
   }
 
   disconnect() {
@@ -35,11 +33,12 @@ export default class extends SplitViewController {
   }
 
   loadFirstLink() {
-    if (this.panelTarget.classList.contains("hidden")) return
-
     const link = this.contentTarget.querySelector("a[target='_blank']")
     if (!link) return
 
+    if (this.panelTarget.classList.contains("hidden")) {
+      this.open()
+    }
     this.loadInIframe(link.href, link.textContent.trim() || link.href)
   }
 }
