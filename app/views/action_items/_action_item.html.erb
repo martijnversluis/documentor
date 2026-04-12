@@ -1,6 +1,5 @@
-<%= turbo_frame_tag dom_id(action_item) do %>
+<%= turbo_frame_tag dom_id(action_item), draggable: action_item.completed? ? nil : "true", data: action_item.completed? ? {} : { sortable_id: action_item.id } do %>
   <li class="flex items-start space-x-3 py-2 px-3 rounded-lg hover:bg-gray-50 group transition-all"
-      <%= "draggable=true data-sortable-id=#{action_item.id}".html_safe unless action_item.completed? %>
       <%= "data-controller=completion-notes data-completion-notes-url-value=#{update_notes_action_item_path(action_item)}".html_safe if action_item.completed? %>
       <% if local_assigns[:link_to_dossier] == false && !action_item.completed? %>
         data-controller="action-item-document-drop"
