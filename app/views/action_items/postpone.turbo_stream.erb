@@ -1,8 +1,17 @@
-<%= turbo_stream.remove @action_item %>
+<% if @action_item.due_date == Date.current %>
+  <%= turbo_stream.replace @action_item do %>
+    <%= render "action_items/index_item", item: @action_item, return_to: today_action_items_path %>
+  <% end %>
+<% else %>
+  <%= turbo_stream.remove @action_item %>
+<% end %>
 
 <%= turbo_stream.replace "today-count" do %>
   <span id="today-count"><%= ActionItem.pending.active.today.count %></span>
 <% end %>
 <%= turbo_stream.replace "tomorrow-count" do %>
   <span id="tomorrow-count"><%= ActionItem.pending.active.tomorrow.count %></span>
+<% end %>
+<%= turbo_stream.replace "overdue-count" do %>
+  <span id="overdue-count"><%= ActionItem.pending.active.overdue.count %></span>
 <% end %>
