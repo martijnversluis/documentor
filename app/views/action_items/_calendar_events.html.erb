@@ -18,7 +18,8 @@
                        event[:start_time] <= now && event[:end_time] > now
         %>
         <li class="<%= is_ongoing ? 'bg-green-50 border-l-4 border-green-500' : '' %> hover:bg-gray-50 group">
-          <% if is_ongoing && event[:google_account_id].present? && event[:event_id].present? %>
+          <% has_meeting_notes = @meetings_by_event_id&.key?(event[:event_id]) %>
+          <% if event[:google_account_id].present? && event[:event_id].present? %>
             <%= button_to enter_meeting_path,
               method: :post,
               params: {
@@ -30,11 +31,11 @@
                 html_link: event[:html_link]
               },
               class: "w-full text-left px-4 py-3 flex items-start gap-3 cursor-pointer" do %>
-              <%= render "action_items/calendar_event_content", event: event, is_ongoing: is_ongoing %>
+              <%= render "action_items/calendar_event_content", event: event, is_ongoing: is_ongoing, has_meeting_notes: has_meeting_notes %>
             <% end %>
           <% else %>
             <div class="px-4 py-3 flex items-start gap-3">
-              <%= render "action_items/calendar_event_content", event: event, is_ongoing: is_ongoing %>
+              <%= render "action_items/calendar_event_content", event: event, is_ongoing: is_ongoing, has_meeting_notes: false %>
             </div>
           <% end %>
         </li>

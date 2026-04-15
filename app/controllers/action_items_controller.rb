@@ -9,6 +9,7 @@ class ActionItemsController < ApplicationController
     @completed_items = recent_completed_items
     @pending_reviews = pending_reviews_for_today
     @calendar_events = load_calendar_events(Date.current)
+    @meetings_by_event_id = meetings_with_content_for_events(@calendar_events)
     @habits = load_habits_for_today
     render :index
   end
@@ -19,6 +20,7 @@ class ActionItemsController < ApplicationController
     @pending_items = base_pending_scope.tomorrow
     @completed_items = recent_completed_items
     @calendar_events = load_calendar_events(Date.tomorrow)
+    @meetings_by_event_id = meetings_with_content_for_events(@calendar_events)
     render :index
   end
 
@@ -28,6 +30,7 @@ class ActionItemsController < ApplicationController
     @pending_items = ActionItem.none
     @completed_items = base_scope.completed_yesterday.root_items.includes(:dossier, :children).order(completed_at: :desc)
     @calendar_events = load_calendar_events(Date.yesterday)
+    @meetings_by_event_id = meetings_with_content_for_events(@calendar_events)
     @show_only_completed = true
     render :index
   end
@@ -129,6 +132,7 @@ class ActionItemsController < ApplicationController
 
     all_events = load_calendar_events_for_range(@start_date, @end_date)
     @calendar_events_by_date = group_events_by_date(all_events, @days)
+    @meetings_by_event_id = meetings_with_content_for_events(all_events)
 
     @total_events = @calendar_events_by_date.values.sum(&:size)
     @total_tasks = @action_items_by_date.values.sum(&:size)
@@ -167,6 +171,7 @@ class ActionItemsController < ApplicationController
     all_events = load_calendar_events_for_range(@start_date, @end_date)
     days = (@start_date..@end_date).to_a
     @calendar_events_by_date = group_events_by_date(all_events, days)
+    @meetings_by_event_id = meetings_with_content_for_events(all_events)
 
     @recurring_items = filtered_action_items(ActionItem.pending.active.recurring)
       .includes(:dossier)
@@ -448,6 +453,12 @@ class ActionItemsController < ApplicationController
 
       { type: type, review: review, template: template }
     end
+  end
+
+  def meetings_with_content_for_events(events)
+    event_ids = events.filter_map { |e| e[:event_id] }.uniq
+    return {} if event_ids.empty?
+    Meeting.where(google_event_id: event_ids).with_content.index_by(&:google_event_id)
   end
 
   def load_calendar_events(date)
