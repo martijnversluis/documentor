@@ -39,3 +39,4 @@
 node_modules
 .overmind.sock
 .playwright-cli/
+.playwright-mcp/
