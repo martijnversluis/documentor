@@ -98,9 +98,7 @@
 
     <% if habit.persisted? %>
       <div class="ml-auto">
-        <%= button_to archive_habit_path(habit), method: :patch, class: "px-4 py-2 text-amber-600 text-sm font-medium hover:bg-amber-50 rounded-lg cursor-pointer" do %>
-          Archiveren
-        <% end %>
+<%= link_to "Archiveren", archive_habit_path(habit), data: { turbo_method: :patch, turbo_confirm: "Weet je zeker dat je deze gewoonte wilt archiveren?" }, class: "px-4 py-2 text-amber-600 text-sm font-medium hover:bg-amber-50 rounded-lg" %>
       </div>
     <% end %>
   </div>
