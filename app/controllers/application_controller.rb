@@ -57,7 +57,7 @@ class ApplicationController < ActionController::Base
     # Work mode: show all, personal mode: hide work dossier items
     return scope if work_mode?
 
-    work_dossier_ids = Dossier.work.pluck(:id)
-    scope.where.not(dossier_id: work_dossier_ids).or(scope.where(dossier_id: nil))
+    ids = @work_dossier_ids ||= Dossier.work.pluck(:id)
+    scope.where.not(dossier_id: ids).or(scope.where(dossier_id: nil))
   end
 end

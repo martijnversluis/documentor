@@ -388,7 +388,7 @@ class ActionItemsController < ApplicationController
   end
 
   def base_scope
-    filtered_action_items(ActionItem.all)
+    @base_scope ||= filtered_action_items(ActionItem.all)
   end
 
   def base_pending_scope
