@@ -82,7 +82,11 @@ group :development, :test do
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
 
+  # N+1 query detection
+  gem "bullet"
+
   # Testing
+  gem "capybara"
   gem "factory_bot_rails"
   gem "rspec-rails"
 

@@ -55,7 +55,11 @@ class Habit < ApplicationRecord
 
   # Get completion for a specific date
   def completion_for(date)
-    habit_completions.find_by(completed_on: date)
+    if habit_completions.loaded?
+      habit_completions.find { |c| c.completed_on == date }
+    else
+      habit_completions.find_by(completed_on: date)
+    end
   end
 
   # Get completion count for a specific date
@@ -98,6 +102,8 @@ class Habit < ApplicationRecord
 
   # Calculate current streak (only counts days where target was fully met)
   def current_streak
+    return @current_streak if defined?(@current_streak)
+
     streak = 0
     date = Date.current
 
@@ -115,7 +121,7 @@ class Habit < ApplicationRecord
       date -= 1.day
     end
 
-    streak
+    @current_streak = streak
   end
 
   # Check if this habit uses counter mode (vs simple checkbox)
