@@ -129,6 +129,11 @@ class Habit < ApplicationRecord
     target_count.present?
   end
 
+  # Simple checkbox habit: no timer, no counter
+  def simple_checkbox?
+    duration_seconds.to_i.zero? && target_count.blank?
+  end
+
   # Calculate completion rate for last N days
   def completion_rate(days: 30)
     start_date = [Date.current - days + 1, created_at.to_date].max

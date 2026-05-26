@@ -505,6 +505,8 @@ class ActionItemsController < ApplicationController
   end
 
   def load_habits_for_today
-    Habit.active.not_archived.ordered.includes(:habit_completions).select { |h| h.scheduled_for?(Date.current) }
+    Habit.active.not_archived.includes(:habit_completions)
+      .select { |h| h.scheduled_for?(Date.current) }
+      .sort_by { |h| [h.simple_checkbox? ? 1 : 0, h.name.downcase] }
   end
 end

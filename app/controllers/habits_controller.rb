@@ -2,7 +2,8 @@ class HabitsController < ApplicationController
   before_action :set_habit, only: [:edit, :update, :archive, :unarchive, :toggle, :increment, :decrement]
 
   def index
-    @habits = Habit.active.not_archived.ordered.includes(:habit_completions)
+    @habits = Habit.active.not_archived.includes(:habit_completions)
+      .sort_by { |h| [h.simple_checkbox? ? 1 : 0, h.name.downcase] }
     @archived_habits = Habit.archived.ordered
     @date = Date.current
     @week_start = params[:week].present? ? Date.parse(params[:week]).beginning_of_week : Date.current.beginning_of_week
