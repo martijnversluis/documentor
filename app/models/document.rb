@@ -34,6 +34,7 @@ class Document < ApplicationRecord
   before_validation :set_name_from_file
   before_validation :extract_date_from_eml
   after_commit :extract_text_content, on: [:create, :update], if: :file_attachment_changed?
+  after_commit :preprocess_image_variants, on: [:create, :update], if: :image_attachment_changed?
 
   def self.find_duplicate(document)
     return nil unless document.file.attached?
@@ -73,10 +74,18 @@ class Document < ApplicationRecord
     ExtractDocumentTextJob.perform_later(id)
   end
 
+  def preprocess_image_variants
+    PreprocessImageVariantsJob.perform_later(file.blob.id)
+  end
+
   def file_attachment_changed?
     return false unless file.attached?
 
     # Check if file was just attached or changed
     saved_change_to_attribute?(:id) || file.blob.created_at > 5.seconds.ago
+  end
+
+  def image_attachment_changed?
+    file_attachment_changed? && file.blob.image?
   end
 end
