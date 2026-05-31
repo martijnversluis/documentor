@@ -49,6 +49,36 @@ class ActionItem < ApplicationRecord
   scope :recurring, -> { where.not(recurrence: [nil, ""]) }
   scope :root_items, -> { where(parent_id: nil) }
 
+  FILTER_COUNT_KEYS = %i[today tomorrow yesterday overdue waiting someday quick next recurring inbox].freeze
+
+  def self.filter_counts(scope)
+    conn = connection
+    today = conn.quote(Date.current)
+    tomorrow = conn.quote(Date.tomorrow)
+    yesterday_start = conn.quote(Date.yesterday.beginning_of_day)
+    yesterday_end = conn.quote(Date.yesterday.end_of_day)
+    quick_horizon = conn.quote(1.week.from_now.to_date)
+
+    pending_active = "completed_at IS NULL AND someday = FALSE"
+    filters = {
+      today: "#{pending_active} AND due_date <= #{today}",
+      tomorrow: "#{pending_active} AND due_date = #{tomorrow}",
+      yesterday: "completed_at BETWEEN #{yesterday_start} AND #{yesterday_end}",
+      overdue: "#{pending_active} AND due_date < #{today}",
+      waiting: "#{pending_active} AND (waiting_for_party_id IS NOT NULL OR (waiting_for_description IS NOT NULL AND waiting_for_description <> ''))",
+      someday: "completed_at IS NULL AND someday = TRUE",
+      quick: "#{pending_active} AND estimated_minutes BETWEEN 1 AND 15 AND (recurrence IS NULL OR due_date <= #{quick_horizon})",
+      next: "#{pending_active} AND next_action = TRUE",
+      recurring: "#{pending_active} AND recurrence IS NOT NULL AND recurrence <> ''",
+      inbox: "#{pending_active} AND dossier_id IS NULL AND due_date IS NULL",
+    }
+
+    select_sql = filters.map { |key, condition| "COUNT(*) FILTER (WHERE #{condition}) AS #{key}_count" }.join(", ")
+    row = scope.root_items.unscope(:order).select(Arel.sql(select_sql)).take
+
+    FILTER_COUNT_KEYS.index_with { |key| row.public_send("#{key}_count").to_i }
+  end
+
   DURATION_OPTIONS = [
     ["5 min", 5],
     ["15 min", 15],
