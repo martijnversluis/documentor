@@ -8,10 +8,13 @@ class WasteCalendarCheckJob < ApplicationJob
     "GFT" => "Groene kliko aan de weg zetten",
     "GREEN" => "Groene kliko aan de weg zetten",
     "Papier" => "Blauwe kliko aan de weg zetten",
+    "PAPIER" => "Blauwe kliko aan de weg zetten",
     "PAPER" => "Blauwe kliko aan de weg zetten",
     "PMD" => "PMD kliko aan de weg zetten",
     "PACKAGES" => "PMD kliko aan de weg zetten",
-    "Plastic" => "PMD kliko aan de weg zetten"
+    "Plastic" => "PMD kliko aan de weg zetten",
+    "GLAS" => "Glasbak legen",
+    "TEXTIEL" => "Textiel naar de container brengen",
   }.freeze
 
   def perform
@@ -32,23 +35,17 @@ class WasteCalendarCheckJob < ApplicationJob
     waste_type = pickup[:waste_type]
     description = WASTE_TYPE_DESCRIPTIONS[waste_type] || "#{waste_type} aan de weg zetten"
 
-    # Check for existing action item to avoid duplicates
-    existing = ActionItem.where(description: description)
-                         .where(due_date: Date.current)
-                         .where(completed_at: nil)
-                         .exists?
-    return if existing
+    return if ActionItem.exists?(description: description, due_date: Date.current, completed_at: nil)
 
     ActionItem.create!(
       description: description,
       due_date: Date.current,
-      context: "thuis",
       position: 0,
-      notes: "waste_type:#{waste_type}"
+      notes: "waste_type:#{waste_type}",
     )
 
     Rails.logger.info "Created waste calendar action item: #{description}"
   rescue ActiveRecord::RecordInvalid => e
-    Rails.logger.error "Failed to create waste calendar action item: #{e.message}"
+    Rails.logger.error "Failed to create waste calendar action item for #{waste_type}: #{e.message}"
   end
 end
