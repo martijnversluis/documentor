@@ -400,16 +400,18 @@ class ActionItemsController < ApplicationController
   end
 
   def load_filter_counts
-    @today_count = base_scope.pending.active.today.root_items.count
-    @tomorrow_count = base_scope.pending.active.tomorrow.root_items.count
-    @yesterday_count = base_scope.completed_yesterday.root_items.count
-    @overdue_count = base_scope.pending.active.overdue.root_items.count
-    @waiting_count = base_scope.pending.active.waiting.root_items.count
-    @someday_count = base_scope.pending.someday_maybe.root_items.count
-    @quick_count = base_scope.pending.active.quick_wins.root_items.count
-    @next_count = base_scope.pending.active.next_actions.root_items.count
-    @recurring_count = base_scope.pending.active.recurring.root_items.count
-    @inbox_count = base_scope.pending.active.inbox.root_items.count
+    counts = ActionItem.filter_counts(base_scope)
+
+    @today_count = counts[:today]
+    @tomorrow_count = counts[:tomorrow]
+    @yesterday_count = counts[:yesterday]
+    @overdue_count = counts[:overdue]
+    @waiting_count = counts[:waiting]
+    @someday_count = counts[:someday]
+    @quick_count = counts[:quick]
+    @next_count = counts[:next]
+    @recurring_count = counts[:recurring]
+    @inbox_count = counts[:inbox]
   end
 
   def apply_filter_defaults
