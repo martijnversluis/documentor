@@ -35,10 +35,10 @@ class WasteCalendarCheckJob < ApplicationJob
     waste_type = pickup[:waste_type]
     description = WASTE_TYPE_DESCRIPTIONS[waste_type] || "#{waste_type} aan de weg zetten"
 
-    return if ActionItem.exists?(description: description, due_date: Date.current, completed_at: nil)
+    return if ActionItem.exists?(description:, due_date: Date.current, completed_at: nil)
 
     ActionItem.create!(
-      description: description,
+      description:,
       due_date: Date.current,
       position: 0,
       notes: "waste_type:#{waste_type}",

@@ -1,6 +1,4 @@
-require "rails_helper"
-
-RSpec.describe WasteCalendarCheckJob do
+describe WasteCalendarCheckJob do
   before do
     AppSetting["waste_calendar_post_code"] = "1234AB"
     AppSetting["waste_calendar_house_number"] = "1"
