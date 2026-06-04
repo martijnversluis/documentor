@@ -92,7 +92,7 @@
       <% elsif @document.file.content_type == "application/pdf" %>
         <iframe src="<%= rails_blob_path(@document.file, disposition: "inline") %>" class="w-full h-[800px] rounded border"></iframe>
       <% elsif @document.file.content_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" %>
-        <div data-controller="docx-viewer" data-docx-viewer-url-value="<%= rails_blob_path(@document.file) %>">
+        <div data-controller="docx-viewer" data-docx-viewer-url-value="<%= rails_storage_proxy_path(@document.file) %>">
           <div data-docx-viewer-target="output" class="prose max-w-none">
             <p class="text-gray-500">Document laden...</p>
           </div>
