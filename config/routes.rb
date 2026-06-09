@@ -180,6 +180,7 @@ Rails.application.routes.draw do
       post :toggle
       post :increment
       post :decrement
+      post :set_choice
       patch :archive
       patch :unarchive
     end

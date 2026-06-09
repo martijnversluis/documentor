@@ -1,4 +1,18 @@
-<% if habit.counter_mode? %>
+<% if habit.choice_mode? %>
+  <% current_choice = habit.choice_for(date) %>
+  <div class="flex items-center justify-center gap-1">
+    <% habit.choice_options_array.each do |option| %>
+      <% selected = current_choice == option["emoji"] %>
+      <%= button_to set_choice_habit_path(habit, date: date, choice_value: (selected ? "" : option["emoji"])),
+                   method: :post,
+                   title: option["label"],
+                   class: "w-8 h-8 rounded-full flex items-center justify-center text-lg leading-none cursor-pointer transition-all #{selected ? "#{habit.color_classes[:light]} ring-2 #{habit.color_classes[:border]}" : "opacity-40 hover:opacity-100 hover:bg-gray-100"}",
+                   data: { turbo_frame: "_top" } do %>
+        <%= option["emoji"] %>
+      <% end %>
+    <% end %>
+  </div>
+<% elsif habit.counter_mode? %>
   <% current_count = habit.completion_count_for(date) %>
   <% completed = current_count >= habit.target_count %>
   <div class="flex items-center gap-1">
