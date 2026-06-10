@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_06_064520) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_09_165139) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -209,6 +209,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_06_064520) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "count", default: 1, null: false
+    t.string "choice_value"
     t.index ["completed_on"], name: "index_habit_completions_on_completed_on"
     t.index ["habit_id", "completed_on"], name: "index_habit_completions_on_habit_id_and_completed_on", unique: true
     t.index ["habit_id"], name: "index_habit_completions_on_habit_id"
@@ -227,6 +228,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_06_064520) do
     t.integer "duration_seconds"
     t.integer "target_count", default: 1
     t.datetime "archived_at"
+    t.text "choice_options"
     t.index ["active"], name: "index_habits_on_active"
     t.index ["position"], name: "index_habits_on_position"
   end

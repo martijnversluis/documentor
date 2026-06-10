@@ -1,5 +1,5 @@
 class HabitsController < ApplicationController
-  before_action :set_habit, only: [:edit, :update, :archive, :unarchive, :toggle, :increment, :decrement]
+  before_action :set_habit, only: [:edit, :update, :archive, :unarchive, :toggle, :increment, :decrement, :set_choice]
 
   def index
     @habits = Habit.active.not_archived.includes(:habit_completions)
@@ -92,6 +92,22 @@ class HabitsController < ApplicationController
     end
   end
 
+  def set_choice
+    date = params[:date].present? ? Date.parse(params[:date]) : Date.current
+    @habit.set_choice!(date, params[:choice_value])
+
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          "habit_#{@habit.id}_date_#{date}",
+          partial: "habits/habit_checkbox",
+          locals: { habit: @habit, date: date }
+        )
+      end
+      format.html { redirect_back fallback_location: habits_path }
+    end
+  end
+
   private
 
   def set_habit
@@ -99,6 +115,6 @@ class HabitsController < ApplicationController
   end
 
   def habit_params
-    params.require(:habit).permit(:name, :description, :frequency, :color, :active, :position, :duration_seconds, :target_count, target_days: [])
+    params.require(:habit).permit(:name, :description, :frequency, :color, :active, :position, :duration_seconds, :target_count, :choice_options_text, target_days: [])
   end
 end

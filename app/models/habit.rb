@@ -45,11 +45,12 @@ class Habit < ApplicationRecord
 
   # Check if habit was fully completed on a specific date
   def completed_on?(date)
-    count = completion_count_for(date)
-    if target_count.present?
-      count >= target_count
+    if choice_mode?
+      choice_for(date).present?
+    elsif counter_mode?
+      completion_count_for(date) >= target_count
     else
-      count >= 1
+      completion_count_for(date) >= 1
     end
   end
 
@@ -100,6 +101,28 @@ class Habit < ApplicationRecord
     end
   end
 
+  # Get the chosen value for a date (choice mode)
+  def choice_for(date)
+    completion_for(date)&.choice_value
+  end
+
+  # Set or clear the choice for a date
+  def set_choice!(date, value)
+    completion = completion_for(date)
+
+    if value.blank?
+      completion&.destroy!
+      return nil
+    end
+
+    if completion
+      completion.update!(choice_value: value)
+      completion
+    else
+      habit_completions.create!(completed_on: date, count: 1, choice_value: value)
+    end
+  end
+
   # Calculate current streak (only counts days where target was fully met)
   def current_streak
     return @current_streak if defined?(@current_streak)
@@ -126,12 +149,43 @@ class Habit < ApplicationRecord
 
   # Check if this habit uses counter mode (vs simple checkbox)
   def counter_mode?
-    target_count.present?
+    target_count.present? && !choice_mode?
   end
 
-  # Simple checkbox habit: no timer, no counter
+  # Check if this habit uses choice mode (pick one option from a list)
+  def choice_mode?
+    choice_options.present?
+  end
+
+  # Simple checkbox habit: no timer, no counter, no choice
   def simple_checkbox?
-    duration_seconds.to_i.zero? && target_count.blank?
+    duration_seconds.to_i.zero? && target_count.blank? && choice_options.blank?
+  end
+
+  # Parse choice_options from JSON string
+  def choice_options_array
+    return [] if choice_options.blank?
+    JSON.parse(choice_options)
+  rescue JSON::ParserError
+    []
+  end
+
+  # Set choice_options from array
+  def choice_options_array=(options)
+    self.choice_options = options.present? ? options.to_json : nil
+  end
+
+  # One option per line, as "emoji label". For use in textarea form input.
+  def choice_options_text
+    choice_options_array.map { |opt| [opt["emoji"], opt["label"]].reject(&:blank?).join(" ") }.join("\n")
+  end
+
+  def choice_options_text=(text)
+    options = text.to_s.lines.map(&:strip).reject(&:blank?).map do |line|
+      emoji, label = line.split(/\s+/, 2)
+      { "emoji" => emoji, "label" => label.to_s.strip }
+    end
+    self.choice_options_array = options
   end
 
   # Calculate completion rate for last N days
