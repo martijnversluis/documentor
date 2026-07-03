@@ -65,11 +65,7 @@
             <li class="p-4 flex items-center justify-between gap-4">
               <% if document.file.attached? && document.file.content_type.start_with?("image/") %>
                 <div class="flex-shrink-0">
-                  <% if document.file.content_type.in?(%w[image/heic image/heif]) %>
-                    <%= image_tag document.file.variant(resize_to_limit: [80, 80], format: :jpeg), class: "w-16 h-16 object-cover rounded border border-gray-200" %>
-                  <% else %>
-                    <%= image_tag document.file.variant(resize_to_limit: [80, 80]), class: "w-16 h-16 object-cover rounded border border-gray-200" %>
-                  <% end %>
+                  <%= document_thumbnail_tag(document.file, size: [80, 80], class: "w-16 h-16 object-cover rounded border border-gray-200") %>
                 </div>
               <% end %>
               <div class="flex-1 min-w-0">

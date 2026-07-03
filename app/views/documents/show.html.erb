@@ -79,12 +79,7 @@
         </svg>
       </button>
       <% if @document.file.content_type.start_with?("image/") %>
-        <% if @document.file.content_type.in?(%w[image/heic image/heif]) %>
-          <%# HEIC/HEIF images need to be converted for browser display %>
-          <%= image_tag @document.file.variant(format: :jpeg), class: "max-w-full h-auto rounded" %>
-        <% else %>
-          <%= image_tag @document.file, class: "max-w-full h-auto rounded" %>
-        <% end %>
+        <%= document_thumbnail_tag(@document.file, class: "max-w-full h-auto rounded") %>
       <% elsif @document.file.content_type.start_with?("video/") %>
         <video controls class="max-w-full h-auto rounded" poster="<%= url_for(@document.file.preview(resize_to_limit: [1280, 720])) %>">
           <source src="<%= rails_service_blob_proxy_path(@document.file.signed_id, @document.file.filename) %>" type="<%= @document.file.content_type == 'video/quicktime' ? 'video/mp4' : @document.file.content_type %>">

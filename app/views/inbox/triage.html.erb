@@ -122,11 +122,7 @@
         <% if @current_item.file.attached? %>
           <div class="border border-gray-200 rounded-lg overflow-hidden">
             <% if @current_item.file.content_type.start_with?("image/") %>
-              <% if @current_item.file.content_type.in?(%w[image/heic image/heif]) %>
-                <%= image_tag @current_item.file.variant(format: :jpeg), class: "max-w-full h-auto" %>
-              <% else %>
-                <%= image_tag @current_item.file, class: "max-w-full h-auto" %>
-              <% end %>
+              <%= document_thumbnail_tag(@current_item.file, class: "max-w-full h-auto") %>
             <% elsif @current_item.file.content_type.start_with?("video/") %>
               <video controls class="max-w-full h-auto" poster="<%= url_for(@current_item.file.preview(resize_to_limit: [1280, 720])) %>">
                 <source src="<%= rails_service_blob_proxy_path(@current_item.file.signed_id, @current_item.file.filename) %>" type="<%= @current_item.file.content_type == 'video/quicktime' ? 'video/mp4' : @current_item.file.content_type %>">

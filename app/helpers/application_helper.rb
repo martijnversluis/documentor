@@ -189,4 +189,44 @@ module ApplicationHelper
 
     nil
   end
+
+  # Renders a thumbnail for an ActiveStorage attachment without ever
+  # generating variants inline. When the variant is not yet processed,
+  # enqueues PreprocessImageVariantsJob (which is globally serialised)
+  # and renders a placeholder in the meantime.
+  def document_thumbnail_tag(attachment, size: nil, **html_options)
+    return unless attachment&.attached?
+    blob = attachment.blob
+
+    if blob.image?
+      is_heic = blob.content_type.in?(PreprocessImageVariantsJob::HEIC_CONTENT_TYPES)
+      return image_tag(url_for(attachment), **html_options) if size.nil? && !is_heic
+
+      transformations = {}
+      transformations[:resize_to_limit] = size if size
+      transformations[:format] = :jpeg if is_heic
+
+      variant = blob.variant(transformations)
+      if variant.send(:processed?)
+        image_tag url_for(variant), **html_options
+      else
+        PreprocessImageVariantsJob.perform_later(blob.id)
+        thumbnail_placeholder(**html_options)
+      end
+    elsif attachment.previewable?
+      preview = size ? attachment.preview(resize_to_limit: size) : attachment.preview
+      image_tag preview, **html_options
+    end
+  end
+
+  def thumbnail_placeholder(**html_options)
+    classes = [html_options[:class], "flex items-center justify-center bg-gray-100 text-gray-400 animate-pulse"].compact.join(" ")
+    content_tag :div, class: classes, title: "Miniatuur wordt aangemaakt" do
+      raw <<~SVG.html_safe
+        <svg class="w-1/2 h-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+      SVG
+    end
+  end
 end
