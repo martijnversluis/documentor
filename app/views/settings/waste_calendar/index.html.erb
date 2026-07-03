@@ -75,7 +75,7 @@
             <div class="flex items-center gap-3">
               <%= waste_bin_icon(pickup.waste_type, size: 28) %>
               <div>
-                <p class="font-medium text-gray-900"><%= pickup.waste_type %></p>
+                <p class="font-medium text-gray-900"><%= waste_type_label(pickup.waste_type) %></p>
                 <p class="text-sm text-gray-500">
                   <%= l(pickup.collection_date, format: "%A %d %B") %>
                   <% if pickup.collection_date == Date.tomorrow %>

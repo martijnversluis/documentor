@@ -107,6 +107,27 @@ module ApplicationHelper
     "GREY" => { bin: "#3D5C3D", lid: "#4A4A4A" }
   }.freeze
 
+  WASTE_TYPE_LABELS = {
+    "REST" => "Restafval",
+    "GREY" => "Restafval",
+    "Rest" => "Restafval",
+    "Restafval" => "Restafval",
+    "GFT" => "GFT",
+    "GREEN" => "GFT",
+    "PAPIER" => "Papier",
+    "PAPER" => "Papier",
+    "Papier" => "Papier",
+    "PMD" => "PMD",
+    "PACKAGES" => "PMD",
+    "Plastic" => "PMD",
+    "GLAS" => "Glas",
+    "TEXTIEL" => "Textiel"
+  }.freeze
+
+  def waste_type_label(waste_type)
+    WASTE_TYPE_LABELS[waste_type] || waste_type.to_s.capitalize
+  end
+
   def waste_bin_icon(waste_type, size: 24)
     colors = WASTE_BIN_COLORS[waste_type] || { bin: "#6b7280", lid: "#374151" }
 
