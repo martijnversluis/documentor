@@ -13,9 +13,6 @@ shared: &shared
   sync_waste_calendar:
     class: SyncWasteCalendarJob
     schedule: at 5am every day
-  waste_calendar_check:
-    class: WasteCalendarCheckJob
-    schedule: at 6pm every day
   charging_check:
     class: ChargingCheckJob
     schedule: every 2 hours

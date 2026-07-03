@@ -47,8 +47,7 @@ class SyncWasteCalendarJob < ApplicationJob
     pickups = parse_ics(ics_content)
     return 0 if pickups.empty?
 
-    # Clear future pickups and re-import
-    WastePickup.where("collection_date >= ?", Date.current).delete_all
+    WastePickup.where("collection_date >= ?", Date.current).destroy_all
 
     count = 0
     pickups.each do |pickup|
@@ -97,8 +96,7 @@ class SyncWasteCalendarJob < ApplicationJob
   end
 
   def import_pickups(pickups)
-    # Clear future pickups and re-import
-    WastePickup.where("collection_date >= ?", Date.current).delete_all
+    WastePickup.where("collection_date >= ?", Date.current).destroy_all
 
     pickups.each do |pickup|
       WastePickup.create!(
