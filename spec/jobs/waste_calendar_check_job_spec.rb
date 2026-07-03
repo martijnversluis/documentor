@@ -1,9 +1,4 @@
 describe WasteCalendarCheckJob do
-  before do
-    AppSetting["waste_calendar_post_code"] = "1234AB"
-    AppSetting["waste_calendar_house_number"] = "1"
-  end
-
   it "creates an action item for each pickup scheduled for tomorrow" do
     WastePickup.create!(collection_date: Date.tomorrow, waste_type: "REST")
     WastePickup.create!(collection_date: Date.tomorrow, waste_type: "GFT")
@@ -51,11 +46,11 @@ describe WasteCalendarCheckJob do
     expect { described_class.new.perform }.not_to change(ActionItem, :count)
   end
 
-  it "does nothing when the post code and house number have not been configured" do
+  it "still creates action items when the address is not configured (manual or ICS pickups)" do
     AppSetting["waste_calendar_post_code"] = nil
     AppSetting["waste_calendar_house_number"] = nil
     WastePickup.create!(collection_date: Date.tomorrow, waste_type: "REST")
 
-    expect { described_class.new.perform }.not_to change(ActionItem, :count)
+    expect { described_class.new.perform }.to change(ActionItem, :count).by(1)
   end
 end

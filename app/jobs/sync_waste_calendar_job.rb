@@ -6,12 +6,32 @@ class SyncWasteCalendarJob < ApplicationJob
   # Circulus-Berkel company code
   DEFAULT_COMPANY_CODE = "f8e2844a-095e-48f9-9f98-71fceb51d2c3".freeze
 
+  WASTE_TYPE_PATTERNS = {
+    "REST" => [/rest/, /grijs/, /grey/],
+    "GFT" => [/gft/, /groen/, /tuinafval/, /green/],
+    "PAPIER" => [/papier/, /blauw/, /paper/],
+    "PMD" => [/pmd/, /plastic/, /metaal/, /drankkarton/, /packages/],
+    "GLAS" => [/glas/, /glass/],
+    "TEXTIEL" => [/textiel/, /kleding/, /textile/]
+  }.freeze
+
+  def self.normalize_waste_type(type)
+    downcased = type.to_s.downcase
+    WASTE_TYPE_PATTERNS.each do |code, patterns|
+      return code if patterns.any? { |p| downcased.match?(p) }
+    end
+    type.to_s.upcase.gsub(/[^A-Z]/, "")[0..10]
+  end
+
   def perform
     post_code = AppSetting["waste_calendar_post_code"]
     house_number = AppSetting["waste_calendar_house_number"]
     company_code = AppSetting["waste_calendar_company_code"].presence || DEFAULT_COMPANY_CODE
 
-    return unless post_code.present? && house_number.present?
+    if post_code.blank? || house_number.blank?
+      Rails.logger.warn "SyncWasteCalendarJob: skipping — post_code or house_number not configured"
+      return
+    end
 
     pickups = fetch_pickups(company_code, post_code, house_number)
 
@@ -19,7 +39,7 @@ class SyncWasteCalendarJob < ApplicationJob
       import_pickups(pickups)
       Rails.logger.info "Synced #{pickups.size} waste calendar pickups from Ximmio"
     else
-      Rails.logger.warn "No waste pickups found from Ximmio"
+      Rails.logger.warn "SyncWasteCalendarJob: Ximmio returned no pickups for #{post_code} #{house_number}"
     end
   end
 
@@ -68,31 +88,12 @@ class SyncWasteCalendarJob < ApplicationJob
     calendar_response.calendar.map do |date_time, waste_type|
       {
         date: date_time.to_date,
-        waste_type: normalize_waste_type(waste_type)
+        waste_type: self.class.normalize_waste_type(waste_type)
       }
     end.sort_by { |p| p[:date] }
   rescue StandardError => e
     Rails.logger.error "Failed to fetch waste calendar from Ximmio: #{e.message}"
     []
-  end
-
-  def normalize_waste_type(type)
-    case type.to_s.downcase
-    when /rest/, /grijs/
-      "REST"
-    when /gft/, /groen/, /tuinafval/
-      "GFT"
-    when /papier/, /blauw/
-      "PAPIER"
-    when /pmd/, /plastic/, /metaal/, /drankkarton/
-      "PMD"
-    when /glas/
-      "GLAS"
-    when /textiel/, /kleding/
-      "TEXTIEL"
-    else
-      type.upcase.gsub(/[^A-Z]/, "")[0..10]
-    end
   end
 
   def import_pickups(pickups)
@@ -122,7 +123,7 @@ class SyncWasteCalendarJob < ApplicationJob
       when /^DTSTART[^:]*:(\d{8})/
         current_event[:date] = Date.parse($1)
       when /^SUMMARY:(.+)/
-        current_event[:waste_type] = normalize_waste_type_class($1)
+        current_event[:waste_type] = normalize_waste_type($1)
       when /^END:VEVENT/
         if current_event[:date] && current_event[:waste_type] && current_event[:date] >= Date.current
           pickups << current_event
@@ -134,22 +135,4 @@ class SyncWasteCalendarJob < ApplicationJob
     pickups
   end
 
-  def self.normalize_waste_type_class(type)
-    case type.to_s.downcase
-    when /rest/, /grijs/
-      "REST"
-    when /gft/, /groen/, /tuinafval/
-      "GFT"
-    when /papier/, /blauw/
-      "PAPIER"
-    when /pmd/, /plastic/, /metaal/, /drankkarton/
-      "PMD"
-    when /glas/
-      "GLAS"
-    when /textiel/, /kleding/
-      "TEXTIEL"
-    else
-      type.upcase.gsub(/[^A-Z]/, "")[0..10]
-    end
-  end
 end

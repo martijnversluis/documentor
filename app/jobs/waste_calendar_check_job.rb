@@ -18,21 +18,20 @@ class WasteCalendarCheckJob < ApplicationJob
   }.freeze
 
   def perform
-    service = WasteCalendarService.new
-    return unless service.configured?
+    pickups = WastePickup.tomorrow.to_a
 
-    tomorrows_pickups = service.tomorrows_pickups
-    return if tomorrows_pickups.empty?
-
-    tomorrows_pickups.each do |pickup|
-      create_action_item_for_pickup(pickup)
+    if pickups.empty?
+      Rails.logger.info "WasteCalendarCheckJob: no pickups scheduled for #{Date.tomorrow}"
+      return
     end
+
+    Rails.logger.info "WasteCalendarCheckJob: found #{pickups.size} pickup(s) for #{Date.tomorrow}"
+    pickups.each { |pickup| create_action_item_for_pickup(pickup.waste_type) }
   end
 
   private
 
-  def create_action_item_for_pickup(pickup)
-    waste_type = pickup[:waste_type]
+  def create_action_item_for_pickup(waste_type)
     description = WASTE_TYPE_DESCRIPTIONS[waste_type] || "#{waste_type} aan de weg zetten"
 
     return if ActionItem.exists?(description:, due_date: Date.current, completed_at: nil)
