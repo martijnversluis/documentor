@@ -39,9 +39,9 @@ class Dossier < ApplicationRecord
   end
 
   def timeline_items
-    all_documents = documents.without_subscriptions.to_a + folders.flat_map(&:documents)
-    all_notes = notes.to_a + folders.flat_map(&:notes)
-    (all_documents + all_notes).sort_by(&:display_date).reverse
+    docs = documents.without_subscriptions.includes(:folder).to_a
+    all_notes = notes.includes(:folder).to_a
+    (docs + all_notes).sort_by(&:display_date).reverse
   end
 
   private
