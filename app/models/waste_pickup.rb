@@ -33,16 +33,20 @@ class WastePickup < ApplicationRecord
   end
 
   def action_item_notes
-    "#{ACTION_ITEM_NOTES_PREFIX}#{id}"
+    "waste_type:#{waste_type}\n#{ACTION_ITEM_NOTES_PREFIX}#{id}"
+  end
+
+  def linked_action_items
+    ActionItem.where("notes LIKE ?", "%#{ACTION_ITEM_NOTES_PREFIX}#{id}")
   end
 
   private
 
   def ensure_action_item
-    due = collection_date - 1.day
-    item = ActionItem.find_or_initialize_by(notes: action_item_notes)
+    item = linked_action_items.first_or_initialize
     item.description = action_item_description
-    item.due_date = due
+    item.due_date = collection_date - 1.day
+    item.notes = action_item_notes
     item.position ||= 0
     item.save! if item.new_record? || item.changed?
   rescue ActiveRecord::RecordInvalid => e
@@ -50,6 +54,6 @@ class WastePickup < ApplicationRecord
   end
 
   def remove_pending_action_item
-    ActionItem.where(notes: action_item_notes, completed_at: nil).delete_all
+    linked_action_items.where(completed_at: nil).delete_all
   end
 end
