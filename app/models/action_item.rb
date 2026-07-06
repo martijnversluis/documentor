@@ -2,6 +2,7 @@ class ActionItem < ApplicationRecord
   include PgSearch::Model
 
   belongs_to :dossier, optional: true, touch: true
+  belongs_to :party, optional: true
   belongs_to :waiting_for_party, class_name: "Party", optional: true
   belongs_to :parent, class_name: "ActionItem", optional: true, touch: true
   belongs_to :meeting, optional: true

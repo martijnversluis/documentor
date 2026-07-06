@@ -9,7 +9,12 @@
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-1">
+    <div class="lg:col-span-1 space-y-6">
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="font-semibold text-gray-900 mb-3">Contact</h2>
+        <%= render "parties/contact_card", party: @party %>
+      </div>
+
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <% if @party.notes.present? %>
           <div>

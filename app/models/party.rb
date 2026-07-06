@@ -2,12 +2,17 @@ class Party < ApplicationRecord
   include Taggable
 
   has_many :party_links, dependent: :destroy
+  has_many :action_items, dependent: :nullify
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }
 
   normalizes :name, with: ->(name) { name.strip }
 
   scope :ordered, -> { order(:name) }
+
+  def contact_details?
+    phone.present? || email.present? || address.present? || postal_code.present? || city.present? || website.present?
+  end
 
   def linked_items
     linked_folders = Folder.joins(:party_links).where(party_links: { party_id: id })

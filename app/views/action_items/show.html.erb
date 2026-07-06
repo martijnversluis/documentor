@@ -171,6 +171,57 @@
         </dl>
       </div>
 
+      <% if @action_item.party.present? %>
+        <div class="border-t border-gray-100 pt-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-medium text-gray-700">Contact</h3>
+            <%= link_to @action_item.party.name, @action_item.party, class: "text-sm text-blue-600 hover:underline" %>
+          </div>
+          <%= render "parties/contact_card", party: @action_item.party %>
+        </div>
+
+        <% if @party_history.present? %>
+          <div class="border-t border-gray-100 pt-4">
+            <h3 class="text-sm font-medium text-gray-700 mb-3">Eerdere actiepunten voor <%= @action_item.party.name %></h3>
+            <ul class="divide-y divide-gray-100 border border-gray-100 rounded-lg">
+              <% @party_history.each do |item| %>
+                <li class="p-3 text-sm">
+                  <div class="flex items-start justify-between gap-3">
+                    <%= link_to item, class: "flex-1 min-w-0 text-gray-900 hover:text-blue-600 #{'line-through text-gray-400' if item.completed?}" do %>
+                      <div class="prose prose-sm max-w-none break-words">
+                        <%= markdown_first_paragraph(item.description) %>
+                      </div>
+                    <% end %>
+                    <span class="text-xs text-gray-500 whitespace-nowrap flex-shrink-0">
+                      <% if item.completed? %>
+                        Afgerond <%= item.completed_at.strftime("%d-%m-%Y") %>
+                      <% elsif item.due_date.present? %>
+                        <%= item.due_date.strftime("%d-%m-%Y") %>
+                      <% else %>
+                        <%= item.created_at.strftime("%d-%m-%Y") %>
+                      <% end %>
+                    </span>
+                  </div>
+                  <% if item.dossier.present? %>
+                    <div class="mt-1 text-xs text-gray-500">
+                      <%= link_to item.dossier.name, item.dossier, class: "hover:underline" %>
+                    </div>
+                  <% end %>
+                  <% if item.notes.present? %>
+                    <details class="mt-2 text-xs text-gray-600">
+                      <summary class="cursor-pointer text-gray-500 hover:text-gray-700">Notities</summary>
+                      <div class="mt-1 prose prose-xs max-w-none break-words">
+                        <%= markdown(item.notes) %>
+                      </div>
+                    </details>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+      <% end %>
+
       <div class="border-t border-gray-100 pt-4" id="action-item-documents">
         <%= render "action_items/documents_section", action_item: @action_item, recent_documents: @recent_documents %>
       </div>

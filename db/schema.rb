@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_05_140000) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_06_100100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -45,10 +45,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_05_140000) do
     t.text "notes"
     t.bigint "meeting_id"
     t.string "status_text"
+    t.bigint "party_id"
     t.index ["dossier_id"], name: "index_action_items_on_dossier_id"
     t.index ["meeting_id"], name: "index_action_items_on_meeting_id"
     t.index ["parent_id", "completed_at", "someday", "due_date"], name: "index_action_items_on_filter_counts"
     t.index ["parent_id"], name: "index_action_items_on_parent_id"
+    t.index ["party_id"], name: "index_action_items_on_party_id"
     t.index ["waiting_for_party_id"], name: "index_action_items_on_waiting_for_party_id"
   end
 
@@ -273,6 +275,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_05_140000) do
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "phone"
+    t.string "email"
+    t.string "address"
+    t.string "postal_code"
+    t.string "city"
+    t.string "website"
     t.index "lower((name)::text)", name: "index_parties_on_lower_name", unique: true
   end
 
@@ -543,6 +551,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_05_140000) do
   add_foreign_key "action_items", "action_items", column: "parent_id"
   add_foreign_key "action_items", "dossiers"
   add_foreign_key "action_items", "meetings"
+  add_foreign_key "action_items", "parties"
   add_foreign_key "action_items", "parties", column: "waiting_for_party_id"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"

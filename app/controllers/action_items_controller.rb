@@ -186,6 +186,14 @@ class ActionItemsController < ApplicationController
                                 .where.not(id: @action_item.document_ids)
                                 .order(created_at: :desc)
                                 .limit(10)
+
+    if @action_item.party.present?
+      @party_history = ActionItem.where(party_id: @action_item.party_id)
+                                 .where.not(id: @action_item.id)
+                                 .includes(:dossier)
+                                 .order(Arel.sql("COALESCE(completed_at, due_date, created_at) DESC"))
+                                 .limit(20)
+    end
   end
 
   def edit
@@ -384,7 +392,7 @@ class ActionItemsController < ApplicationController
   end
 
   def action_item_params
-    params.require(:action_item).permit(:description, :due_date, :recurrence, :context, :dossier_id, :waiting_for_party_id, :waiting_for_description, :someday, :estimated_minutes, :next_action, :parent_id, :notes, :status_text)
+    params.require(:action_item).permit(:description, :due_date, :recurrence, :context, :dossier_id, :party_id, :waiting_for_party_id, :waiting_for_description, :someday, :estimated_minutes, :next_action, :parent_id, :notes, :status_text)
   end
 
   def base_scope
