@@ -452,13 +452,25 @@ class ActionItemsController < ApplicationController
     current_hour = Time.current.hour
     weekend = Date.current.wday.in?([0, 6])
 
-    Review::REVIEW_TYPES.filter_map do |type|
-      next if type == "daily_start" && (weekend || current_hour >= 12)
-      next if type == "daily_end" && (weekend || current_hour < 12)
+    relevant_types = Review::REVIEW_TYPES.reject do |type|
+      (type == "daily_start" && (weekend || current_hour >= 12)) ||
+        (type == "daily_end" && (weekend || current_hour < 12))
+    end
+    return [] if relevant_types.empty?
 
-      review = Review.find_or_initialize_for_period(type)
-      template = ReviewTemplate.active_for_type(type)
-      next if review.completed? || template.nil?
+    templates_by_type = ReviewTemplate.where(active: true, review_type: relevant_types).index_by(&:review_type)
+    period_keys_by_type = relevant_types.index_with { |type| Review.period_for(type)[:key] }
+    reviews_by_key = Review
+      .where(review_type: relevant_types)
+      .where(period_key: period_keys_by_type.values)
+      .index_by { |r| [r.review_type, r.period_key] }
+
+    relevant_types.filter_map do |type|
+      template = templates_by_type[type]
+      next if template.nil?
+
+      review = reviews_by_key[[type, period_keys_by_type[type]]] || Review.find_or_initialize_for_period(type)
+      next if review.completed?
       next unless review.due? || review.due_soon?
 
       { type: type, review: review, template: template }

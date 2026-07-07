@@ -14,7 +14,9 @@ class ApplicationController < ActionController::Base
   end
 
   def work_mode_auto?
-    GoogleAccount.joins(:google_calendars).where(google_calendars: { enabled: true }).exists?
+    return @work_mode_auto if defined?(@work_mode_auto)
+
+    @work_mode_auto = GoogleAccount.joins(:google_calendars).where(google_calendars: { enabled: true }).exists?
   end
 
   def work_status
