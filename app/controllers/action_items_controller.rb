@@ -408,7 +408,10 @@ class ActionItemsController < ApplicationController
   end
 
   def load_filter_counts
-    counts = ActionItem.filter_counts(base_scope)
+    mode_key = work_mode? ? "work" : "personal:#{work_dossier_ids.sort.join(',')}"
+    counts = Rails.cache.fetch("action_items/filter_counts/v1/#{Date.current}/#{mode_key}", expires_in: 30.seconds) do
+      ActionItem.filter_counts(base_scope)
+    end
 
     @today_count = counts[:today]
     @tomorrow_count = counts[:tomorrow]
@@ -458,22 +461,24 @@ class ActionItemsController < ApplicationController
     end
     return [] if relevant_types.empty?
 
-    templates_by_type = ReviewTemplate.where(active: true, review_type: relevant_types).index_by(&:review_type)
-    period_keys_by_type = relevant_types.index_with { |type| Review.period_for(type)[:key] }
-    reviews_by_key = Review
-      .where(review_type: relevant_types)
-      .where(period_key: period_keys_by_type.values)
-      .index_by { |r| [r.review_type, r.period_key] }
+    Rails.cache.fetch("pending_reviews/v1/#{Date.current}/#{current_hour}", expires_in: 60.seconds) do
+      templates_by_type = ReviewTemplate.where(active: true, review_type: relevant_types).index_by(&:review_type)
+      period_keys_by_type = relevant_types.index_with { |type| Review.period_for(type)[:key] }
+      reviews_by_key = Review
+        .where(review_type: relevant_types)
+        .where(period_key: period_keys_by_type.values)
+        .index_by { |r| [r.review_type, r.period_key] }
 
-    relevant_types.filter_map do |type|
-      template = templates_by_type[type]
-      next if template.nil?
+      relevant_types.filter_map do |type|
+        template = templates_by_type[type]
+        next if template.nil?
 
-      review = reviews_by_key[[type, period_keys_by_type[type]]] || Review.find_or_initialize_for_period(type)
-      next if review.completed?
-      next unless review.due? || review.due_soon?
+        review = reviews_by_key[[type, period_keys_by_type[type]]] || Review.find_or_initialize_for_period(type)
+        next if review.completed?
+        next unless review.due? || review.due_soon?
 
-      { type: type, review: review, template: template }
+        { type: type, review: review, template: template }
+      end
     end
   end
 

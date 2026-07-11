@@ -59,7 +59,13 @@ class ApplicationController < ActionController::Base
     # Work mode: show all, personal mode: hide work dossier items
     return scope if work_mode?
 
-    ids = @work_dossier_ids ||= Dossier.work.pluck(:id)
+    ids = work_dossier_ids
     scope.where.not(dossier_id: ids).or(scope.where(dossier_id: nil))
+  end
+
+  def work_dossier_ids
+    @work_dossier_ids ||= Rails.cache.fetch("work_dossier_ids/v1", expires_in: 5.minutes) do
+      Dossier.work.pluck(:id)
+    end
   end
 end
