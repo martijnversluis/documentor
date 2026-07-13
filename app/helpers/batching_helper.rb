@@ -6,26 +6,47 @@ module BatchingHelper
   MAX_BATCH_TIME = 60
 
   def batching_suggestions(action_items)
+    materialized = action_items.to_a
+    return [] if materialized.empty?
+
+    cache_key = [
+      "batching_suggestions/v1",
+      materialized.size,
+      materialized.map(&:id).sort.hash,
+      materialized.map { |i| i.updated_at.to_i }.max
+    ].join("/")
+
+    Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
+      build_batching_suggestions(materialized)
+    end
+  end
+
+  def build_batching_suggestions(action_items)
     suggestions = []
 
-    # Group by context
-    context_batches = action_items.group_by(&:context).reject { |ctx, _| ctx.blank? }
+    context_batches = Hash.new { |h, k| h[k] = [] }
+    dossier_batches = Hash.new { |h, k| h[k] = [] }
+    quick_items = []
+
+    action_items.each do |item|
+      context_batches[item.context] << item if item.context.present?
+      dossier_batches[item.dossier] << item if item.dossier.present?
+      quick_items << item if item.estimated_minutes.present? && item.estimated_minutes <= 15
+    end
+
     context_batches.each do |context, items|
       next if items.size < MIN_BATCH_SIZE
 
-      total_time = items.sum { |i| i.estimated_minutes || 15 }
       suggestions << {
         type: :context,
         title: "#{items.size} taken met context @#{context}",
         description: "Deze taken kun je samen doen omdat ze dezelfde context hebben",
         items: items,
-        total_time: total_time,
+        total_time: items.sum { |i| i.estimated_minutes || 15 },
         icon: "location"
       }
     end
 
-    # Group quick tasks (≤15 min)
-    quick_items = action_items.select { |i| i.estimated_minutes.present? && i.estimated_minutes <= 15 }
     if quick_items.size >= MIN_BATCH_SIZE
       total_time = quick_items.sum(&:estimated_minutes)
       if total_time <= MAX_BATCH_TIME
@@ -40,23 +61,19 @@ module BatchingHelper
       end
     end
 
-    # Group by dossier (if multiple items in same dossier)
-    dossier_batches = action_items.select { |i| i.dossier.present? }.group_by(&:dossier)
     dossier_batches.each do |dossier, items|
       next if items.size < MIN_BATCH_SIZE
 
-      total_time = items.sum { |i| i.estimated_minutes || 15 }
       suggestions << {
         type: :dossier,
         title: "#{items.size} taken voor #{dossier.name}",
         description: "Focus op dit project en werk deze taken achter elkaar af",
         items: items,
-        total_time: total_time,
+        total_time: items.sum { |i| i.estimated_minutes || 15 },
         icon: "folder"
       }
     end
 
-    # Sort by batch size (most items first)
     suggestions.sort_by { |s| -s[:items].size }
   end
 
