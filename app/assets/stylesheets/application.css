@@ -21,6 +21,37 @@
   word-break: break-all !important;
 }
 
+/* Tables: keep cells readable and give them visible borders */
+.prose table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.prose thead {
+  background-color: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+}
+
+.prose th {
+  font-weight: 600;
+}
+
+.prose tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
 .prose pre {
   white-space: pre-wrap !important;
   cursor: text;
