@@ -461,19 +461,24 @@ class ActionItemsController < ApplicationController
     end
     return [] if relevant_types.empty?
 
-    Rails.cache.fetch("pending_reviews/v1/#{Date.current}/#{current_hour}", expires_in: 60.seconds) do
+    Rails.cache.fetch("pending_reviews/v2/#{Date.current}/#{current_hour}", expires_in: 5.minutes) do
       templates_by_type = ReviewTemplate.where(active: true, review_type: relevant_types).index_by(&:review_type)
-      period_keys_by_type = relevant_types.index_with { |type| Review.period_for(type)[:key] }
+      periods_by_type = relevant_types.index_with { |type| Review.period_for(type) }
       reviews_by_key = Review
-        .where(review_type: relevant_types)
-        .where(period_key: period_keys_by_type.values)
+        .where(review_type: relevant_types, period_key: periods_by_type.values.map { |p| p[:key] })
         .index_by { |r| [r.review_type, r.period_key] }
 
       relevant_types.filter_map do |type|
         template = templates_by_type[type]
         next if template.nil?
 
-        review = reviews_by_key[[type, period_keys_by_type[type]]] || Review.find_or_initialize_for_period(type)
+        period = periods_by_type[type]
+        review = reviews_by_key[[type, period[:key]]] || Review.new(
+          review_type: type,
+          period_start: period[:start],
+          period_end: period[:end],
+          period_key: period[:key]
+        )
         next if review.completed?
         next unless review.due? || review.due_soon?
 
