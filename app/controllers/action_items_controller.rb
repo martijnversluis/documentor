@@ -490,7 +490,10 @@ class ActionItemsController < ApplicationController
   def meetings_with_content_for_events(events)
     event_ids = events.filter_map { |e| e[:event_id] }.uniq
     return {} if event_ids.empty?
-    Meeting.where(google_event_id: event_ids).with_content.index_by(&:google_event_id)
+
+    Rails.cache.fetch("meetings_with_content/v1/#{event_ids.sort.hash}", expires_in: 5.minutes) do
+      Meeting.where(google_event_id: event_ids).with_content.index_by(&:google_event_id)
+    end
   end
 
   def load_calendar_events(date)
