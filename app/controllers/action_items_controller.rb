@@ -409,7 +409,8 @@ class ActionItemsController < ApplicationController
 
   def load_filter_counts
     mode_key = work_mode? ? "work" : "personal:#{work_dossier_ids.sort.join(',')}"
-    counts = Rails.cache.fetch("action_items/filter_counts/v1/#{Date.current}/#{mode_key}", expires_in: 5.minutes) do
+    cache_key = "action_items/filter_counts/v1/#{Date.current}/#{mode_key}"
+    counts = Rails.cache.fetch(cache_key, expires_in: 30.minutes, race_condition_ttl: 30.seconds) do
       ActionItem.filter_counts(base_scope)
     end
 

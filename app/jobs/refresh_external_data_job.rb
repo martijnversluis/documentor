@@ -9,6 +9,7 @@ class RefreshExternalDataJob < ApplicationJob
     refresh_github_dashboards
     refresh_mail_dashboards
     sync_calendar_lists
+    refresh_filter_counts
   end
 
   private
@@ -82,6 +83,21 @@ class RefreshExternalDataJob < ApplicationJob
     Rails.cache.write("calendar_lists_synced_at", Time.current, expires_in: 1.hour)
   rescue StandardError => e
     Rails.logger.warn "RefreshExternalDataJob: calendar list sync failed: #{e.message}"
+  end
+
+  def refresh_filter_counts
+    work_ids = Dossier.work.pluck(:id).sort
+    Rails.cache.write("work_dossier_ids/v1", work_ids, expires_in: 30.minutes)
+
+    date = Date.current
+    personal_key = "action_items/filter_counts/v1/#{date}/personal:#{work_ids.join(',')}"
+    work_key = "action_items/filter_counts/v1/#{date}/work"
+
+    personal_scope = ActionItem.where.not(dossier_id: work_ids).or(ActionItem.where(dossier_id: nil))
+    Rails.cache.write(personal_key, ActionItem.filter_counts(personal_scope), expires_in: 30.minutes)
+    Rails.cache.write(work_key, ActionItem.filter_counts(ActionItem.all), expires_in: 30.minutes)
+  rescue StandardError => e
+    Rails.logger.warn "RefreshExternalDataJob: filter counts refresh failed: #{e.message}"
   end
 
   def refresh_mail_dashboards
