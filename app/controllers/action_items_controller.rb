@@ -462,7 +462,9 @@ class ActionItemsController < ApplicationController
     end
     return [] if relevant_types.empty?
 
-    Rails.cache.fetch("pending_reviews/v2/#{Date.current}/#{current_hour}", expires_in: 5.minutes) do
+    reviews_version = Review.maximum(:updated_at)&.to_i || 0
+    cache_key = "pending_reviews/v3/#{Date.current}/#{current_hour}/#{reviews_version}"
+    Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
       templates_by_type = ReviewTemplate.where(active: true, review_type: relevant_types).index_by(&:review_type)
       periods_by_type = relevant_types.index_with { |type| Review.period_for(type) }
       reviews_by_key = Review
