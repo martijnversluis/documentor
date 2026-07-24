@@ -53,6 +53,8 @@ class HabitsController < ApplicationController
         percentage: scheduled.positive? ? (done * 100.0 / scheduled).round : nil
       }
     end
+
+    @choice_scales = build_choice_scales(@habits)
   end
 
   def new
@@ -155,6 +157,30 @@ class HabitsController < ApplicationController
   end
 
   private
+
+  def build_choice_scales(habits)
+    habits.each_with_object({}) do |habit, memo|
+      next unless habit.choice_mode?
+      options = habit.choice_options_array
+      next if options.empty?
+
+      ranks_by_emoji = options.each_with_index.to_h { |opt, i| [opt["emoji"], i] }
+
+      ranks = habit.habit_completions.each_with_object({}) do |completion, h|
+        next unless completion.completed_on.between?(@start_date, @end_date)
+        rank = ranks_by_emoji[completion.choice_value]
+        next unless rank
+
+        h[completion.completed_on] = {
+          rank: rank,
+          emoji: completion.choice_value,
+          label: options[rank]["label"]
+        }
+      end
+
+      memo[habit.id] = { options: options, ranks: ranks }
+    end
+  end
 
   def classify_cell(habit, completion)
     return :missed if completion.nil?

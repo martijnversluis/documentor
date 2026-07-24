@@ -32,4 +32,22 @@ RSpec.describe "Habits trends page", type: :feature do
 
     expect(page).to have_content("Nog geen actieve gewoontes")
   end
+
+  it "renders a sparkline for choice habits with the value scale" do
+    habit = create(
+      :habit,
+      name: "Hoe was je dag?",
+      color: "purple",
+      choice_options_text: "😞 Slecht\n😐 Matig\n🙂 Goed\n😄 Top",
+      created_at: 30.days.ago
+    )
+    create(:habit_completion, habit: habit, completed_on: 2.days.ago.to_date, choice_value: "🙂")
+    create(:habit_completion, habit: habit, completed_on: 1.day.ago.to_date, choice_value: "😄")
+
+    visit trends_habits_path
+
+    expect(page).to have_content("Hoe was je dag?")
+    expect(page).to have_content("↑ 😄 · 😞 ↓")
+    expect(page).to have_css("svg circle", minimum: 2)
+  end
 end

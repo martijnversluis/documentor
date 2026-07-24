@@ -53,35 +53,72 @@
             <% cells = @grid[habit.id] %>
             <% stats = @stats[habit.id] %>
             <tr class="border-t border-gray-100">
-              <td class="py-1 pr-3 whitespace-nowrap">
+              <td class="py-1 pr-3 whitespace-nowrap align-middle">
                 <div class="flex items-center gap-2">
                   <div class="w-2 h-2 rounded-full <%= habit.color_classes[:bg] %>"></div>
-                  <span class="font-medium text-gray-800 truncate" style="max-width: 160px" title="<%= habit.name %>"><%= habit.name %></span>
+                  <div class="min-w-0">
+                    <div class="font-medium text-gray-800 truncate" style="max-width: 160px" title="<%= habit.name %>"><%= habit.name %></div>
+                    <% if habit.choice_mode? && (options = habit.choice_options_array).any? %>
+                      <div class="text-[10px] text-gray-400 leading-tight">
+                        ↑ <%= options.last["emoji"] %> · <%= options.first["emoji"] %> ↓
+                      </div>
+                    <% end %>
+                  </div>
                 </div>
               </td>
-              <td class="py-1">
-                <div class="flex gap-px" style="width: <%= grid_width %>px">
-                  <% (@start_date..@end_date).each do |date| %>
-                    <%
-                      state = cells[date]
-                      css = case state
-                            when :done then habit.color_classes[:bg]
-                            when :partial then habit.color_classes[:light]
-                            when :missed then "bg-gray-100"
-                            else "bg-transparent"
-                            end
-                      state_label = case state
-                                    when :done then "voltooid"
-                                    when :partial then "deels"
-                                    when :missed then "gemist"
-                                    else "niet gepland"
-                                    end
-                    %>
-                    <div class="h-5 rounded-sm <%= css %>"
-                         style="width: <%= cell_width %>px"
-                         title="<%= I18n.l(date, format: '%-d %b %Y') %> — <%= state_label %>"></div>
-                  <% end %>
-                </div>
+              <td class="py-1 align-middle">
+                <% if habit.choice_mode? && (scale = @choice_scales[habit.id]) %>
+                  <%
+                    sparkline_height = 32
+                    n_options = scale[:options].size
+                    points = []
+                    (@start_date..@end_date).each_with_index do |date, i|
+                      data = scale[:ranks][date]
+                      next unless data
+                      x = (i * (cell_width + 1)) + (cell_width / 2.0)
+                      y = sparkline_height - ((data[:rank] + 0.5) * (sparkline_height.to_f / n_options))
+                      points << { x: x, y: y, date: date, emoji: data[:emoji], label: data[:label] }
+                    end
+                  %>
+                  <svg width="<%= grid_width %>" height="<%= sparkline_height %>"
+                       xmlns="http://www.w3.org/2000/svg"
+                       class="block <%= habit.color_classes[:text] %>">
+                    <% points.each_cons(2) do |a, b| %>
+                      <% next if (b[:date] - a[:date]).to_i > 7 %>
+                      <line x1="<%= a[:x].round(2) %>" y1="<%= a[:y].round(2) %>"
+                            x2="<%= b[:x].round(2) %>" y2="<%= b[:y].round(2) %>"
+                            stroke="currentColor" stroke-width="1" opacity="0.4" />
+                    <% end %>
+                    <% points.each do |p| %>
+                      <circle cx="<%= p[:x].round(2) %>" cy="<%= p[:y].round(2) %>" r="2" fill="currentColor">
+                        <title><%= I18n.l(p[:date], format: '%-d %b %Y') %> — <%= p[:emoji] %> <%= p[:label] %></title>
+                      </circle>
+                    <% end %>
+                  </svg>
+                <% else %>
+                  <div class="flex gap-px" style="width: <%= grid_width %>px">
+                    <% (@start_date..@end_date).each do |date| %>
+                      <%
+                        state = cells[date]
+                        css = case state
+                              when :done then habit.color_classes[:bg]
+                              when :partial then habit.color_classes[:light]
+                              when :missed then "bg-gray-100"
+                              else "bg-transparent"
+                              end
+                        state_label = case state
+                                      when :done then "voltooid"
+                                      when :partial then "deels"
+                                      when :missed then "gemist"
+                                      else "niet gepland"
+                                      end
+                      %>
+                      <div class="h-5 rounded-sm <%= css %>"
+                           style="width: <%= cell_width %>px"
+                           title="<%= I18n.l(date, format: '%-d %b %Y') %> — <%= state_label %>"></div>
+                    <% end %>
+                  </div>
+                <% end %>
               </td>
               <td class="py-1 pl-3 text-right text-gray-600 tabular-nums"><%= stats[:percentage] %>%</td>
               <td class="py-1 pl-3 text-right text-gray-600 tabular-nums">
