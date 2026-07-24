@@ -1,0 +1,170 @@
+<%
+  cell_width = case @days
+               when 30 then 14
+               when 90 then 6
+               when 180 then 4
+               else 2
+               end
+  grid_width = @days * (cell_width + 1)
+%>
+
+<div class="max-w-7xl mx-auto">
+  <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Trends</h1>
+      <p class="text-sm text-gray-500 mt-1">
+        <%= I18n.l(@start_date, format: "%-d %b %Y") %> — <%= I18n.l(@end_date, format: "%-d %b %Y") %>
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <% [30, 90, 180, 365].each do |d| %>
+        <%= link_to "#{d}d", trends_habits_path(days: d),
+            class: "px-3 py-1.5 text-sm font-medium rounded-lg #{@days == d ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}" %>
+      <% end %>
+      <%= link_to habits_path, class: "ml-2 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900" do %>
+        ← Terug
+      <% end %>
+    </div>
+  </div>
+
+  <% if @habits.any? %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 overflow-x-auto">
+      <table class="text-sm" style="min-width: <%= grid_width + 280 %>px">
+        <thead>
+          <tr>
+            <th class="text-left font-medium text-gray-500 pb-1 pr-3 whitespace-nowrap" style="width: 180px">Gewoonte</th>
+            <th class="pb-1">
+              <div class="flex gap-px items-end h-4" style="width: <%= grid_width %>px">
+                <% (@start_date..@end_date).each do |date| %>
+                  <div class="text-[10px] text-gray-400 leading-none whitespace-nowrap" style="width: <%= cell_width %>px; overflow: visible">
+                    <% if date.day == 1 %>
+                      <%= I18n.l(date, format: "%b") %>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            </th>
+            <th class="text-right font-medium text-gray-500 pb-1 pl-3 whitespace-nowrap" style="width: 50px">%</th>
+            <th class="text-right font-medium text-gray-500 pb-1 pl-3 whitespace-nowrap" style="width: 50px">🔥</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @habits.each do |habit| %>
+            <% cells = @grid[habit.id] %>
+            <% stats = @stats[habit.id] %>
+            <tr class="border-t border-gray-100">
+              <td class="py-1 pr-3 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 rounded-full <%= habit.color_classes[:bg] %>"></div>
+                  <span class="font-medium text-gray-800 truncate" style="max-width: 160px" title="<%= habit.name %>"><%= habit.name %></span>
+                </div>
+              </td>
+              <td class="py-1">
+                <div class="flex gap-px" style="width: <%= grid_width %>px">
+                  <% (@start_date..@end_date).each do |date| %>
+                    <%
+                      state = cells[date]
+                      css = case state
+                            when :done then habit.color_classes[:bg]
+                            when :partial then habit.color_classes[:light]
+                            when :missed then "bg-gray-100"
+                            else "bg-transparent"
+                            end
+                      state_label = case state
+                                    when :done then "voltooid"
+                                    when :partial then "deels"
+                                    when :missed then "gemist"
+                                    else "niet gepland"
+                                    end
+                    %>
+                    <div class="h-5 rounded-sm <%= css %>"
+                         style="width: <%= cell_width %>px"
+                         title="<%= I18n.l(date, format: '%-d %b %Y') %> — <%= state_label %>"></div>
+                  <% end %>
+                </div>
+              </td>
+              <td class="py-1 pl-3 text-right text-gray-600 tabular-nums"><%= stats[:percentage] %>%</td>
+              <td class="py-1 pl-3 text-right text-gray-600 tabular-nums">
+                <% if stats[:streak].positive? %>
+                  <%= stats[:streak] %>
+                <% else %>
+                  <span class="text-gray-300">·</span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+        <tfoot>
+          <tr class="border-t-2 border-gray-200">
+            <td class="pt-3 pr-3 text-xs font-medium text-gray-500 whitespace-nowrap">Alle habits samen</td>
+            <td class="pt-3">
+              <div class="flex gap-px" style="width: <%= grid_width %>px">
+                <% @daily_totals.each do |day| %>
+                  <%
+                    pct = day[:percentage]
+                    css = if pct.nil?
+                            "bg-transparent"
+                          elsif pct >= 100
+                            "bg-green-600"
+                          elsif pct >= 75
+                            "bg-green-400"
+                          elsif pct >= 50
+                            "bg-green-200"
+                          elsif pct >= 25
+                            "bg-yellow-200"
+                          elsif pct.positive?
+                            "bg-orange-200"
+                          else
+                            "bg-red-200"
+                          end
+                  %>
+                  <div class="h-5 rounded-sm <%= css %>"
+                       style="width: <%= cell_width %>px"
+                       title="<%= I18n.l(day[:date], format: '%-d %b %Y') %>: <%= day[:done] %>/<%= day[:scheduled] %> gepland<%= pct ? " (#{pct}%)" : '' %>"></div>
+                <% end %>
+              </div>
+            </td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="mt-4 flex items-center flex-wrap gap-4 text-xs text-gray-500">
+      <span class="font-medium text-gray-600">Per habit:</span>
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-sm bg-blue-500"></div>
+        <span>Voltooid (habit-kleur)</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-sm bg-blue-100"></div>
+        <span>Deels</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-sm bg-gray-100"></div>
+        <span>Gemist</span>
+      </div>
+      <span class="ml-4 font-medium text-gray-600">Alle samen:</span>
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-sm bg-green-600"></div>
+        <span>100%</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-sm bg-green-200"></div>
+        <span>50–74%</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-sm bg-yellow-200"></div>
+        <span>25–49%</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-sm bg-red-200"></div>
+        <span>0%</span>
+      </div>
+    </div>
+  <% else %>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center text-gray-500">
+      Nog geen actieve gewoontes om trends van te tonen.
+    </div>
+  <% end %>
+</div>

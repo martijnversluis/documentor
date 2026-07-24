@@ -176,6 +176,9 @@ Rails.application.routes.draw do
 
   # Habits
   resources :habits, except: [:destroy] do
+    collection do
+      get :trends
+    end
     member do
       post :toggle
       post :increment
