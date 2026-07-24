@@ -543,8 +543,14 @@ class ActionItemsController < ApplicationController
   end
 
   def load_habits_for_today
-    Habit.active.not_archived.includes(:habit_completions)
-      .select { |h| h.scheduled_for?(Date.current) }
-      .sort_by { |h| [h.simple_checkbox? ? 1 : 0, h.name.downcase] }
+    version = Habit.maximum(:updated_at)&.to_i || 0
+    cache_key = "habits_for_today/v1/#{Date.current}/#{version}"
+    Rails.cache.fetch(cache_key, expires_in: 10.minutes, race_condition_ttl: 30.seconds) do
+      habits = Habit.active.not_archived.includes(:habit_completions)
+        .select { |h| h.scheduled_for?(Date.current) }
+        .sort_by { |h| [h.simple_checkbox? ? 1 : 0, h.name.downcase] }
+      habits.each(&:current_streak)
+      habits
+    end
   end
 end

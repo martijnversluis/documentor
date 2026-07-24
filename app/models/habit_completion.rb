@@ -1,5 +1,5 @@
 class HabitCompletion < ApplicationRecord
-  belongs_to :habit
+  belongs_to :habit, touch: true
 
   validates :completed_on, presence: true, uniqueness: { scope: :habit_id }
   validates :count, presence: true, numericality: { greater_than: 0 }
