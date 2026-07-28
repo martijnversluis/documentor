@@ -4,13 +4,13 @@ class ApplicationController < ActionController::Base
   helper_method :work_mode?, :work_mode_auto?, :work_status, :ongoing_meetings
 
   def work_mode?
-    # If user manually toggled within the last hour, respect their choice
-    if cookies[:work_mode_manual].present?
-      return cookies[:work_mode] == "true"
-    end
+    return @work_mode if defined?(@work_mode)
 
-    # Otherwise, auto-determine from calendar (with caching)
-    auto_work_mode
+    @work_mode = if cookies[:work_mode_manual].present?
+                   cookies[:work_mode] == "true"
+                 else
+                   auto_work_mode
+                 end
   end
 
   def work_mode_auto?
