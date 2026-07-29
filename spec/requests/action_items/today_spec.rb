@@ -21,7 +21,7 @@ describe "ActionItems#today" do
 
       expect {
         get today_action_items_path
-      }.to have_enqueued_job(RefreshExternalDataJob)
+      }.to have_enqueued_job(RefreshExternalDataJob).at_least(:once)
 
       expect(response).to have_http_status(:success)
     end
@@ -38,6 +38,41 @@ describe "ActionItems#today" do
 
       expect(response).to have_http_status(:success)
       expect(ActionItem).not_to have_received(:filter_counts)
+    end
+
+    it "renders without fetching calendar events synchronously when the cache is cold" do
+      create(:google_calendar, enabled: true)
+
+      Rails.cache.clear
+      allow(GoogleCalendarService).to receive(:new).and_call_original
+
+      get today_action_items_path
+
+      expect(response).to have_http_status(:success)
+      expect(GoogleCalendarService).not_to have_received(:new)
+    end
+
+    it "enqueues a background refresh when the calendar events cache is cold" do
+      create(:google_calendar, enabled: true)
+      Rails.cache.clear
+
+      expect {
+        get today_action_items_path
+      }.to have_enqueued_job(RefreshExternalDataJob).at_least(:once)
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it "uses cached calendar events when they are present" do
+      create(:google_calendar, enabled: true)
+      Rails.cache.clear
+      Rails.cache.write("calendar_events_#{Date.current}", [])
+      allow(GoogleCalendarService).to receive(:new).and_call_original
+
+      get today_action_items_path
+
+      expect(response).to have_http_status(:success)
+      expect(GoogleCalendarService).not_to have_received(:new)
     end
   end
 end

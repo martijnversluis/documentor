@@ -503,15 +503,19 @@ class ActionItemsController < ApplicationController
   end
 
   def load_calendar_events(date)
-    Rails.cache.fetch("calendar_events_#{date}", expires_in: 10.minutes) do
-      fetch_calendar_events_for_range(date, date)
-    end
+    cached = Rails.cache.read("calendar_events_#{date}")
+    return cached unless cached.nil?
+
+    RefreshExternalDataJob.perform_later
+    []
   end
 
   def load_calendar_events_for_range(start_date, end_date)
-    Rails.cache.fetch("calendar_events_#{start_date}_#{end_date}", expires_in: 10.minutes) do
-      fetch_calendar_events_for_range(start_date, end_date)
-    end
+    cached = Rails.cache.read("calendar_events_#{start_date}_#{end_date}")
+    return cached unless cached.nil?
+
+    RefreshExternalDataJob.perform_later
+    []
   end
 
   def group_events_by_date(events, days)
