@@ -456,41 +456,13 @@ class ActionItemsController < ApplicationController
   end
 
   def pending_reviews_for_today
-    current_hour = Time.current.hour
-    weekend = Date.current.wday.in?([0, 6])
-
-    relevant_types = Review::REVIEW_TYPES.reject do |type|
-      (type == "daily_start" && (weekend || current_hour >= 12)) ||
-        (type == "daily_end" && (weekend || current_hour < 12))
-    end
-    return [] if relevant_types.empty?
-
     reviews_version = Review.maximum(:updated_at)&.to_i || 0
-    cache_key = "pending_reviews/v3/#{Date.current}/#{current_hour}/#{reviews_version}"
-    Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
-      templates_by_type = ReviewTemplate.where(active: true, review_type: relevant_types).index_by(&:review_type)
-      periods_by_type = relevant_types.index_with { |type| Review.period_for(type) }
-      reviews_by_key = Review
-        .where(review_type: relevant_types, period_key: periods_by_type.values.map { |p| p[:key] })
-        .index_by { |r| [r.review_type, r.period_key] }
+    cache_key = "pending_reviews/v3/#{Date.current}/#{Time.current.hour}/#{reviews_version}"
+    cached = Rails.cache.read(cache_key)
+    return cached unless cached.nil?
 
-      relevant_types.filter_map do |type|
-        template = templates_by_type[type]
-        next if template.nil?
-
-        period = periods_by_type[type]
-        review = reviews_by_key[[type, period[:key]]] || Review.new(
-          review_type: type,
-          period_start: period[:start],
-          period_end: period[:end],
-          period_key: period[:key]
-        )
-        next if review.completed?
-        next unless review.due? || review.due_soon?
-
-        { type: type, review: review, template: template }
-      end
-    end
+    RefreshExternalDataJob.perform_later
+    []
   end
 
   def meetings_with_content_for_events(events)
@@ -552,12 +524,10 @@ class ActionItemsController < ApplicationController
   def load_habits_for_today
     version = Habit.maximum(:updated_at)&.to_i || 0
     cache_key = "habits_for_today/v1/#{Date.current}/#{version}"
-    Rails.cache.fetch(cache_key, expires_in: 10.minutes, race_condition_ttl: 30.seconds) do
-      habits = Habit.active.not_archived.includes(:habit_completions)
-        .select { |h| h.scheduled_for?(Date.current) }
-        .sort_by { |h| [h.simple_checkbox? ? 1 : 0, h.name.downcase] }
-      habits.each(&:current_streak)
-      habits
-    end
+    cached = Rails.cache.read(cache_key)
+    return cached unless cached.nil?
+
+    RefreshExternalDataJob.perform_later
+    []
   end
 end

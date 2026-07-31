@@ -10,6 +10,8 @@ class RefreshExternalDataJob < ApplicationJob
     refresh_mail_dashboards
     sync_calendar_lists
     refresh_filter_counts
+    refresh_pending_reviews
+    refresh_habits_today
   end
 
   private
@@ -98,6 +100,24 @@ class RefreshExternalDataJob < ApplicationJob
     Rails.cache.write(work_key, ActionItem.filter_counts(ActionItem.all), expires_in: 30.minutes)
   rescue StandardError => e
     Rails.logger.warn "RefreshExternalDataJob: filter counts refresh failed: #{e.message}"
+  end
+
+  def refresh_pending_reviews
+    now = Time.current
+    version = Review.maximum(:updated_at)&.to_i || 0
+    cache_key = "pending_reviews/v3/#{now.to_date}/#{now.hour}/#{version}"
+    Rails.cache.write(cache_key, Review.pending_dashboard_data(now: now), expires_in: 5.minutes)
+  rescue StandardError => e
+    Rails.logger.warn "RefreshExternalDataJob: pending reviews refresh failed: #{e.message}"
+  end
+
+  def refresh_habits_today
+    date = Date.current
+    version = Habit.maximum(:updated_at)&.to_i || 0
+    cache_key = "habits_for_today/v1/#{date}/#{version}"
+    Rails.cache.write(cache_key, Habit.today_dashboard_data(date: date), expires_in: 10.minutes)
+  rescue StandardError => e
+    Rails.logger.warn "RefreshExternalDataJob: habits refresh failed: #{e.message}"
   end
 
   def refresh_mail_dashboards

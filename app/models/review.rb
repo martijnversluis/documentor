@@ -210,5 +210,38 @@ class Review < ApplicationRecord
       period = period_for(type, date)
       exists?(review_type: type, period_key: period[:key])
     end
+
+    def pending_dashboard_data(now: Time.current)
+      current_hour = now.hour
+      weekend = now.to_date.wday.in?([0, 6])
+
+      relevant_types = REVIEW_TYPES.reject do |type|
+        (type == "daily_start" && (weekend || current_hour >= 12)) ||
+          (type == "daily_end" && (weekend || current_hour < 12))
+      end
+      return [] if relevant_types.empty?
+
+      templates_by_type = ReviewTemplate.where(active: true, review_type: relevant_types).index_by(&:review_type)
+      periods_by_type = relevant_types.index_with { |type| period_for(type, now.to_date) }
+      reviews_by_key = where(review_type: relevant_types, period_key: periods_by_type.values.map { |p| p[:key] })
+        .index_by { |r| [r.review_type, r.period_key] }
+
+      relevant_types.filter_map do |type|
+        template = templates_by_type[type]
+        next if template.nil?
+
+        period = periods_by_type[type]
+        review = reviews_by_key[[type, period[:key]]] || Review.new(
+          review_type: type,
+          period_start: period[:start],
+          period_end: period[:end],
+          period_key: period[:key]
+        )
+        next if review.completed?
+        next unless review.due? || review.due_soon?
+
+        { type: type, review: review, template: template }
+      end
+    end
   end
 end

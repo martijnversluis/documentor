@@ -74,5 +74,49 @@ describe "ActionItems#today" do
       expect(response).to have_http_status(:success)
       expect(GoogleCalendarService).not_to have_received(:new)
     end
+
+    it "renders without computing pending reviews synchronously when the cache is cold" do
+      Rails.cache.clear
+      allow(Review).to receive(:pending_dashboard_data).and_call_original
+
+      get today_action_items_path
+
+      expect(response).to have_http_status(:success)
+      expect(Review).not_to have_received(:pending_dashboard_data)
+    end
+
+    it "uses cached pending reviews when they are present" do
+      Rails.cache.clear
+      key = "pending_reviews/v3/#{Date.current}/#{Time.current.hour}/0"
+      Rails.cache.write(key, [])
+      allow(Review).to receive(:pending_dashboard_data).and_call_original
+
+      get today_action_items_path
+
+      expect(response).to have_http_status(:success)
+      expect(Review).not_to have_received(:pending_dashboard_data)
+    end
+
+    it "renders without computing habits synchronously when the cache is cold" do
+      Rails.cache.clear
+      allow(Habit).to receive(:today_dashboard_data).and_call_original
+
+      get today_action_items_path
+
+      expect(response).to have_http_status(:success)
+      expect(Habit).not_to have_received(:today_dashboard_data)
+    end
+
+    it "uses cached habits when they are present" do
+      Rails.cache.clear
+      key = "habits_for_today/v1/#{Date.current}/0"
+      Rails.cache.write(key, [])
+      allow(Habit).to receive(:today_dashboard_data).and_call_original
+
+      get today_action_items_path
+
+      expect(response).to have_http_status(:success)
+      expect(Habit).not_to have_received(:today_dashboard_data)
+    end
   end
 end

@@ -228,6 +228,14 @@ class Habit < ApplicationRecord
     end
   end
 
+  def self.today_dashboard_data(date: Date.current)
+    habits = active.not_archived.includes(:habit_completions)
+      .select { |h| h.scheduled_for?(date) }
+      .sort_by { |h| [h.simple_checkbox? ? 1 : 0, h.name.downcase] }
+    habits.each(&:current_streak)
+    habits
+  end
+
   private
 
   def prevent_destruction
