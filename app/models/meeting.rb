@@ -35,4 +35,8 @@ class Meeting < ApplicationRecord
   def duration_minutes
     ((end_time - start_time) / 60).to_i
   end
+
+  def self.dashboard_by_event_id
+    with_content.index_by(&:google_event_id)
+  end
 end

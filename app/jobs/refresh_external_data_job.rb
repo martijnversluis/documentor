@@ -12,6 +12,7 @@ class RefreshExternalDataJob < ApplicationJob
     refresh_filter_counts
     refresh_pending_reviews
     refresh_habits_today
+    refresh_meetings_with_content
   end
 
   private
@@ -118,6 +119,12 @@ class RefreshExternalDataJob < ApplicationJob
     Rails.cache.write(cache_key, Habit.today_dashboard_data(date: date), expires_in: 10.minutes)
   rescue StandardError => e
     Rails.logger.warn "RefreshExternalDataJob: habits refresh failed: #{e.message}"
+  end
+
+  def refresh_meetings_with_content
+    Rails.cache.write("meetings_by_event_id/v1", Meeting.dashboard_by_event_id, expires_in: 10.minutes)
+  rescue StandardError => e
+    Rails.logger.warn "RefreshExternalDataJob: meetings refresh failed: #{e.message}"
   end
 
   def refresh_mail_dashboards

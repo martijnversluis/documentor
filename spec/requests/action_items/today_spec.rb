@@ -118,5 +118,32 @@ describe "ActionItems#today" do
       expect(response).to have_http_status(:success)
       expect(Habit).not_to have_received(:today_dashboard_data)
     end
+
+    it "renders without loading meetings synchronously when the meetings cache is cold" do
+      Rails.cache.clear
+      Rails.cache.write("calendar_events_#{Date.current}", [
+        { event_id: "abc123", start_time: Time.current, end_time: Time.current + 1.hour, title: "test" }
+      ])
+      allow(Meeting).to receive(:dashboard_by_event_id).and_call_original
+
+      get today_action_items_path
+
+      expect(response).to have_http_status(:success)
+      expect(Meeting).not_to have_received(:dashboard_by_event_id)
+    end
+
+    it "uses cached meetings when they are present" do
+      Rails.cache.clear
+      Rails.cache.write("calendar_events_#{Date.current}", [
+        { event_id: "abc123", start_time: Time.current, end_time: Time.current + 1.hour, title: "test" }
+      ])
+      Rails.cache.write("meetings_by_event_id/v1", {})
+      allow(Meeting).to receive(:dashboard_by_event_id).and_call_original
+
+      get today_action_items_path
+
+      expect(response).to have_http_status(:success)
+      expect(Meeting).not_to have_received(:dashboard_by_event_id)
+    end
   end
 end
