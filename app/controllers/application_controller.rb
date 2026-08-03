@@ -1,7 +1,13 @@
 class ApplicationController < ActionController::Base
   before_action :require_login
 
-  helper_method :work_mode?, :work_mode_auto?, :work_status, :ongoing_meetings
+  helper_method :work_mode?, :work_mode_auto?, :work_status, :ongoing_meetings, :enqueue_cache_refresh
+
+  def enqueue_cache_refresh
+    return if @cache_refresh_enqueued
+    @cache_refresh_enqueued = true
+    RefreshExternalDataJob.perform_later
+  end
 
   def work_mode?
     return @work_mode if defined?(@work_mode)

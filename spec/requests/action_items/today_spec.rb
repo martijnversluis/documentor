@@ -145,5 +145,15 @@ describe "ActionItems#today" do
       expect(response).to have_http_status(:success)
       expect(Meeting).not_to have_received(:dashboard_by_event_id)
     end
+
+    it "enqueues at most one refresh job per request even when several caches are cold" do
+      Rails.cache.clear
+
+      expect {
+        get today_action_items_path
+      }.to have_enqueued_job(RefreshExternalDataJob).exactly(:once)
+
+      expect(response).to have_http_status(:success)
+    end
   end
 end

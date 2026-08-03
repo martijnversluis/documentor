@@ -9,16 +9,7 @@ module BatchingHelper
     materialized = action_items.to_a
     return [] if materialized.empty?
 
-    cache_key = [
-      "batching_suggestions/v1",
-      materialized.size,
-      materialized.map(&:id).sort.hash,
-      materialized.map { |i| i.updated_at.to_i }.max
-    ].join("/")
-
-    Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
-      build_batching_suggestions(materialized)
-    end
+    build_batching_suggestions(materialized)
   end
 
   def build_batching_suggestions(action_items)

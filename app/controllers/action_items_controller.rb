@@ -414,7 +414,7 @@ class ActionItemsController < ApplicationController
 
     if counts.nil?
       counts = ActionItem::FILTER_COUNT_KEYS.index_with { 0 }
-      RefreshExternalDataJob.perform_later
+      enqueue_cache_refresh
     end
 
     @today_count = counts[:today]
@@ -461,7 +461,7 @@ class ActionItemsController < ApplicationController
     cached = Rails.cache.read(cache_key)
     return cached unless cached.nil?
 
-    RefreshExternalDataJob.perform_later
+    enqueue_cache_refresh
     []
   end
 
@@ -471,7 +471,7 @@ class ActionItemsController < ApplicationController
     cached = Rails.cache.read("meetings_by_event_id/v1")
     return cached unless cached.nil?
 
-    RefreshExternalDataJob.perform_later
+    enqueue_cache_refresh
     {}
   end
 
@@ -479,7 +479,7 @@ class ActionItemsController < ApplicationController
     cached = Rails.cache.read("calendar_events_#{date}")
     return cached unless cached.nil?
 
-    RefreshExternalDataJob.perform_later
+    enqueue_cache_refresh
     []
   end
 
@@ -487,7 +487,7 @@ class ActionItemsController < ApplicationController
     cached = Rails.cache.read("calendar_events_#{start_date}_#{end_date}")
     return cached unless cached.nil?
 
-    RefreshExternalDataJob.perform_later
+    enqueue_cache_refresh
     []
   end
 
@@ -528,7 +528,7 @@ class ActionItemsController < ApplicationController
     cached = Rails.cache.read(cache_key)
     return cached unless cached.nil?
 
-    RefreshExternalDataJob.perform_later
+    enqueue_cache_refresh
     []
   end
 end
