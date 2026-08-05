@@ -17,6 +17,7 @@ class MailController < ApplicationController
     @messages = Rails.cache.read(cache_key)
 
     if @messages.nil?
+      enqueue_cache_refresh
       render partial: "mail/loading"
     elsif @messages.is_a?(Hash) && @messages[:auth_error]
       render partial: "mail/error", locals: { error: @messages[:auth_error], show_reconnect: true }

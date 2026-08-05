@@ -119,6 +119,23 @@ describe "ActionItems#today" do
       expect(Habit).not_to have_received(:today_dashboard_data)
     end
 
+    it "shows a habits loading state when the cache is cold and habits exist" do
+      create(:habit, active: true)
+
+      get today_action_items_path
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("Gewoontes worden geladen")
+    end
+
+    it "hides the habits block entirely when there are no active habits" do
+      get today_action_items_path
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).not_to include("Gewoontes worden geladen")
+      expect(response.body).not_to include('id="habit_')
+    end
+
     it "renders without loading meetings synchronously when the meetings cache is cold" do
       Rails.cache.clear
       Rails.cache.write("calendar_events_#{Date.current}", [

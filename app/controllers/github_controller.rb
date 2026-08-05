@@ -45,6 +45,7 @@ class GithubController < ApplicationController
     @data = Rails.cache.read(cache_key)
 
     if @data.nil?
+      enqueue_cache_refresh
       render partial: "github/loading"
     elsif @data.is_a?(Hash) && @data[:auth_error]
       render partial: "github/error", locals: { error: @data[:auth_error], show_reconnect: true }
