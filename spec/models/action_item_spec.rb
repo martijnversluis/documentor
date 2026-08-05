@@ -1,6 +1,18 @@
 require "rails_helper"
 
 RSpec.describe ActionItem do
+  def count_queries(&)
+    queries = 0
+    callback = ->(*, payload) do
+      next if payload[:name] == "SCHEMA"
+      next if payload[:sql].match?(/\A(BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE)/)
+
+      queries += 1
+    end
+    ActiveSupport::Notifications.subscribed(callback, "sql.active_record", &)
+    queries
+  end
+
   describe ".filter_counts" do
     it "returns counts for each filter category in a single query" do
       create(:action_item, due_date: Date.current, completed_at: nil, someday: false)
@@ -49,16 +61,46 @@ RSpec.describe ActionItem do
       expect(counts[:today]).to eq(1)
     end
 
-    def count_queries(&)
-      queries = 0
-      callback = ->(*, payload) do
-        next if payload[:name] == "SCHEMA"
-        next if payload[:sql].match?(/\A(BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE)/)
+  end
 
-        queries += 1
-      end
-      ActiveSupport::Notifications.subscribed(callback, "sql.active_record", &)
-      queries
+  describe "children helpers with preloaded association" do
+    let!(:parent) { create(:action_item) }
+    let!(:pending_child) { create(:action_item, parent: parent) }
+    let!(:completed_child) { create(:action_item, parent: parent, completed_at: 1.hour.ago) }
+
+    let(:loaded_parent) { ActionItem.includes(:children).find(parent.id) }
+
+    it "answers #has_children? without firing a query when children are preloaded" do
+      loaded_parent.children.to_a # force load
+
+      expect(count_queries { loaded_parent.has_children? }).to eq(0)
+      expect(loaded_parent.has_children?).to be true
+    end
+
+    it "answers #pending_children_count without firing a query when children are preloaded" do
+      loaded_parent.children.to_a
+
+      count = nil
+      queries = count_queries { count = loaded_parent.pending_children_count }
+
+      expect(queries).to eq(0)
+      expect(count).to eq(1)
+    end
+
+    it "answers #all_children_completed? without firing a query when children are preloaded" do
+      loaded_parent.children.to_a
+
+      result = nil
+      queries = count_queries { result = loaded_parent.all_children_completed? }
+
+      expect(queries).to eq(0)
+      expect(result).to be false
+    end
+
+    it "still falls back to a query when children are not preloaded" do
+      fresh = ActionItem.find(parent.id)
+
+      expect(count_queries { fresh.has_children? }).to eq(1)
     end
   end
 end
