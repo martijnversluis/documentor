@@ -400,7 +400,7 @@ class ActionItemsController < ApplicationController
   end
 
   def base_pending_scope
-    base_scope.pending.active.root_items.includes(:dossier, :waiting_for_party, :children).ordered
+    base_scope.pending.active.root_items.includes(:dossier, :waiting_for_party, children: :children).ordered
   end
 
   def recent_completed_items

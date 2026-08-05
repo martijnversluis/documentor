@@ -95,7 +95,7 @@
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
                   </svg>
-                  <%= item.children.completed.count %>/<%= item.children.count %> sub-items
+                  <%= item.completed_children_count %>/<%= item.children.size %> sub-items
                 </span>
               <% end %>
             </div>
@@ -145,9 +145,10 @@
   </div>
 
   <%# Render pending children %>
-  <% if item.children.pending.any? %>
+  <% pending_children = item.pending_children_ordered %>
+  <% if pending_children.any? %>
     <ul class="border-l-2 border-gray-200 ml-8">
-      <% item.children.pending.ordered.each do |child| %>
+      <% pending_children.each do |child| %>
         <%= render "action_items/index_item", item: child, return_to: local_assigns[:return_to], nested: true %>
       <% end %>
     </ul>

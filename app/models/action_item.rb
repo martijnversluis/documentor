@@ -124,15 +124,47 @@ class ActionItem < ApplicationRecord
   end
 
   def has_children?
-    children.exists?
+    children.loaded? ? children.any? : children.exists?
   end
 
   def pending_children_count
-    children.pending.count
+    if children.loaded?
+      children.count { |c| c.completed_at.nil? }
+    else
+      children.pending.count
+    end
   end
 
   def all_children_completed?
-    children.pending.empty?
+    if children.loaded?
+      children.all? { |c| c.completed_at.present? }
+    else
+      children.pending.empty?
+    end
+  end
+
+  def completed_children_count
+    if children.loaded?
+      children.count { |c| c.completed_at.present? }
+    else
+      children.completed.count
+    end
+  end
+
+  def pending_children_ordered
+    if children.loaded?
+      children.reject { |c| c.completed_at.present? }.sort_by do |c|
+        [
+          c.position.nil? ? 1 : 0,
+          c.position || 0,
+          c.due_date.nil? ? 1 : 0,
+          c.due_date || Date.new(0),
+          c.created_at,
+        ]
+      end
+    else
+      children.pending.ordered
+    end
   end
 
   def depth
