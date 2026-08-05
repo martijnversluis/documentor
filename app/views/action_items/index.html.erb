@@ -407,7 +407,17 @@
 
   <%= render "action_items/calendar_events", calendar_events: @calendar_events if @calendar_events %>
 
-  <% if @habits&.any? %>
+  <% if @habits.nil? %>
+    <div class="bg-gradient-to-r from-green-50 to-white rounded-lg shadow-sm border border-green-200 border-l-4 border-l-green-500 mb-6">
+      <div class="px-4 py-3 border-b border-green-100 flex items-center gap-2">
+        <svg class="animate-spin h-4 w-4 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        <span class="text-sm text-gray-500">Gewoontes worden geladen…</span>
+      </div>
+    </div>
+  <% elsif @habits.any? %>
     <div class="bg-gradient-to-r from-green-50 to-white rounded-lg shadow-sm border border-green-200 border-l-4 border-l-green-500 mb-6">
       <div class="px-4 py-3 border-b border-green-100 flex items-center justify-between">
         <h2 class="font-semibold text-gray-900 flex items-center gap-2">

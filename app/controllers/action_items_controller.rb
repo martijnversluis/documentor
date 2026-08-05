@@ -529,6 +529,9 @@ class ActionItemsController < ApplicationController
     return cached unless cached.nil?
 
     enqueue_cache_refresh
-    []
+    # nil signals "cache cold, but habits may exist" so the view can show a
+    # loading state instead of silently hiding the block; [] means "warm cache
+    # confirmed there is nothing to show".
+    Habit.active.not_archived.exists? ? nil : []
   end
 end
