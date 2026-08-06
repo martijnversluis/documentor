@@ -53,15 +53,10 @@ class ApplicationController < ActionController::Base
   end
 
   # Fetches key from SolidCache at most once per HOT_CACHE_TTL per process, and
-  # swallows any error (statement timeout, connection error, etc.), falling back
-  # to +default+. Any of these values is fine to be a few seconds stale.
+  # swallows any error (statement timeout, connection error, rack-timeout), falling
+  # back to +default+. Any of these values is fine to be a few seconds stale.
   def hot_cache_fetch(key, default:)
-    PROCESS_CACHE.fetch(key, expires_in: HOT_CACHE_TTL) do
-      Rails.cache.read(key)
-    rescue StandardError => e
-      Rails.logger.warn("hot_cache_fetch(#{key}) fell back to default: #{e.class}: #{e.message}")
-      nil
-    end || default
+    PROCESS_CACHE.fetch(key, expires_in: HOT_CACHE_TTL) { safe_cache_read(key) } || default
   end
 
   # Filter dossiers based on work mode
@@ -80,8 +75,27 @@ class ApplicationController < ActionController::Base
   end
 
   def work_dossier_ids
-    @work_dossier_ids ||= Rails.cache.fetch("work_dossier_ids/v1", expires_in: 5.minutes) do
+    @work_dossier_ids ||= work_dossier_ids_lookup
+  end
+
+  def work_dossier_ids_lookup
+    Rails.cache.fetch("work_dossier_ids/v1", expires_in: 5.minutes) do
       Dossier.work.pluck(:id)
     end
+  rescue StandardError, Rack::Timeout::RequestTimeoutException => e
+    Rails.logger.warn("work_dossier_ids fell back to direct query: #{e.class}: #{e.message}")
+    Dossier.work.pluck(:id)
+  end
+
+  # Reads +key+ from Rails.cache but never blocks the request thread on failure.
+  # Explicitly catches +Rack::Timeout::RequestTimeoutException+ (which inherits
+  # from +Exception+, not +StandardError+, so it slips past broad rescues) so a
+  # cache read that hits the rack-timeout deadline degrades to a cache miss
+  # instead of a 500.
+  def safe_cache_read(key)
+    Rails.cache.read(key)
+  rescue StandardError, Rack::Timeout::RequestTimeoutException => e
+    Rails.logger.warn("safe_cache_read(#{key}) failed: #{e.class}: #{e.message}")
+    nil
   end
 end

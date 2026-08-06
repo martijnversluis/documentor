@@ -410,7 +410,7 @@ class ActionItemsController < ApplicationController
   def load_filter_counts
     mode_key = work_mode? ? "work" : "personal:#{work_dossier_ids.sort.join(',')}"
     cache_key = "action_items/filter_counts/v1/#{Date.current}/#{mode_key}"
-    counts = Rails.cache.read(cache_key)
+    counts = safe_cache_read(cache_key)
 
     if counts.nil?
       counts = ActionItem::FILTER_COUNT_KEYS.index_with { 0 }
