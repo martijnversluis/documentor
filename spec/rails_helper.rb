@@ -43,6 +43,7 @@ RSpec.configure do |config|
   ]
 
   config.before(:each) { Bullet.start_request }
+  config.before(:each) { ApplicationController::PROCESS_CACHE.clear }
 
   config.after(:each) do
     Bullet.perform_out_of_channel_notifications if Bullet.notification?

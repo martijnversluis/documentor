@@ -1,4 +1,10 @@
 class ApplicationController < ActionController::Base
+  # Process-local memo for cache reads that fire on every request. Fronts SolidCache
+  # so a single slow/failed lookup on the shared PG database can't stall the request
+  # thread. TTL is short enough that background writes still propagate quickly.
+  PROCESS_CACHE = ActiveSupport::Cache::MemoryStore.new(size: 64.kilobytes)
+  HOT_CACHE_TTL = 10.seconds
+
   before_action :require_login
 
   helper_method :work_mode?, :work_mode_auto?, :work_status, :ongoing_meetings, :enqueue_cache_refresh
@@ -26,15 +32,11 @@ class ApplicationController < ActionController::Base
   end
 
   def work_status
-    return @work_status if defined?(@work_status)
-
-    @work_status = Rails.cache.read("work_status") || { status: :unknown, label: nil }
+    @work_status ||= hot_cache_fetch("work_status", default: { status: :unknown, label: nil })
   end
 
   def ongoing_meetings
-    return @ongoing_meetings if defined?(@ongoing_meetings)
-
-    @ongoing_meetings = Rails.cache.read("ongoing_meetings") || []
+    @ongoing_meetings ||= hot_cache_fetch("ongoing_meetings", default: [])
   end
 
   private
@@ -47,11 +49,19 @@ class ApplicationController < ActionController::Base
   end
 
   def auto_work_mode
-    cached = Rails.cache.read("auto_work_mode")
-    return cached unless cached.nil?
+    hot_cache_fetch("auto_work_mode", default: false)
+  end
 
-    # Cache miss: return false, background job will populate cache
-    false
+  # Fetches key from SolidCache at most once per HOT_CACHE_TTL per process, and
+  # swallows any error (statement timeout, connection error, etc.), falling back
+  # to +default+. Any of these values is fine to be a few seconds stale.
+  def hot_cache_fetch(key, default:)
+    PROCESS_CACHE.fetch(key, expires_in: HOT_CACHE_TTL) do
+      Rails.cache.read(key)
+    rescue StandardError => e
+      Rails.logger.warn("hot_cache_fetch(#{key}) fell back to default: #{e.class}: #{e.message}")
+      nil
+    end || default
   end
 
   # Filter dossiers based on work mode
