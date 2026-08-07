@@ -1,0 +1,67 @@
+<% if @pending_reviews&.any? %>
+  <div class="bg-gradient-to-r from-blue-50 to-white rounded-lg shadow-sm border border-blue-200 border-l-4 border-l-blue-500 mb-6">
+    <div class="px-4 py-3 border-b border-blue-100 flex items-center justify-between">
+      <h2 class="font-semibold text-gray-900 flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+        </svg>
+        Reviews
+      </h2>
+      <%= link_to review_templates_path, class: "text-sm text-blue-600 hover:text-blue-700" do %>
+        Beheren
+      <% end %>
+    </div>
+    <ul class="divide-y divide-blue-100">
+      <% @pending_reviews.each do |data| %>
+        <%
+          type_styles = {
+            "daily_start" => { bg: "bg-amber-100", text: "text-amber-700", button_bg: "bg-amber-600", button_hover: "hover:bg-amber-700" },
+            "daily_end" => { bg: "bg-indigo-100", text: "text-indigo-700", button_bg: "bg-indigo-600", button_hover: "hover:bg-indigo-700" },
+            "weekly" => { bg: "bg-blue-100", text: "text-blue-700", button_bg: "bg-blue-600", button_hover: "hover:bg-blue-700" },
+            "monthly" => { bg: "bg-purple-100", text: "text-purple-700", button_bg: "bg-purple-600", button_hover: "hover:bg-purple-700" },
+            "quarterly" => { bg: "bg-orange-100", text: "text-orange-700", button_bg: "bg-orange-600", button_hover: "hover:bg-orange-700" },
+            "yearly" => { bg: "bg-green-100", text: "text-green-700", button_bg: "bg-green-600", button_hover: "hover:bg-green-700" }
+          }
+          styles = type_styles[data[:type]]
+          review = data[:review]
+        %>
+        <li class="p-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= styles[:bg] %> <%= styles[:text] %>">
+              <%= Review::REVIEW_TYPE_LABELS[data[:type]] %>
+            </span>
+            <span class="text-sm text-gray-600">
+              <% if review.in_progress? %>
+                In behandeling (<%= review.progress_percentage %>%)
+              <% else %>
+                Nog niet gestart
+              <% end %>
+            </span>
+          </div>
+          <% if review.in_progress? %>
+            <%= link_to review_path(review), class: "inline-flex items-center gap-1 px-3 py-1.5 #{styles[:button_bg]} #{styles[:button_hover]} text-white text-sm font-medium rounded-lg" do %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+              </svg>
+              Vervolgen
+            <% end %>
+          <% elsif review.persisted? %>
+            <%= button_to start_review_path(review), method: :post, class: "inline-flex items-center gap-1 px-3 py-1.5 #{styles[:button_bg]} #{styles[:button_hover]} text-white text-sm font-medium rounded-lg cursor-pointer" do %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+              </svg>
+              Starten
+            <% end %>
+          <% else %>
+            <%= button_to reviews_path(review_type: data[:type]), method: :post, class: "inline-flex items-center gap-1 px-3 py-1.5 #{styles[:button_bg]} #{styles[:button_hover]} text-white text-sm font-medium rounded-lg cursor-pointer" do %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              Starten
+            <% end %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

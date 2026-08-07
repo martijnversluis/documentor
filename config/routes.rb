@@ -133,6 +133,13 @@ Rails.application.routes.draw do
       patch :reorder
       patch :postpone_today
       patch :reschedule_overdue
+      get "fragment/:filter/:section",
+          action: :fragment,
+          as: :fragment,
+          constraints: {
+            filter: /today|tomorrow|yesterday|overdue|waiting|someday|next_actions|quick_wins|recurring|inbox/,
+            section: /pending_reviews|calendar_events|completed_items/
+          }
     end
     member do
       patch :toggle
