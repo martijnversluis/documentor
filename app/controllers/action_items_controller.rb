@@ -6,10 +6,6 @@ class ActionItemsController < ApplicationController
     @current_filter = :today
     @filter_label = "vandaag"
     @pending_items = base_pending_scope.today
-    @completed_items = recent_completed_items
-    @pending_reviews = pending_reviews_for_today
-    @calendar_events = load_calendar_events(Date.current)
-    @meetings_by_event_id = meetings_with_content_for_events(@calendar_events)
     @habits = load_habits_for_today
     render :index
   end
@@ -18,9 +14,6 @@ class ActionItemsController < ApplicationController
     @current_filter = :tomorrow
     @filter_label = "morgen"
     @pending_items = base_pending_scope.tomorrow
-    @completed_items = recent_completed_items
-    @calendar_events = load_calendar_events(Date.tomorrow)
-    @meetings_by_event_id = meetings_with_content_for_events(@calendar_events)
     render :index
   end
 
@@ -28,9 +21,6 @@ class ActionItemsController < ApplicationController
     @current_filter = :yesterday
     @filter_label = "gisteren"
     @pending_items = ActionItem.none
-    @completed_items = base_scope.completed_yesterday.root_items.includes(:dossier, :children).order(completed_at: :desc)
-    @calendar_events = load_calendar_events(Date.yesterday)
-    @meetings_by_event_id = meetings_with_content_for_events(@calendar_events)
     @show_only_completed = true
     render :index
   end
@@ -39,7 +29,6 @@ class ActionItemsController < ApplicationController
     @current_filter = :overdue
     @filter_label = "verlopen"
     @pending_items = base_pending_scope.overdue
-    @completed_items = recent_completed_items
     render :index
   end
 
@@ -47,7 +36,6 @@ class ActionItemsController < ApplicationController
     @current_filter = :waiting
     @filter_label = "wachtend"
     @pending_items = base_pending_scope.waiting
-    @completed_items = recent_completed_items
     render :index
   end
 
@@ -55,7 +43,6 @@ class ActionItemsController < ApplicationController
     @current_filter = :someday
     @filter_label = "ooit/misschien"
     @pending_items = base_scope.pending.root_items.includes(:dossier, :waiting_for_party, :children).someday_maybe.ordered
-    @completed_items = recent_completed_items
     render :index
   end
 
@@ -63,7 +50,6 @@ class ActionItemsController < ApplicationController
     @current_filter = :next_actions
     @filter_label = "eerstvolgende"
     @pending_items = base_pending_scope.next_actions
-    @completed_items = recent_completed_items
     render :index
   end
 
@@ -71,7 +57,6 @@ class ActionItemsController < ApplicationController
     @current_filter = :quick_wins
     @filter_label = "quick win"
     @pending_items = base_pending_scope.quick_wins
-    @completed_items = recent_completed_items
     render :index
   end
 
@@ -79,7 +64,6 @@ class ActionItemsController < ApplicationController
     @current_filter = :recurring
     @filter_label = "herhalend"
     @pending_items = base_pending_scope.recurring
-    @completed_items = recent_completed_items
     render :index
   end
 
@@ -87,7 +71,6 @@ class ActionItemsController < ApplicationController
     @current_filter = :inbox
     @filter_label = "inbox"
     @pending_items = base_pending_scope.inbox
-    @completed_items = recent_completed_items
     @inbox_documents = Document.unscoped.inbox.includes(file_attachment: :blob).order(created_at: :desc)
     @inbox_notes = Note.unscoped.inbox.order(created_at: :desc)
 
@@ -359,6 +342,27 @@ class ActionItemsController < ApplicationController
     redirect_to today_action_items_path, notice: message
   end
 
+  # Renders one dashboard section for a given filter as a partial. Used by the
+  # lazy_load Stimulus controller to defer expensive blocks off the initial page
+  # render, so a slow SolidCache / DB warm-up can't blow the 15s rack-timeout on
+  # /.
+  def fragment
+    @current_filter = params[:filter].to_sym
+
+    case params[:section]
+    when "pending_reviews"
+      @pending_reviews = pending_reviews_for_today
+      render partial: "action_items/pending_reviews_section", layout: false
+    when "calendar_events"
+      @calendar_events = load_calendar_events(fragment_date)
+      @meetings_by_event_id = meetings_with_content_for_events(@calendar_events)
+      render partial: "action_items/calendar_events", locals: { calendar_events: @calendar_events }, layout: false
+    when "completed_items"
+      @completed_items = fragment_completed_items
+      render partial: "action_items/completed_items_section", layout: false
+    end
+  end
+
   def power_through
     @all_items = filtered_action_items(ActionItem.pending.active.today.root_items).includes(:dossier, :children).ordered.to_a
 
@@ -405,6 +409,22 @@ class ActionItemsController < ApplicationController
 
   def recent_completed_items
     base_scope.completed.root_items.includes(:dossier, :children).order(completed_at: :desc).limit(20)
+  end
+
+  def fragment_date
+    case @current_filter
+    when :tomorrow then Date.tomorrow
+    when :yesterday then Date.yesterday
+    else Date.current
+    end
+  end
+
+  def fragment_completed_items
+    if @current_filter == :yesterday
+      base_scope.completed_yesterday.root_items.includes(:dossier, :children).order(completed_at: :desc)
+    else
+      recent_completed_items
+    end
   end
 
   def load_filter_counts

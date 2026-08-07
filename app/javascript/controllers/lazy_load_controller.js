@@ -3,14 +3,20 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["content", "spinner"]
   static values = {
-    url: String
+    url: String,
+    delay: { type: Number, default: 0 }
   }
 
   connect() {
-    this.load()
+    if (this.delayValue > 0) {
+      this.delayTimer = setTimeout(() => this.load(), this.delayValue)
+    } else {
+      this.load()
+    }
   }
 
   disconnect() {
+    if (this.delayTimer) clearTimeout(this.delayTimer)
     if (this.retryTimer) clearTimeout(this.retryTimer)
   }
 

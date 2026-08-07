@@ -1,6 +1,41 @@
 require "rails_helper"
+require "benchmark"
 
 RSpec.describe ApplicationHelper, type: :helper do
+  describe "#markdown_first_paragraph" do
+    it "returns an empty string for blank input" do
+      expect(helper.markdown_first_paragraph(nil)).to eq("")
+      expect(helper.markdown_first_paragraph("")).to eq("")
+    end
+
+    it "renders a short paragraph as markdown" do
+      expect(helper.markdown_first_paragraph("**bold** text")).to include("<strong>bold</strong>")
+    end
+
+    it "returns only the first paragraph when a blank line separates them" do
+      html = helper.markdown_first_paragraph("first para\n\nsecond para that should not render")
+      expect(html).to include("first para")
+      expect(html).not_to include("second para")
+    end
+
+    it "hard-caps the raw input handed to Redcarpet at MARKDOWN_PREVIEW_MAX_CHARS" do
+      huge = "a" * (ApplicationHelper::MARKDOWN_PREVIEW_MAX_CHARS + 500)
+
+      html = helper.markdown_first_paragraph(huge)
+
+      expect(html.length).to be < huge.length
+      expect(html).to include("…")
+    end
+
+    it "renders in comfortably under a second for a maximum-length preview" do
+      max_input = "a " * (ApplicationHelper::MARKDOWN_PREVIEW_MAX_CHARS / 2)
+
+      duration = Benchmark.realtime { helper.markdown_first_paragraph(max_input) }
+
+      expect(duration).to be < 0.5
+    end
+  end
+
   describe "#document_thumbnail_tag" do
     let(:blob) do
       ActiveStorage::Blob.create_and_upload!(

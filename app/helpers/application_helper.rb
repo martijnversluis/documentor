@@ -31,18 +31,24 @@ module ApplicationHelper
     end
   end
 
+  MARKDOWN_RENDERER = Redcarpet::Markdown.new(
+    ExternalLinkRenderer.new(hard_wrap: true),
+    autolink: true,
+    tables: true,
+    fenced_code_blocks: true,
+    strikethrough: true,
+    no_intra_emphasis: true
+  )
+
+  # Cap on the raw input we hand to Redcarpet in the list-item preview.
+  # A previously unbounded description hit rack-timeout while rendering, so a
+  # hard ceiling here keeps _index_item.html.erb responsive even on giant text.
+  MARKDOWN_PREVIEW_MAX_CHARS = 1_000
+
   def markdown(text)
     return "" if text.blank?
 
-    renderer = ExternalLinkRenderer.new(hard_wrap: true)
-    markdown = Redcarpet::Markdown.new(renderer,
-      autolink: true,
-      tables: true,
-      fenced_code_blocks: true,
-      strikethrough: true,
-      no_intra_emphasis: true
-    )
-    html = markdown.render(text)
+    html = MARKDOWN_RENDERER.render(text)
 
     # Convert GitHub-style task lists to checkboxes
     html = html.gsub(/<li>\s*\[ \]/, '<li class="task-list-item"><input type="checkbox" data-action="change->markdown-checkbox#toggle">')
@@ -55,6 +61,7 @@ module ApplicationHelper
     return "" if text.blank?
 
     first_paragraph = text.split(/\n\s*\n/).first.to_s
+    first_paragraph = "#{first_paragraph[0, MARKDOWN_PREVIEW_MAX_CHARS]}…" if first_paragraph.length > MARKDOWN_PREVIEW_MAX_CHARS
     markdown(first_paragraph)
   end
 
