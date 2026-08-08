@@ -138,7 +138,7 @@ Rails.application.routes.draw do
           as: :fragment,
           constraints: {
             filter: /today|tomorrow|yesterday|overdue|waiting|someday|next_actions|quick_wins|recurring|inbox/,
-            section: /pending_reviews|calendar_events|completed_items/
+            section: /pending_items|pending_reviews|calendar_events|completed_items/
           }
     end
     member do

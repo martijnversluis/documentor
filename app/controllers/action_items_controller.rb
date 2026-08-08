@@ -5,7 +5,6 @@ class ActionItemsController < ApplicationController
   def today
     @current_filter = :today
     @filter_label = "vandaag"
-    @pending_items = base_pending_scope.today
     @habits = load_habits_for_today
     render :index
   end
@@ -13,14 +12,12 @@ class ActionItemsController < ApplicationController
   def tomorrow
     @current_filter = :tomorrow
     @filter_label = "morgen"
-    @pending_items = base_pending_scope.tomorrow
     render :index
   end
 
   def yesterday
     @current_filter = :yesterday
     @filter_label = "gisteren"
-    @pending_items = ActionItem.none
     @show_only_completed = true
     render :index
   end
@@ -28,49 +25,42 @@ class ActionItemsController < ApplicationController
   def overdue
     @current_filter = :overdue
     @filter_label = "verlopen"
-    @pending_items = base_pending_scope.overdue
     render :index
   end
 
   def waiting
     @current_filter = :waiting
     @filter_label = "wachtend"
-    @pending_items = base_pending_scope.waiting
     render :index
   end
 
   def someday
     @current_filter = :someday
     @filter_label = "ooit/misschien"
-    @pending_items = base_scope.pending.root_items.includes(:dossier, :waiting_for_party, :children).someday_maybe.ordered
     render :index
   end
 
   def next_actions
     @current_filter = :next_actions
     @filter_label = "eerstvolgende"
-    @pending_items = base_pending_scope.next_actions
     render :index
   end
 
   def quick_wins
     @current_filter = :quick_wins
     @filter_label = "quick win"
-    @pending_items = base_pending_scope.quick_wins
     render :index
   end
 
   def recurring
     @current_filter = :recurring
     @filter_label = "herhalend"
-    @pending_items = base_pending_scope.recurring
     render :index
   end
 
   def inbox
     @current_filter = :inbox
     @filter_label = "inbox"
-    @pending_items = base_pending_scope.inbox
     @inbox_documents = Document.unscoped.inbox.includes(file_attachment: :blob).order(created_at: :desc)
     @inbox_notes = Note.unscoped.inbox.order(created_at: :desc)
 
@@ -350,6 +340,9 @@ class ActionItemsController < ApplicationController
     @current_filter = params[:filter].to_sym
 
     case params[:section]
+    when "pending_items"
+      @pending_items = fragment_pending_items.to_a
+      render partial: "action_items/pending_items_section", layout: false
     when "pending_reviews"
       @pending_reviews = pending_reviews_for_today
       render partial: "action_items/pending_reviews_section", layout: false
@@ -424,6 +417,22 @@ class ActionItemsController < ApplicationController
       base_scope.completed_yesterday.root_items.includes(:dossier, :children).order(completed_at: :desc)
     else
       recent_completed_items
+    end
+  end
+
+  def fragment_pending_items
+    case @current_filter
+    when :today then base_pending_scope.today
+    when :tomorrow then base_pending_scope.tomorrow
+    when :yesterday then ActionItem.none
+    when :overdue then base_pending_scope.overdue
+    when :waiting then base_pending_scope.waiting
+    when :someday then base_scope.pending.root_items.includes(:dossier, :waiting_for_party, :children).someday_maybe.ordered
+    when :next_actions then base_pending_scope.next_actions
+    when :quick_wins then base_pending_scope.quick_wins
+    when :recurring then base_pending_scope.recurring
+    when :inbox then base_pending_scope.inbox
+    else ActionItem.none
     end
   end
 
