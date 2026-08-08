@@ -173,35 +173,5 @@ describe "ActionItems#today" do
       expect(response).to have_http_status(:success)
     end
 
-    it "does not fire per-item children queries when rendering items with sub-items" do
-      3.times do
-        parent = create(:action_item, due_date: Date.current)
-        create(:action_item, parent: parent, due_date: Date.current)
-        create(:action_item, parent: parent, due_date: Date.current, completed_at: 1.hour.ago)
-      end
-
-      # Warm caches so we exercise the render path, not the cache-miss shortcuts
-      Rails.cache.write("meetings_by_event_id/v1", {})
-      Rails.cache.write("calendar_events_#{Date.current}", [])
-
-      # Prime the request once so route/controller class caches don't skew the count
-      get today_action_items_path
-
-      queries = []
-      callback = ->(*, payload) do
-        next if payload[:name] == "SCHEMA"
-        next if payload[:sql].match?(/\A(BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE)/)
-
-        queries << payload[:sql]
-      end
-
-      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
-        get today_action_items_path
-      end
-
-      children_scope_queries = queries.grep(/FROM "action_items".*"parent_id" =/)
-      expect(children_scope_queries).to be_empty,
-        "expected no per-item children scope queries, got:\n#{children_scope_queries.join("\n")}"
-    end
   end
 end

@@ -103,17 +103,99 @@ describe "ActionItems#fragment" do
     end
   end
 
+  describe "GET /action_items/fragment/:filter/pending_items" do
+    it "renders the pending items list for the today filter" do
+      create(:action_item, description: "Vandaag te doen", due_date: Date.current)
+
+      get fragment_action_items_path(filter: :today, section: :pending_items)
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("Openstaand")
+      expect(response.body).to include("Vandaag te doen")
+    end
+
+    it "renders the empty state when there are no pending items for the filter" do
+      get fragment_action_items_path(filter: :today, section: :pending_items)
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("Geen openstaande actiepunten")
+    end
+
+    it "renders an empty body when the filter is yesterday (no pending items ever)" do
+      get fragment_action_items_path(filter: :yesterday, section: :pending_items)
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("Geen openstaande actiepunten")
+    end
+
+    it "does not fire per-item children queries when rendering items with sub-items" do
+      3.times do
+        parent = create(:action_item, due_date: Date.current)
+        create(:action_item, parent: parent, due_date: Date.current)
+        create(:action_item, parent: parent, due_date: Date.current, completed_at: 1.hour.ago)
+      end
+
+      # Prime the request once so route/controller class caches don't skew the count
+      get fragment_action_items_path(filter: :today, section: :pending_items)
+
+      queries = []
+      callback = ->(*, payload) do
+        next if payload[:name] == "SCHEMA"
+        next if payload[:sql].match?(/\A(BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE)/)
+
+        queries << payload[:sql]
+      end
+
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        get fragment_action_items_path(filter: :today, section: :pending_items)
+      end
+
+      children_scope_queries = queries.grep(/FROM "action_items".*"parent_id" =/)
+      expect(children_scope_queries).to be_empty,
+        "expected no per-item children scope queries, got:\n#{children_scope_queries.join("\n")}"
+    end
+  end
+
   describe "index emits lazy-load shells pointing at the fragment endpoint" do
-    it "renders the pending_reviews, calendar_events and completed_items lazy shells with staggered delays on /" do
+    it "renders the pending_items, pending_reviews, calendar_events and completed_items lazy shells with staggered delays on /" do
       get today_action_items_path
 
       expect(response).to have_http_status(:success)
+      expect(response.body).to include(%(data-lazy-load-url-value="#{fragment_action_items_path(filter: :today, section: :pending_items)}"))
       expect(response.body).to include(%(data-lazy-load-url-value="#{fragment_action_items_path(filter: :today, section: :pending_reviews)}"))
       expect(response.body).to include(%(data-lazy-load-url-value="#{fragment_action_items_path(filter: :today, section: :calendar_events)}"))
       expect(response.body).to include(%(data-lazy-load-url-value="#{fragment_action_items_path(filter: :today, section: :completed_items)}"))
+      expect(response.body).to include(%(data-lazy-load-delay-value="100"))
       expect(response.body).to include(%(data-lazy-load-delay-value="300"))
       expect(response.body).to include(%(data-lazy-load-delay-value="500"))
       expect(response.body).to include(%(data-lazy-load-delay-value="700"))
+    end
+
+    it "does not fire any action_items queries on the initial render" do
+      create(:action_item, description: "Vandaag te doen", due_date: Date.current)
+
+      # Warm the caches so we don't observe cache-miss enqueue traffic
+      Rails.cache.write("meetings_by_event_id/v1", {})
+      Rails.cache.write("calendar_events_#{Date.current}", [])
+
+      # Prime the request once so route/controller class caches don't skew the count
+      get today_action_items_path
+
+      queries = []
+      callback = ->(*, payload) do
+        next if payload[:name] == "SCHEMA"
+        next if payload[:sql].match?(/\A(BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE)/)
+
+        queries << payload[:sql]
+      end
+
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        get today_action_items_path
+      end
+
+      action_item_queries = queries.grep(/FROM "action_items"/)
+      expect(action_item_queries).to be_empty,
+        "expected no action_items queries on initial render, got:\n#{action_item_queries.join("\n")}"
     end
   end
 end

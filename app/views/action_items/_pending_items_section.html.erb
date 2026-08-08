@@ -1,0 +1,55 @@
+<% if @pending_items.size >= 5 %>
+  <%= render "action_items/batching_suggestions", items: @pending_items %>
+<% end %>
+
+<% if @pending_items.any? %>
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+    <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-semibold text-gray-900">Openstaand (<%= @pending_items.size %>)</h2>
+      <% if @current_filter == :today && @pending_items.any? %>
+        <div class="flex items-center gap-2">
+          <%= link_to power_through_action_items_path, class: "inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg" do %>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            Power through
+          <% end %>
+          <%= button_to postpone_today_action_items_path, method: :patch, class: "inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded", data: { turbo_confirm: "Alle #{@pending_items.size} items van vandaag doorschuiven naar morgen?" } do %>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+            </svg>
+            Naar morgen
+          <% end %>
+        </div>
+      <% end %>
+      <% if @current_filter == :overdue && @pending_items.any? %>
+        <%= button_to reschedule_overdue_action_items_path, method: :patch, class: "inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg cursor-pointer", data: { turbo_confirm: "Alle #{@pending_items.size} verlopen items naar vandaag verplaatsen?" } do %>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          Naar vandaag
+        <% end %>
+      <% end %>
+      <% if @current_filter == :inbox %>
+        <%= link_to inbox_triage_path, class: "inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg" do %>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+          Triage
+        <% end %>
+      <% end %>
+    </div>
+    <ul id="action-items-list" class="divide-y divide-gray-100" data-controller="sortable" data-sortable-url-value="<%= reorder_action_items_path %>">
+      <% @pending_items.each do |item| %>
+        <%= render "action_items/index_item", item: item, return_to: request.path %>
+      <% end %>
+    </ul>
+  </div>
+<% else %>
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center mb-6">
+    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <p class="mt-2 text-gray-500">Geen openstaande actiepunten</p>
+  </div>
+<% end %>
