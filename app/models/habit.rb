@@ -6,6 +6,14 @@ class Habit < ApplicationRecord
 
   has_many :habit_completions, dependent: :destroy
 
+  after_commit :invalidate_today_dashboard_cache
+
+  def self.invalidate_today_dashboard_cache
+    Rails.cache.delete("habits_for_today/v2/#{Date.current}")
+  rescue StandardError, Rack::Timeout::RequestTimeoutException => e
+    Rails.logger.warn("Habit.invalidate_today_dashboard_cache failed: #{e.class}: #{e.message}")
+  end
+
   FREQUENCIES = %w[daily weekdays weekly].freeze
   COLORS = %w[blue green purple orange pink red yellow].freeze
 
@@ -241,5 +249,9 @@ class Habit < ApplicationRecord
   def prevent_destruction
     errors.add(:base, "Gewoontes kunnen niet verwijderd worden, alleen gearchiveerd")
     throw(:abort)
+  end
+
+  def invalidate_today_dashboard_cache
+    self.class.invalidate_today_dashboard_cache
   end
 end
