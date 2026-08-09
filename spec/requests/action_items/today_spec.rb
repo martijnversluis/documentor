@@ -109,8 +109,8 @@ describe "ActionItems#today" do
 
     it "uses cached habits when they are present" do
       Rails.cache.clear
-      key = "habits_for_today/v1/#{Date.current}/0"
-      Rails.cache.write(key, [])
+      allow(Rails.cache).to receive(:read).and_call_original
+      allow(Rails.cache).to receive(:read).with("habits_for_today/v2/#{Date.current}").and_return([])
       allow(Habit).to receive(:today_dashboard_data).and_call_original
 
       get today_action_items_path
@@ -119,16 +119,22 @@ describe "ActionItems#today" do
       expect(Habit).not_to have_received(:today_dashboard_data)
     end
 
-    it "shows a habits loading state when the cache is cold and habits exist" do
-      create(:habit, active: true)
+    it "shows a habits loading state on cache miss (does not hit the DB to check for habits)" do
+      allow(Habit).to receive(:exists?).and_call_original
 
       get today_action_items_path
 
       expect(response).to have_http_status(:success)
       expect(response.body).to include("Gewoontes worden geladen")
+      # Never touch the DB on the hot path — a cold PG connection can eat the
+      # entire 15s rack-timeout budget.
+      expect(Habit).not_to have_received(:exists?)
     end
 
-    it "hides the habits block entirely when there are no active habits" do
+    it "hides the habits block when the cache confirms no active habits" do
+      allow(Rails.cache).to receive(:read).and_call_original
+      allow(Rails.cache).to receive(:read).with("habits_for_today/v2/#{Date.current}").and_return([])
+
       get today_action_items_path
 
       expect(response).to have_http_status(:success)

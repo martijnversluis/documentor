@@ -28,7 +28,7 @@ class ApplicationController < ActionController::Base
   def work_mode_auto?
     return @work_mode_auto if defined?(@work_mode_auto)
 
-    @work_mode_auto = GoogleAccount.joins(:google_calendars).where(google_calendars: { enabled: true }).exists?
+    @work_mode_auto = hot_cache_fetch("work_mode_auto", default: false)
   end
 
   def work_status

@@ -3,6 +3,7 @@ class RefreshExternalDataJob < ApplicationJob
 
   def perform
     refresh_work_mode
+    refresh_work_mode_auto
     refresh_work_status
     refresh_ongoing_meetings
     refresh_calendar_events
@@ -22,6 +23,13 @@ class RefreshExternalDataJob < ApplicationJob
     Rails.cache.write("auto_work_mode", result, expires_in: CACHE_TTL)
   rescue StandardError => e
     Rails.logger.warn "RefreshExternalDataJob: work mode check failed: #{e.message}"
+  end
+
+  def refresh_work_mode_auto
+    result = GoogleAccount.joins(:google_calendars).where(google_calendars: { enabled: true }).exists?
+    Rails.cache.write("work_mode_auto", result, expires_in: CACHE_TTL)
+  rescue StandardError => e
+    Rails.logger.warn "RefreshExternalDataJob: work_mode_auto check failed: #{e.message}"
   end
 
   def refresh_work_status
@@ -114,9 +122,7 @@ class RefreshExternalDataJob < ApplicationJob
 
   def refresh_habits_today
     date = Date.current
-    version = Habit.maximum(:updated_at)&.to_i || 0
-    cache_key = "habits_for_today/v1/#{date}/#{version}"
-    Rails.cache.write(cache_key, Habit.today_dashboard_data(date: date), expires_in: 10.minutes)
+    Rails.cache.write("habits_for_today/v2/#{date}", Habit.today_dashboard_data(date: date), expires_in: 10.minutes)
   rescue StandardError => e
     Rails.logger.warn "RefreshExternalDataJob: habits refresh failed: #{e.message}"
   end

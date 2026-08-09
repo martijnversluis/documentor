@@ -552,15 +552,15 @@ class ActionItemsController < ApplicationController
   end
 
   def load_habits_for_today
-    version = Habit.maximum(:updated_at)&.to_i || 0
-    cache_key = "habits_for_today/v1/#{Date.current}/#{version}"
-    cached = Rails.cache.read(cache_key)
+    cached = safe_cache_read("habits_for_today/v2/#{Date.current}")
     return cached unless cached.nil?
 
     enqueue_cache_refresh
-    # nil signals "cache cold, but habits may exist" so the view can show a
-    # loading state instead of silently hiding the block; [] means "warm cache
-    # confirmed there is nothing to show".
-    Habit.active.not_archived.exists? ? nil : []
+    # nil signals "cache cold" so the view shows a loading state instead of
+    # silently hiding the block. Do NOT touch the DB here — a cold PG
+    # connection can eat the entire 15s rack-timeout budget. The background
+    # RefreshExternalDataJob will fill the cache with either data or an
+    # explicit [].
+    nil
   end
 end
