@@ -41,12 +41,18 @@ describe "ApplicationController hot-path cache resilience" do
       cache_failures.each do |failure_name, (exception_class, message)|
         it "renders successfully when the underlying cache read raises #{failure_name}" do
           allow(Rails.cache).to receive(:read).and_call_original
+          # Preserve the outer work_mode_auto stub so the layout still renders
+          # the work_status / ongoing_meetings blocks (otherwise the resilience
+          # assertion for those keys passes vacuously — the read never fires).
+          allow(Rails.cache).to receive(:read).with("work_mode_auto").and_return(true)
           allow(Rails.cache).to receive(:read).with(key)
             .and_raise(exception_class, message)
 
           get today_action_items_path
 
           expect(response).to have_http_status(:success)
+          expect(Rails.cache).to have_received(:read).with(key),
+            "expected the #{key} cache read to be attempted (and rescued)"
         end
       end
     end
@@ -56,6 +62,7 @@ describe "ApplicationController hot-path cache resilience" do
     cache_failures.each do |failure_name, (exception_class, message)|
       it "renders successfully when the filter-counts cache read raises #{failure_name}" do
         allow(Rails.cache).to receive(:read).and_call_original
+        allow(Rails.cache).to receive(:read).with("work_mode_auto").and_return(true)
         allow(Rails.cache).to receive(:read).with(a_string_starting_with("action_items/filter_counts/"))
           .and_raise(exception_class, message)
 
