@@ -83,3 +83,7 @@ production:
   primary:
     <<: *default
     url: <%= ENV["DATABASE_URL"] %>
+    # Disable idle-connection reaping. The container often sits idle for
+    # hours between requests (overnight, /up-only periods) and the cold
+    # PG reconnect eats the 15s rack-timeout budget on the next real hit.
+    idle_timeout: 0
