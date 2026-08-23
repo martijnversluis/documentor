@@ -87,3 +87,12 @@ production:
     # hours between requests (overnight, /up-only periods) and the cold
     # PG reconnect eats the 15s rack-timeout budget on the next real hit.
     idle_timeout: 0
+    # Enable TCP keepalives so the socket doesn't get silently dropped by
+    # Docker's network stack or PG-side idle timers during long /up-only
+    # stretches. Without these, Rails still holds the connection object
+    # but the underlying TCP is dead, and the next real request pays a
+    # ~10s reconnect penalty that blows the 15s rack-timeout budget.
+    keepalives: 1
+    keepalives_idle: 30
+    keepalives_interval: 10
+    keepalives_count: 3
