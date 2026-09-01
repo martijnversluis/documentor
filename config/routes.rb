@@ -209,6 +209,7 @@ Rails.application.routes.draw do
   get "mail/dashboard", to: "mail#dashboard", as: :mail_dashboard
   post "mail/promote", to: "mail#promote", as: :mail_promote
   post "mail/dismiss", to: "mail#dismiss", as: :mail_dismiss
+  post "mail/mark_as_read", to: "mail#mark_as_read", as: :mail_mark_as_read
 
   # Meetings
   get "meetings/banner", to: "meetings#banner", as: :meetings_banner

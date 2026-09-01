@@ -9,83 +9,77 @@ class GmailService
     @account = google_account
   end
 
-  # Fetch unread messages from inbox
+  # Fetch unread inbox conversations, one entry per thread.
   def unread_messages(max_results: 20)
     refresh_token_if_needed!
     service = gmail_service
 
-    # Get unread messages in inbox
-    result = service.list_user_messages(
+    result = service.list_user_threads(
       "me",
       q: "is:unread in:inbox",
       max_results: max_results
     )
 
-    return [] unless result.messages.present?
+    return [] unless result.threads.present?
 
-    # Fetch details for each message
-    result.messages.map do |msg|
-      fetch_message_details(service, msg.id)
+    result.threads.map do |thread_stub|
+      fetch_thread_details(service, thread_stub.id)
     end.compact
   rescue Google::Apis::AuthorizationError => e
     raise AuthorizationError, "Gmail token is invalid or expired: #{e.message}"
   end
 
-  # Mark a message as read
-  def mark_as_read(message_id)
+  def mark_thread_as_read(thread_id)
     refresh_token_if_needed!
     service = gmail_service
 
-    # Remove UNREAD label
-    modify_request = Google::Apis::GmailV1::ModifyMessageRequest.new(
+    modify_request = Google::Apis::GmailV1::ModifyThreadRequest.new(
       remove_label_ids: ["UNREAD"]
     )
-    service.modify_message("me", message_id, modify_request)
+    service.modify_thread("me", thread_id, modify_request)
   rescue Google::Apis::ClientError => e
-    Rails.logger.warn "Failed to mark message #{message_id} as read: #{e.message}"
+    Rails.logger.warn "Failed to mark thread #{thread_id} as read: #{e.message}"
     raise
   end
 
-  # Move a message to trash
-  def trash(message_id)
+  def trash_thread(thread_id)
     refresh_token_if_needed!
     service = gmail_service
-    service.trash_user_message("me", message_id)
+    service.trash_user_thread("me", thread_id)
   rescue Google::Apis::ClientError => e
-    Rails.logger.warn "Failed to trash message #{message_id}: #{e.message}"
+    Rails.logger.warn "Failed to trash thread #{thread_id}: #{e.message}"
     raise
-  end
-
-  # Mark as read and trash in one go
-  def dismiss(message_id)
-    mark_as_read(message_id)
-    trash(message_id)
   end
 
   private
 
-  def fetch_message_details(service, message_id)
-    msg = service.get_user_message("me", message_id, format: "full")
+  def fetch_thread_details(service, thread_id)
+    thread = service.get_user_thread("me", thread_id, format: "full")
+    messages = thread.messages || []
+    return nil if messages.empty?
 
-    headers = msg.payload.headers.to_h { |h| [h.name.downcase, h.value] }
+    # Prefer the newest unread message so subject/from reflect the item that made the thread unread.
+    message = messages.reverse.find { |m| m.label_ids&.include?("UNREAD") } || messages.last
 
-    # Extract HTML body for CTA extraction
-    html_body = extract_html_body(msg.payload)
+    headers = message.payload.headers.to_h { |h| [h.name.downcase, h.value] }
+
+    html_body = extract_html_body(message.payload)
     cta = extract_cta(html_body) if html_body.present?
 
     {
-      id: msg.id,
-      thread_id: msg.thread_id,
-      snippet: msg.snippet,
+      id: message.id,
+      thread_id: thread_id,
+      message_count: messages.size,
+      snippet: message.snippet,
       subject: headers["subject"] || "(geen onderwerp)",
       from: parse_from_header(headers["from"]),
       from_raw: headers["from"],
       date: parse_date(headers["date"]),
-      labels: msg.label_ids || [],
+      labels: message.label_ids || [],
       cta: cta
     }
   rescue Google::Apis::ClientError => e
-    Rails.logger.warn "Failed to fetch message #{message_id}: #{e.message}"
+    Rails.logger.warn "Failed to fetch thread #{thread_id}: #{e.message}"
     nil
   end
 

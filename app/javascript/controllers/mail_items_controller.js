@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["list", "item"]
-  static values = { promoteUrl: String, dismissUrl: String }
+  static values = { promoteUrl: String, dismissUrl: String, markAsReadUrl: String }
 
   connect() {
     setTimeout(() => this.filterItems(), 0)
@@ -21,33 +21,36 @@ export default class extends Controller {
     this.checkEmpty()
   }
 
-  async ignore(event) {
+  async delete(event) {
+    await this.sendThreadAction(event, this.dismissUrlValue, "Failed to delete mail thread:")
+  }
+
+  async markAsRead(event) {
+    await this.sendThreadAction(event, this.markAsReadUrlValue, "Failed to mark mail thread as read:")
+  }
+
+  async sendThreadAction(event, url, errorLabel) {
     event.preventDefault()
     event.stopPropagation()
 
     const item = event.target.closest("[data-item-id]")
     if (!item) return
 
-    const itemId = item.dataset.itemId
-    // Extract the actual Gmail message ID (remove "mail-" prefix)
-    const messageId = itemId.replace("mail-", "")
-
-    // Remove from UI immediately
+    const threadId = item.dataset.itemThreadId
     item.remove()
     this.checkEmpty()
 
-    // Call backend to mark as read and trash
     try {
-      await fetch(this.dismissUrlValue, {
+      await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content
         },
-        body: JSON.stringify({ message_id: messageId })
+        body: JSON.stringify({ thread_id: threadId })
       })
     } catch (error) {
-      console.error("Failed to dismiss mail:", error)
+      console.error(errorLabel, error)
     }
   }
 

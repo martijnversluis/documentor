@@ -1,4 +1,7 @@
-<div data-controller="mail-items" data-mail-items-promote-url-value="<%= mail_promote_path %>" data-mail-items-dismiss-url-value="<%= mail_dismiss_path %>">
+<div data-controller="mail-items"
+     data-mail-items-promote-url-value="<%= mail_promote_path %>"
+     data-mail-items-dismiss-url-value="<%= mail_dismiss_path %>"
+     data-mail-items-mark-as-read-url-value="<%= mail_mark_as_read_path %>">
   <% if messages.empty? %>
     <div class="text-center py-4 text-gray-500 text-sm">
       Geen ongelezen berichten
@@ -8,7 +11,7 @@
       <% messages.first(20).each do |msg| %>
         <li class="px-4 py-2.5 hover:bg-gray-50 group"
             data-mail-items-target="item"
-            data-item-id="mail-<%= msg[:id] %>"
+            data-item-id="mail-<%= msg[:thread_id] %>"
             data-item-subject="<%= msg[:subject] %>"
             data-item-from="<%= msg[:from] %>"
             data-item-thread-id="<%= msg[:thread_id] %>">
@@ -23,7 +26,12 @@
             </div>
             <div class="flex-1 min-w-0">
               <a href="https://mail.google.com/mail/u/0/#inbox/<%= msg[:thread_id] %>" target="_blank" rel="noopener noreferrer">
-                <p class="text-sm text-gray-900 truncate"><%= msg[:subject] %></p>
+                <p class="text-sm text-gray-900 truncate">
+                  <%= msg[:subject] %>
+                  <% if msg[:message_count].to_i > 1 %>
+                    <span class="ml-1 text-xs text-gray-500">(<%= msg[:message_count] %>)</span>
+                  <% end %>
+                </p>
                 <p class="text-xs text-gray-500">
                   <%= msg[:from] %>
                   <% if msg[:date] %>
@@ -60,11 +68,19 @@
                 </svg>
               </button>
               <button type="button"
-                      data-action="click->mail-items#ignore"
-                      class="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
-                      title="Negeren">
+                      data-action="click->mail-items#markAsRead"
+                      class="p-1 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded"
+                      title="Markeer als gelezen">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+              </button>
+              <button type="button"
+                      data-action="click->mail-items#delete"
+                      class="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                      title="Verwijder conversatie">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"></path>
                 </svg>
               </button>
             </div>

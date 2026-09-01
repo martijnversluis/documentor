@@ -41,6 +41,22 @@ class MailController < ApplicationController
   end
 
   def dismiss
+    with_mail_account do |account|
+      GmailService.new(account).trash_thread(params[:thread_id])
+      Rails.cache.delete("mail_dashboard_#{account.id}")
+    end
+  end
+
+  def mark_as_read
+    with_mail_account do |account|
+      GmailService.new(account).mark_thread_as_read(params[:thread_id])
+      Rails.cache.delete("mail_dashboard_#{account.id}")
+    end
+  end
+
+  private
+
+  def with_mail_account
     google_account = GoogleAccount.find_by(mail_enabled: true)
 
     unless google_account
@@ -48,15 +64,11 @@ class MailController < ApplicationController
       return
     end
 
-    service = GmailService.new(google_account)
-    service.dismiss(params[:message_id])
-
-    # Clear cache so the message disappears
-    Rails.cache.delete("mail_dashboard_#{google_account.id}")
+    yield(google_account)
 
     render json: { success: true }
   rescue StandardError => e
-    Rails.logger.error "Failed to dismiss mail: #{e.message}"
+    Rails.logger.error "Mail action failed: #{e.class}: #{e.message}"
     render json: { success: false, error: e.message }, status: :unprocessable_entity
   end
 end
