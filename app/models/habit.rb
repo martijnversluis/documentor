@@ -10,7 +10,7 @@ class Habit < ApplicationRecord
 
   def self.invalidate_today_dashboard_cache
     Rails.cache.delete("habits_for_today/v2/#{Date.current}")
-  rescue StandardError, Rack::Timeout::RequestTimeoutException => e
+  rescue StandardError => e
     Rails.logger.warn("Habit.invalidate_today_dashboard_cache failed: #{e.class}: #{e.message}")
   end
 

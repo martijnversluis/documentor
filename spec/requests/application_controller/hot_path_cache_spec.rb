@@ -13,11 +13,12 @@ describe "ApplicationController hot-path cache resilience" do
     allow(Rails.cache).to receive(:read).with("work_mode_auto").and_return(true)
   end
 
-  # Rack::Timeout::RequestTimeoutException inherits from Exception (not StandardError),
-  # so it slips past broad rescues. The hot-path readers must catch it explicitly.
+  # Backend/StandardError failures degrade to a cache miss.
+  # Rack::Timeout::RequestTimeoutException is intentionally NOT rescued: it must
+  # propagate so the request thread actually dies at its deadline instead of
+  # accumulating past-deadline work on a wedged puma slot.
   cache_failures = {
-    "ActiveRecord::QueryAborted" => [ActiveRecord::QueryAborted, "statement timeout"],
-    "Rack::Timeout::RequestTimeoutException" => [Rack::Timeout::RequestTimeoutException, "Request ran for longer than 15000ms"]
+    "ActiveRecord::QueryAborted" => [ActiveRecord::QueryAborted, "statement timeout"]
   }
 
   %w[auto_work_mode work_mode_auto work_status ongoing_meetings].each do |key|

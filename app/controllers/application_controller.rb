@@ -82,19 +82,20 @@ class ApplicationController < ActionController::Base
     Rails.cache.fetch("work_dossier_ids/v1", expires_in: 5.minutes) do
       Dossier.work.pluck(:id)
     end
-  rescue StandardError, Rack::Timeout::RequestTimeoutException => e
+  rescue StandardError => e
     Rails.logger.warn("work_dossier_ids fell back to direct query: #{e.class}: #{e.message}")
     Dossier.work.pluck(:id)
   end
 
-  # Reads +key+ from Rails.cache but never blocks the request thread on failure.
-  # Explicitly catches +Rack::Timeout::RequestTimeoutException+ (which inherits
-  # from +Exception+, not +StandardError+, so it slips past broad rescues) so a
-  # cache read that hits the rack-timeout deadline degrades to a cache miss
-  # instead of a 500.
+  # Reads +key+ from Rails.cache but never blocks the request thread on cache
+  # backend failures (SolidCache/PG hiccups). Rack::Timeout::RequestTimeoutException
+  # is deliberately NOT caught: rack-timeout raises it exactly once per request,
+  # so swallowing it here would silently extend the request past its deadline
+  # and pin a puma thread until every downstream call finally returns (observed:
+  # 97s requests that starved /up health checks and triggered container 502s).
   def safe_cache_read(key)
     Rails.cache.read(key)
-  rescue StandardError, Rack::Timeout::RequestTimeoutException => e
+  rescue StandardError => e
     Rails.logger.warn("safe_cache_read(#{key}) failed: #{e.class}: #{e.message}")
     nil
   end
