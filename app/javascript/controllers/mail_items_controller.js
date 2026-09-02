@@ -66,7 +66,6 @@ export default class extends Controller {
     const from = item.dataset.itemFrom
     const threadId = item.dataset.itemThreadId
 
-    // Build description like: [Mail] Van: Subject
     const description = `[Mail van ${from}] ${subject}`
     const notes = `https://mail.google.com/mail/u/0/#inbox/${threadId}`
 
@@ -74,13 +73,16 @@ export default class extends Controller {
       const response = await fetch(this.promoteUrlValue, {
         method: "POST",
         headers: {
+          "Accept": "text/vnd.turbo-stream.html",
           "Content-Type": "application/json",
           "X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content
         },
-        body: JSON.stringify({ description, notes })
+        body: JSON.stringify({ description, notes, thread_id: threadId })
       })
 
       if (response.ok) {
+        const html = await response.text()
+        Turbo.renderStreamMessage(html)
         this.addToPromoted(itemId)
         item.remove()
         this.checkEmpty()

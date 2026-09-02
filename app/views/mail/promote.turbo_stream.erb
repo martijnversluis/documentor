@@ -1,0 +1,7 @@
+<%= turbo_stream.append "action-items-list" do %>
+  <%= render "action_items/index_item", item: @action_item %>
+<% end %>
+
+<%= turbo_stream.replace "today-count" do %>
+  <span id="today-count"><%= ActionItem.pending.active.today.count %></span>
+<% end %>

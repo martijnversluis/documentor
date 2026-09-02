@@ -27,7 +27,7 @@ class MailController < ApplicationController
   end
 
   def promote
-    action_item = ActionItem.create!(
+    @action_item = ActionItem.create!(
       description: params[:description],
       due_date: Date.current,
       context: "werk",
@@ -35,7 +35,22 @@ class MailController < ApplicationController
       notes: params[:notes]
     )
 
-    render json: { success: true, action_item_id: action_item.id }
+    if params[:thread_id].present?
+      account = GoogleAccount.find_by(mail_enabled: true)
+      if account
+        begin
+          GmailService.new(account).mark_thread_as_read(params[:thread_id])
+          Rails.cache.delete("mail_dashboard_#{account.id}")
+        rescue StandardError => e
+          Rails.logger.warn "Mail promote: mark_thread_as_read failed for #{params[:thread_id]}: #{e.class}: #{e.message}"
+        end
+      end
+    end
+
+    respond_to do |format|
+      format.turbo_stream
+      format.json { render json: { success: true, action_item_id: @action_item.id } }
+    end
   rescue ActiveRecord::RecordInvalid => e
     render json: { success: false, error: e.message }, status: :unprocessable_entity
   end
