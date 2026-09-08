@@ -4,8 +4,9 @@
       <h2 class="font-semibold text-gray-700"><%= @current_filter == :yesterday ? "Afgerond gisteren" : "Recent afgerond" %></h2>
     </div>
     <ul id="completed-items-list" class="divide-y divide-gray-100">
+      <% return_path = filter_action_items_path(@current_filter) %>
       <% @completed_items.each do |item| %>
-        <%= render "action_items/completed_index_item", item: item, return_to: request.path %>
+        <%= render "action_items/completed_index_item", item: item, return_to: return_path %>
       <% end %>
     </ul>
   </div>
