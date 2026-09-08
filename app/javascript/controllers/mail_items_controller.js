@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["list", "item"]
-  static values = { promoteUrl: String, dismissUrl: String, markAsReadUrl: String }
+  static values = { dismissUrl: String, markAsReadUrl: String }
 
   connect() {
     setTimeout(() => this.filterItems(), 0)
@@ -51,44 +51,6 @@ export default class extends Controller {
       })
     } catch (error) {
       console.error(errorLabel, error)
-    }
-  }
-
-  async promote(event) {
-    event.preventDefault()
-    event.stopPropagation()
-
-    const item = event.target.closest("[data-item-id]")
-    if (!item) return
-
-    const itemId = item.dataset.itemId
-    const subject = item.dataset.itemSubject
-    const from = item.dataset.itemFrom
-    const threadId = item.dataset.itemThreadId
-
-    const description = `[Mail van ${from}] ${subject}`
-    const notes = `https://mail.google.com/mail/u/0/#inbox/${threadId}`
-
-    try {
-      const response = await fetch(this.promoteUrlValue, {
-        method: "POST",
-        headers: {
-          "Accept": "text/vnd.turbo-stream.html",
-          "Content-Type": "application/json",
-          "X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content
-        },
-        body: JSON.stringify({ description, notes, thread_id: threadId })
-      })
-
-      if (response.ok) {
-        const html = await response.text()
-        Turbo.renderStreamMessage(html)
-        this.addToPromoted(itemId)
-        item.remove()
-        this.checkEmpty()
-      }
-    } catch (error) {
-      console.error("Failed to promote item:", error)
     }
   }
 

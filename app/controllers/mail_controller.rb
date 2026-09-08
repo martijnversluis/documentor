@@ -26,23 +26,29 @@ class MailController < ApplicationController
     end
   end
 
-  def promote
-    @action_item = ActionItem.create!(
+  def new_promote
+    @thread_id = params[:thread_id]
+    @action_item = ActionItem.new(
       description: params[:description],
-      due_date: Date.current,
-      context: "werk",
-      position: 0,
-      notes: params[:notes]
+      notes: params[:notes],
+      due_date: Date.current
     )
+  end
 
-    if params[:thread_id].present?
+  def promote
+    attrs = action_item_params
+    @thread_id = params[:thread_id]
+    @action_item = ActionItem.new(attrs)
+    @action_item.save!
+
+    if @thread_id.present?
       account = GoogleAccount.find_by(mail_enabled: true)
       if account
         begin
-          GmailService.new(account).mark_thread_as_read(params[:thread_id])
+          GmailService.new(account).mark_thread_as_read(@thread_id)
           Rails.cache.delete("mail_dashboard_#{account.id}")
         rescue StandardError => e
-          Rails.logger.warn "Mail promote: mark_thread_as_read failed for #{params[:thread_id]}: #{e.class}: #{e.message}"
+          Rails.logger.warn "Mail promote: mark_thread_as_read failed for #{@thread_id}: #{e.class}: #{e.message}"
         end
       end
     end
@@ -52,7 +58,11 @@ class MailController < ApplicationController
       format.json { render json: { success: true, action_item_id: @action_item.id } }
     end
   rescue ActiveRecord::RecordInvalid => e
-    render json: { success: false, error: e.message }, status: :unprocessable_entity
+    @thread_id = params[:thread_id]
+    respond_to do |format|
+      format.turbo_stream { render :promote_error, status: :unprocessable_entity }
+      format.json { render json: { success: false, error: e.message }, status: :unprocessable_entity }
+    end
   end
 
   def dismiss
@@ -70,6 +80,14 @@ class MailController < ApplicationController
   end
 
   private
+
+  def action_item_params
+    permitted = params.fetch(:action_item, {}).permit(:description, :notes, :dossier_id, :context, :due_date)
+    permitted[:description] = params[:description] if permitted[:description].blank? && params[:description].present?
+    permitted[:notes] = params[:notes] if permitted[:notes].blank? && params[:notes].present?
+    permitted[:due_date] = Date.current if permitted[:due_date].blank?
+    permitted
+  end
 
   def with_mail_account
     google_account = GoogleAccount.find_by(mail_enabled: true)

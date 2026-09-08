@@ -207,6 +207,7 @@ Rails.application.routes.draw do
 
   # Mail dashboard
   get "mail/dashboard", to: "mail#dashboard", as: :mail_dashboard
+  get "mail/promote/new", to: "mail#new_promote", as: :new_mail_promote
   post "mail/promote", to: "mail#promote", as: :mail_promote
   post "mail/dismiss", to: "mail#dismiss", as: :mail_dismiss
   post "mail/mark_as_read", to: "mail#mark_as_read", as: :mail_mark_as_read

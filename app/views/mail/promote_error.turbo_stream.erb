@@ -1,0 +1,3 @@
+<%= turbo_stream.update "modal" do %>
+  <%= render "mail/new_promote_form", action_item: @action_item, thread_id: @thread_id, errors: @action_item.errors %>
+<% end %>

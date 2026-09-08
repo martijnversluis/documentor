@@ -1,3 +1,9 @@
+<%= turbo_stream.update "modal", "" %>
+
+<% if @thread_id.present? %>
+  <%= turbo_stream.remove "mail-thread-#{@thread_id}" %>
+<% end %>
+
 <%= turbo_stream.append "action-items-list" do %>
   <%= render "action_items/index_item", item: @action_item %>
 <% end %>

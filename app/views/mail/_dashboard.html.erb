@@ -1,5 +1,4 @@
 <div data-controller="mail-items"
-     data-mail-items-promote-url-value="<%= mail_promote_path %>"
      data-mail-items-dismiss-url-value="<%= mail_dismiss_path %>"
      data-mail-items-mark-as-read-url-value="<%= mail_mark_as_read_path %>">
   <% if messages.empty? %>
@@ -10,6 +9,7 @@
     <ul class="divide-y divide-gray-100" data-mail-items-target="list">
       <% messages.first(20).each do |msg| %>
         <li class="px-4 py-2.5 hover:bg-gray-50 group"
+            id="mail-thread-<%= msg[:thread_id] %>"
             data-mail-items-target="item"
             data-item-id="mail-<%= msg[:thread_id] %>"
             data-item-subject="<%= msg[:subject] %>"
@@ -51,14 +51,18 @@
               <% end %>
             </div>
             <div class="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button type="button"
-                      data-action="click->mail-items#promote"
-                      class="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
-                      title="Promoveer naar actiepunt">
+              <%= link_to new_mail_promote_path(
+                    thread_id: msg[:thread_id],
+                    description: "[Mail van #{msg[:from]}] #{msg[:subject]}",
+                    notes: "https://mail.google.com/mail/u/0/#inbox/#{msg[:thread_id]}"
+                  ),
+                  class: "p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded",
+                  title: "Promoveer naar actiepunt",
+                  data: { turbo_frame: "modal" } do %>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-              </button>
+              <% end %>
               <button type="button"
                       data-action="click->mail-items#snooze"
                       class="p-1 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded"
