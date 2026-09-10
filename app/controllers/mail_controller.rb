@@ -31,7 +31,8 @@ class MailController < ApplicationController
     @action_item = ActionItem.new(
       description: params[:description],
       notes: params[:notes],
-      due_date: Date.current
+      due_date: Date.current,
+      dossier: Dossier.active.where("name ILIKE ?", "%stekker%").first
     )
   end
 

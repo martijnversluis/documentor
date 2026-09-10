@@ -10,6 +10,14 @@ describe "Mail#promote" do
       expect(response.body).to include("[Mail van X] Hi")
       expect(response.body).to include("abc123")
     end
+
+    it "preselects the Stekker dossier when it exists" do
+      stekker = create(:dossier, name: "🔌 Stekker")
+
+      get new_mail_promote_path, params: { thread_id: "abc123", description: "Hi" }
+
+      expect(response.body).to include(%(data-searchable-select-selected-value="#{stekker.id}"))
+    end
   end
 
   describe "POST /mail/promote" do
