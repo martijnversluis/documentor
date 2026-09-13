@@ -35,7 +35,11 @@ class Dossier < ApplicationRecord
   end
 
   def all_action_items_completed?
-    action_items.any? && action_items.pending.none?
+    if action_items.loaded?
+      action_items.any? && action_items.none? { |ai| ai.completed_at.nil? }
+    else
+      action_items.any? && action_items.pending.none?
+    end
   end
 
   def timeline_items

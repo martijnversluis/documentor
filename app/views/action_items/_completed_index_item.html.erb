@@ -22,7 +22,7 @@
               <% end %>
               <span class="text-xs text-green-600">Afgerond <%= item.completed_at.strftime("%d-%m-%Y") %></span>
               <% if item.has_children? %>
-                <span class="text-xs text-gray-500"><%= item.children.count %> sub-items</span>
+                <span class="text-xs text-gray-500"><%= item.children.size %> sub-items</span>
               <% end %>
             </div>
             <div class="mt-2">
@@ -57,9 +57,10 @@
   </div>
 
   <%# Render completed children %>
-  <% if item.children.completed.any? %>
+  <% completed_children = item.children.select { |c| c.completed_at.present? }.sort_by(&:completed_at).reverse %>
+  <% if completed_children.any? %>
     <ul class="border-l-2 border-gray-200 ml-8">
-      <% item.children.completed.order(completed_at: :desc).each do |child| %>
+      <% completed_children.each do |child| %>
         <%= render "action_items/completed_index_item", item: child, return_to: local_assigns[:return_to], nested: true %>
       <% end %>
     </ul>

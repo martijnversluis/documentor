@@ -17,9 +17,9 @@
         <div class="text-sm text-gray-500 line-clamp-2 prose prose-sm max-w-none prose-p:my-0"><%= markdown(dossier.description) %></div>
       <% end %>
       <div class="mt-2 flex items-center text-xs text-gray-400">
-        <span><%= dossier.folders.count %> mappen</span>
+        <span><%= dossier.folders.size %> mappen</span>
         <span class="mx-2">&middot;</span>
-        <span><%= dossier.documents.count + dossier.notes.count %> items</span>
+        <span><%= dossier.documents.size + dossier.notes.size %> items</span>
         <% if all_completed %>
           <span class="mx-2">&middot;</span>
           <span class="text-green-600 flex items-center gap-1">

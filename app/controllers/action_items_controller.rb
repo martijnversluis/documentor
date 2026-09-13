@@ -401,7 +401,7 @@ class ActionItemsController < ApplicationController
   end
 
   def recent_completed_items
-    base_scope.completed.root_items.includes(:dossier, :children).order(completed_at: :desc).limit(20)
+    base_scope.completed.root_items.includes(:dossier, children: :children).order(completed_at: :desc).limit(20)
   end
 
   def fragment_date
@@ -414,7 +414,7 @@ class ActionItemsController < ApplicationController
 
   def fragment_completed_items
     if @current_filter == :yesterday
-      base_scope.completed_yesterday.root_items.includes(:dossier, :children).order(completed_at: :desc)
+      base_scope.completed_yesterday.root_items.includes(:dossier, children: :children).order(completed_at: :desc)
     else
       recent_completed_items
     end
