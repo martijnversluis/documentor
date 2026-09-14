@@ -1,15 +1,13 @@
-<div data-controller="split-view"
-     data-split-view-storage-key-value="powerThroughSplitOpen"
-     data-split-view-content-max-width-value="max-w-3xl"
+<div data-controller="power-through-split"
      class="flex gap-6"
-     data-action="click->split-view#interceptLink">
-  <div class="max-w-3xl mx-auto flex-1" data-split-view-target="content">
+     data-action="click->power-through-split#interceptLink">
+  <div class="max-w-3xl mx-auto flex-1" data-power-through-split-target="content">
   <div class="mb-6">
     <div class="flex items-center justify-between mb-2">
       <h1 class="text-2xl font-bold text-gray-900">Power Through</h1>
       <div class="flex items-center gap-2">
-        <button data-action="split-view#toggle" class="p-1.5 rounded hover:bg-gray-100" title="Split view">
-          <svg data-split-view-target="toggleIcon" class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button data-action="power-through-split#toggle" class="p-1.5 rounded hover:bg-gray-100" title="Split view">
+          <svg data-power-through-split-target="toggleIcon" class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7"></path>
           </svg>
         </button>
@@ -262,5 +260,5 @@
   </div>
   </div>
 
-  <%= render "shared/split_view_panel", controller_name: "split-view" %>
+  <%= render "shared/split_view_panel", controller_name: "power-through-split" %>
 </div>
