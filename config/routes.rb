@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
   root "action_items#today"
 
+  get "embed_check", to: "embed_check#check", as: :embed_check
+
   # Authentication
   get "login", to: "sessions#new"
   post "login", to: "sessions#create"

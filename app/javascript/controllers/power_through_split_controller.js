@@ -19,6 +19,6 @@ export default class extends SplitViewController {
     const link = this.contentTarget.querySelector("a[target='_blank']")
     if (!link) return
 
-    this.loadInIframe(link.href, link.textContent.trim() || link.href)
+    this.tryLoadInIframe(link.href, link.textContent.trim() || link.href)
   }
 }

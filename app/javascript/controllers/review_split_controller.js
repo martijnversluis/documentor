@@ -39,6 +39,6 @@ export default class extends SplitViewController {
     if (this.panelTarget.classList.contains("hidden")) {
       this.open()
     }
-    this.loadInIframe(link.href, link.textContent.trim() || link.href)
+    this.tryLoadInIframe(link.href, link.textContent.trim() || link.href)
   }
 }
