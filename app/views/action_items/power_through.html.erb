@@ -96,7 +96,7 @@
             <%= f.hidden_field :parent_id, value: @current_item.id %>
             <%= f.hidden_field :dossier_id, value: @current_item.dossier_id %>
             <%= f.hidden_field :due_date, value: @current_item.due_date %>
-            <%= f.text_field :description, placeholder: "Nieuw sub-item toevoegen...", class: "flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+            <%= f.text_field :description, placeholder: "Nieuw sub-item toevoegen...", class: "flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500", data: { controller: "markdown-paste" } %>
             <%= f.submit "Toevoegen", class: "px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 cursor-pointer" %>
           <% end %>
         </div>
@@ -113,7 +113,7 @@
                   <% end %>
                   <div class="flex-1 min-w-0">
                     <div class="flex items-start justify-between gap-2">
-                      <p class="text-sm text-gray-700"><%= child.description %></p>
+                      <div class="text-sm text-gray-700 prose prose-sm max-w-none prose-p:my-0"><%= markdown(child.description) %></div>
                       <div class="flex items-center gap-1 flex-shrink-0">
                         <%= link_to edit_action_item_path(child, return_to: power_through_action_items_path(item_id: @current_item.id)), class: "p-1 text-gray-400 hover:text-blue-600 transition-colors", title: "Bewerken" do %>
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,7 +155,7 @@
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                   </svg>
                   <div class="flex-1 min-w-0">
-                    <p class="line-through"><%= child.description %></p>
+                    <div class="line-through prose prose-sm max-w-none prose-p:my-0 text-gray-400"><%= markdown(child.description) %></div>
                     <% if child.notes.present? %>
                       <p class="text-xs text-gray-400 mt-1 italic"><%= truncate(child.notes, length: 100) %></p>
                     <% end %>

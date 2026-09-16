@@ -24,9 +24,9 @@
     <% end %>
   <% end %>
   <div class="flex-1 min-w-0">
-    <%= link_to child, class: "block text-sm #{child.completed? ? 'text-gray-400 line-through' : 'text-gray-900 hover:text-blue-600'}", data: { turbo_frame: "_top" } do %>
-      <%= child.description %>
-    <% end %>
+    <div class="text-sm prose prose-sm max-w-none prose-p:my-0 <%= child.completed? ? 'text-gray-400 line-through' : 'text-gray-900' %>">
+      <%= markdown(child.description) %>
+    </div>
     <% if child.due_date.present? && !child.completed? %>
       <span class="text-xs <%= child.overdue? ? 'text-red-600 font-medium' : 'text-gray-500' %>">
         <%= child.due_date.strftime("%d-%m-%Y") %>
