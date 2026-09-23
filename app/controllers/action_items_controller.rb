@@ -342,6 +342,7 @@ class ActionItemsController < ApplicationController
     case params[:section]
     when "pending_items"
       @pending_items = fragment_pending_items.to_a
+      @overdue_count = filtered_action_items(ActionItem.pending.active.overdue).count if @current_filter == :today
       render partial: "action_items/pending_items_section", layout: false
     when "pending_reviews"
       @pending_reviews = pending_reviews_for_today
