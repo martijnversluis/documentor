@@ -99,6 +99,8 @@ export default class extends Controller {
   }
 
   async checkEmbeddable(href) {
+    if (this.isSameOrigin(href)) return true
+
     try {
       const response = await fetch(`/embed_check?url=${encodeURIComponent(href)}`, {
         headers: { "Accept": "application/json" }
@@ -108,6 +110,14 @@ export default class extends Controller {
       return data.embeddable !== false
     } catch (_) {
       return true
+    }
+  }
+
+  isSameOrigin(href) {
+    try {
+      return new URL(href, window.location.href).origin === window.location.origin
+    } catch (_) {
+      return false
     }
   }
 }
