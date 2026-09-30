@@ -112,9 +112,11 @@ class ReviewsController < ApplicationController
     today = Date.current
     year_start = Date.new(year, 1, 1)
 
+    reviews_by_type = Review.for_year(year).group_by(&:review_type)
+
     Review::REVIEW_TYPES.map do |type|
       periods = generate_periods_for_type(type, year, today)
-      reviews = Review.where(review_type: type).for_year(year).index_by(&:period_key)
+      reviews = (reviews_by_type[type] || []).index_by(&:period_key)
 
       periods_with_status = periods.map do |period|
         review = reviews[period[:key]]

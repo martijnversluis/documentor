@@ -2,11 +2,21 @@ class HabitsController < ApplicationController
   before_action :set_habit, only: [:edit, :update, :archive, :unarchive, :toggle, :increment, :decrement, :set_choice]
 
   def index
-    @habits = Habit.active.not_archived.includes(:habit_completions)
-      .sort_by { |h| [h.simple_checkbox? ? 1 : 0, h.name.downcase] }
-    @archived_habits = Habit.archived.ordered
     @date = Date.current
     @week_start = params[:week].present? ? Date.parse(params[:week]).beginning_of_week : Date.current.beginning_of_week
+
+    @habits = Habit.active.not_archived.to_a
+      .sort_by { |h| [h.simple_checkbox? ? 1 : 0, h.name.downcase] }
+
+    # Preload alleen recente completions (week + streak berekening tot ~1 jaar terug).
+    # Voorheen laadde `.includes(:habit_completions)` de volledige historie per habit,
+    # wat op /habits een cold render van tientallen seconden opleverde.
+    completions_scope = HabitCompletion.where(completed_on: (@week_start - 400.days)..(@week_start + 6.days))
+    ActiveRecord::Associations::Preloader.new(
+      records: @habits, associations: :habit_completions, scope: completions_scope
+    ).call
+
+    @archived_habits = Habit.archived.ordered
   end
 
   def trends
