@@ -33,17 +33,14 @@
     </div>
     <div class="flex items-center space-x-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
       <% if document.file.attached? %>
-        <button type="button"
-                data-controller="download"
-                data-download-url-value="<%= download_document_path(document) %>"
-                data-download-filename-value="<%= document.name %><%= File.extname(document.file.filename.to_s) unless document.name.include?('.') %>"
-                data-action="click->download#download"
-                class="p-1 text-gray-400 hover:text-blue-600"
-                title="Downloaden">
+        <%= link_to download_document_path(document),
+                    class: "p-1 text-gray-400 hover:text-blue-600",
+                    title: "Downloaden",
+                    data: { turbo: false } do %>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
           </svg>
-        </button>
+        <% end %>
       <% end %>
       <%= link_to edit_document_path(document), class: "p-1 text-gray-400 hover:text-gray-600", title: "Bewerken", data: { turbo_frame: "modal" } do %>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
