@@ -68,11 +68,11 @@ class DocumentsController < ApplicationController
       extension = File.extname(@document.file.filename.to_s)
       filename = @document.name.end_with?(extension) ? @document.name : "#{@document.name}#{extension}"
 
-      # Redirect naar een signed S3-URL; de client haalt het bestand direct bij
-      # Hetzner op. Voorkomt dat Rails het bestand eerst in memory laadt en zo
-      # de 15s rack-timeout opeet voor grotere bestanden.
-      redirect_to rails_blob_url(@document.file, disposition: "attachment", filename: filename),
-                  allow_other_host: true
+      # Rails' proxy-controller streamt chunked uit S3 met nette headers.
+      # Voorkomt dat we het hele bestand eerst in memory laden (zoals het oude
+      # send_data pad), en vermijdt de Content-Disposition-mismatch die
+      # Chrome lieten hangen op een signed Hetzner redirect.
+      redirect_to rails_storage_proxy_url(@document.file, disposition: "attachment", filename: filename)
     else
       redirect_to @document, alert: "Geen bestand beschikbaar"
     end
