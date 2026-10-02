@@ -21,6 +21,12 @@ export default class extends Controller {
   start() {
     if (this.isRunning) return
 
+    // AudioContext aanmaken/resumen moet binnen een user-gesture; latere
+    // setTimeout-ticks tellen niet meer als gesture, dus Chrome weigert
+    // oscillator.start() als de context nog "suspended" is.
+    const ctx = this.getAudioContext()
+    if (ctx.state === "suspended") ctx.resume()
+
     this.isRunning = true
     this.isCountingDown = true
     this.countdownSeconds = 5
