@@ -214,6 +214,9 @@ Rails.application.routes.draw do
   post "mail/dismiss", to: "mail#dismiss", as: :mail_dismiss
   post "mail/mark_as_read", to: "mail#mark_as_read", as: :mail_mark_as_read
 
+  # HEY (IMAP) dashboard
+  get "hey/dashboard", to: "hey#dashboard", as: :hey_dashboard
+
   # Meetings
   get "meetings/banner", to: "meetings#banner", as: :meetings_banner
   get "meetings/next", to: "meetings#next_meeting", as: :next_meeting
@@ -247,6 +250,11 @@ Rails.application.routes.draw do
     resources :github_accounts, only: [:index, :create, :destroy] do
       collection do
         get :callback
+      end
+    end
+    resources :imap_accounts do
+      member do
+        patch :toggle
       end
     end
     resources :waste_calendar, only: [:index] do

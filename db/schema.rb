@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_06_100100) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_23_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -233,6 +233,20 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_06_100100) do
     t.text "choice_options"
     t.index ["active"], name: "index_habits_on_active"
     t.index ["position"], name: "index_habits_on_position"
+  end
+
+  create_table "imap_accounts", force: :cascade do |t|
+    t.string "label", null: false
+    t.string "host", null: false
+    t.integer "port", default: 993, null: false
+    t.string "username", null: false
+    t.text "password", null: false
+    t.string "folder", default: "INBOX", null: false
+    t.boolean "enabled", default: true, null: false
+    t.datetime "discarded_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["username", "host"], name: "index_imap_accounts_on_username_and_host", unique: true, where: "(discarded_at IS NULL)"
   end
 
   create_table "inbox_rules", force: :cascade do |t|

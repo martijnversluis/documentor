@@ -9,6 +9,7 @@ class RefreshExternalDataJob < ApplicationJob
     refresh_calendar_events
     refresh_github_dashboards
     refresh_mail_dashboards
+    refresh_hey_dashboards
     sync_calendar_lists
     refresh_filter_counts
     refresh_pending_reviews
@@ -142,6 +143,18 @@ class RefreshExternalDataJob < ApplicationJob
       Rails.cache.write("mail_dashboard_#{account.id}", { auth_error: e.message }, expires_in: CACHE_TTL)
     rescue StandardError => e
       Rails.logger.warn "RefreshExternalDataJob: Mail dashboard failed for account #{account.id}: #{e.message}"
+    end
+  end
+
+  def refresh_hey_dashboards
+    ImapAccount.enabled.find_each do |account|
+      messages = ImapMailService.new(account).unread_messages
+      Rails.cache.write("hey_dashboard_#{account.id}", messages, expires_in: CACHE_TTL)
+    rescue ImapMailService::AuthorizationError, ImapMailService::ConnectionError => e
+      Rails.logger.warn "RefreshExternalDataJob: HEY auth/connect failed for account #{account.id}: #{e.message}"
+      Rails.cache.write("hey_dashboard_#{account.id}", { auth_error: e.message }, expires_in: CACHE_TTL)
+    rescue StandardError => e
+      Rails.logger.warn "RefreshExternalDataJob: HEY dashboard failed for account #{account.id}: #{e.message}"
     end
   end
 end
