@@ -216,6 +216,7 @@ Rails.application.routes.draw do
 
   # HEY (IMAP) dashboard
   get "hey/dashboard", to: "hey#dashboard", as: :hey_dashboard
+  post "hey/mark_as_read", to: "hey#mark_as_read", as: :hey_mark_as_read
 
   # Meetings
   get "meetings/banner", to: "meetings#banner", as: :meetings_banner

@@ -25,6 +25,13 @@ class ImapMailService
     end
   end
 
+  def mark_as_read(uid)
+    with_imap do |imap|
+      imap.select(@account.folder)
+      imap.uid_store(Integer(uid), "+FLAGS", [:Seen])
+    end
+  end
+
   private
 
   def build_message(fetch_data)

@@ -25,4 +25,28 @@ class HeyController < ApplicationController
       render partial: "hey/dashboard", locals: { messages: @messages, account: @account }
     end
   end
+
+  def mark_as_read
+    account = ImapAccount.enabled.first
+    @uid = params[:uid].to_s
+
+    unless account && @uid.present?
+      head :unprocessable_entity
+      return
+    end
+
+    ImapMailService.new(account).mark_as_read(@uid)
+    Rails.cache.delete("hey_dashboard_#{account.id}")
+
+    respond_to do |format|
+      format.turbo_stream
+      format.json { render json: { success: true } }
+    end
+  rescue StandardError => e
+    Rails.logger.warn "HEY mark_as_read failed: #{e.class}: #{e.message}"
+    respond_to do |format|
+      format.turbo_stream { head :unprocessable_entity }
+      format.json { render json: { success: false, error: e.message }, status: :unprocessable_entity }
+    end
+  end
 end
