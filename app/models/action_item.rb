@@ -39,6 +39,11 @@ class ActionItem < ApplicationRecord
       date: now.to_date, tod: now.strftime("%H:%M:%S")
     )
   }
+  scope :today_all, -> { pending.where(due_date: ..Date.current) }
+  scope :today_scheduled_hidden, -> {
+    now = Time.current
+    pending.where(due_date: now.to_date).where("due_time > ?", now.strftime("%H:%M:%S"))
+  }
   scope :tomorrow, -> { pending.where(due_date: Date.tomorrow) }
   scope :upcoming, -> { pending.where(due_date: Date.current..7.days.from_now.to_date) }
   scope :ordered, -> { order(Arel.sql("position IS NULL, position ASC, due_date IS NULL, due_date ASC, created_at ASC")) }
