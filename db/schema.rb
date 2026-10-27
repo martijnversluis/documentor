@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_23_120000) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_27_122234) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -46,6 +46,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_23_120000) do
     t.bigint "meeting_id"
     t.string "status_text"
     t.bigint "party_id"
+    t.time "due_time"
     t.index ["dossier_id"], name: "index_action_items_on_dossier_id"
     t.index ["meeting_id"], name: "index_action_items_on_meeting_id"
     t.index ["parent_id", "completed_at", "someday", "due_date"], name: "index_action_items_on_filter_counts"

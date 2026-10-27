@@ -332,6 +332,13 @@ class ActionItemsController < ApplicationController
     redirect_to today_action_items_path, notice: message
   end
 
+  def scheduled_today
+    items = ActionItem.scheduled_today.active.map do |item|
+      { id: item.id, description: item.description, scheduled_at: item.scheduled_at.iso8601 }
+    end
+    render json: items
+  end
+
   # Renders one dashboard section for a given filter as a partial. Used by the
   # lazy_load Stimulus controller to defer expensive blocks off the initial page
   # render, so a slow SolidCache / DB warm-up can't blow the 15s rack-timeout on
@@ -390,7 +397,7 @@ class ActionItemsController < ApplicationController
   end
 
   def action_item_params
-    params.require(:action_item).permit(:description, :due_date, :recurrence, :context, :dossier_id, :party_id, :waiting_for_party_id, :waiting_for_description, :someday, :estimated_minutes, :next_action, :parent_id, :notes, :status_text)
+    params.require(:action_item).permit(:description, :due_date, :due_time, :recurrence, :context, :dossier_id, :party_id, :waiting_for_party_id, :waiting_for_description, :someday, :estimated_minutes, :next_action, :parent_id, :notes, :status_text)
   end
 
   def base_scope

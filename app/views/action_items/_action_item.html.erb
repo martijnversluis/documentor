@@ -45,7 +45,7 @@
           <span class="text-xs text-green-600">Afgerond <%= action_item.completed_at.strftime("%d-%m-%Y") %></span>
         <% elsif action_item.due_date.present? %>
           <span class="text-xs <%= action_item.overdue? ? 'text-red-600 font-medium' : 'text-gray-500' %>">
-            <%= action_item.due_date.strftime("%d-%m-%Y") %>
+            <%= action_item.due_date.strftime("%d-%m-%Y") %><% if action_item.due_time.present? %> <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-medium ml-1"><%= action_item.due_time.strftime("%H:%M") %></span><% end %>
           </span>
         <% end %>
         <% if action_item.context.present? %>

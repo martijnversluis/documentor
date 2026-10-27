@@ -24,6 +24,7 @@ class ActionItem < ApplicationRecord
   validates :recurrence, inclusion: { in: RECURRENCE_OPTIONS }, allow_blank: true
   validate :context_must_exist
   validate :children_must_be_completed_before_parent, on: :update, if: -> { completed_at_changed? && completed? }
+  validate :due_time_requires_due_date
 
   scope :pending, -> { where(completed_at: nil) }
   scope :completed, -> { where.not(completed_at: nil) }
@@ -31,7 +32,13 @@ class ActionItem < ApplicationRecord
   scope :completed_yesterday, -> { completed.where(completed_at: Date.yesterday.all_day) }
   scope :due_today, -> { pending.where(due_date: Date.current) }
   scope :overdue, -> { pending.where(due_date: ...Date.current) }
-  scope :today, -> { pending.where(due_date: ..Date.current) }
+  scope :today, -> {
+    now = Time.current
+    pending.where(
+      "due_date < :date OR (due_date = :date AND (due_time IS NULL OR due_time <= :tod))",
+      date: now.to_date, tod: now.strftime("%H:%M:%S")
+    )
+  }
   scope :tomorrow, -> { pending.where(due_date: Date.tomorrow) }
   scope :upcoming, -> { pending.where(due_date: Date.current..7.days.from_now.to_date) }
   scope :ordered, -> { order(Arel.sql("position IS NULL, position ASC, due_date IS NULL, due_date ASC, created_at ASC")) }
@@ -48,21 +55,25 @@ class ActionItem < ApplicationRecord
   }
   scope :next_actions, -> { where(next_action: true) }
   scope :recurring, -> { where.not(recurrence: [nil, ""]) }
+  scope :scheduled_today, -> { pending.where(due_date: Date.current).where.not(due_time: nil) }
   scope :root_items, -> { where(parent_id: nil) }
 
   FILTER_COUNT_KEYS = %i[today tomorrow yesterday overdue waiting someday quick next recurring inbox].freeze
 
   def self.filter_counts(scope)
     conn = connection
-    today = conn.quote(Date.current)
+    now = Time.current
+    today = conn.quote(now.to_date)
+    now_tod = conn.quote(now.strftime("%H:%M:%S"))
     tomorrow = conn.quote(Date.tomorrow)
     yesterday_start = conn.quote(Date.yesterday.beginning_of_day)
     yesterday_end = conn.quote(Date.yesterday.end_of_day)
     quick_horizon = conn.quote(1.week.from_now.to_date)
 
     pending_active = "completed_at IS NULL AND someday = FALSE"
+    today_due = "(due_date < #{today} OR (due_date = #{today} AND (due_time IS NULL OR due_time <= #{now_tod})))"
     filters = {
-      today: "#{pending_active} AND due_date <= #{today}",
+      today: "#{pending_active} AND #{today_due}",
       tomorrow: "#{pending_active} AND due_date = #{tomorrow}",
       yesterday: "completed_at BETWEEN #{yesterday_start} AND #{yesterday_end}",
       overdue: "#{pending_active} AND due_date < #{today}",
@@ -108,6 +119,22 @@ class ActionItem < ApplicationRecord
 
   def due_today?
     !completed? && due_date == Date.current
+  end
+
+  def active_now?
+    return true if due_time.blank?
+    return true if due_date.nil?
+    return true if due_date < Date.current
+
+    due_date == Date.current && seconds_of_day(due_time) <= seconds_of_day(Time.current)
+  end
+
+  def scheduled_at
+    return nil if due_date.nil?
+    return due_date.to_time if due_time.blank?
+
+    Time.zone.local(due_date.year, due_date.month, due_date.day,
+                    due_time.hour, due_time.min, due_time.sec)
   end
 
   def recurring?
@@ -206,12 +233,17 @@ class ActionItem < ApplicationRecord
       dossier: dossier,
       description: description,
       due_date: next_due_date,
+      due_time: due_time,
       recurrence: recurrence,
       context: context,
       waiting_for_party_id: waiting_for_party_id,
       waiting_for_description: waiting_for_description,
       estimated_minutes: estimated_minutes
     )
+  end
+
+  def seconds_of_day(value)
+    value.hour * 3600 + value.min * 60 + value.sec
   end
 
   def calculate_next_due_date
@@ -246,6 +278,12 @@ class ActionItem < ApplicationRecord
   def children_must_be_completed_before_parent
     if children.pending.exists?
       errors.add(:base, "Kan niet afronden: er zijn nog open sub-items")
+    end
+  end
+
+  def due_time_requires_due_date
+    if due_time.present? && due_date.blank?
+      errors.add(:due_time, "vereist een datum")
     end
   end
 end
