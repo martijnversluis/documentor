@@ -117,7 +117,14 @@
       <% end %>
     </div>
 
-    <div data-controller="lazy-load" data-lazy-load-url-value="<%= fragment_action_items_path(filter: @current_filter, section: :pending_items) %>" data-lazy-load-delay-value="100">
+    <% if @current_filter == :today %>
+      <div data-controller="scheduled-notifier" data-scheduled-notifier-url-value="<%= scheduled_today_action_items_path(format: :json) %>"></div>
+    <% end %>
+
+    <div data-controller="lazy-load"
+         data-lazy-load-url-value="<%= fragment_action_items_path(filter: @current_filter, section: :pending_items) %>"
+         data-lazy-load-delay-value="100"
+         data-action="action-items:refresh@window->lazy-load#refresh">
       <div data-lazy-load-target="content">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 flex items-center gap-2">
           <svg class="animate-spin h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

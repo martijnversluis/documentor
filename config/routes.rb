@@ -135,6 +135,7 @@ Rails.application.routes.draw do
       patch :reorder
       patch :postpone_today
       patch :reschedule_overdue
+      get :scheduled_today
       get "fragment/:filter/:section",
           action: :fragment,
           as: :fragment,
