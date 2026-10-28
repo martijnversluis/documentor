@@ -79,7 +79,7 @@
               <% end %>
               <% if item.due_date.present? && !item.next_action? %>
                 <span class="text-xs <%= item.overdue? ? 'text-red-600 font-medium' : 'text-gray-500' %>">
-                  <%= item.due_date.strftime("%d-%m-%Y") %>
+                  <%= item.due_date.strftime("%d-%m-%Y") %><% if item.due_time.present? %> <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-medium ml-1"><%= item.due_time.strftime("%H:%M") %></span><% end %>
                 </span>
               <% end %>
               <% if item.recurring? %>
