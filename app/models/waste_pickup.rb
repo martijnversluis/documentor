@@ -46,6 +46,7 @@ class WastePickup < ApplicationRecord
     item = linked_action_items.first_or_initialize
     item.description = action_item_description
     item.due_date = collection_date - 1.day
+    item.due_time ||= "15:00"
     item.notes = action_item_notes
     item.position ||= 0
     item.save! if item.new_record? || item.changed?

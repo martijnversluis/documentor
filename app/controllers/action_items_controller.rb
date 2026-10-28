@@ -5,6 +5,7 @@ class ActionItemsController < ApplicationController
   def today
     @current_filter = :today
     @filter_label = "vandaag"
+    @show_hidden = params[:show_hidden].present?
     @habits = load_habits_for_today
     render :index
   end
@@ -345,11 +346,15 @@ class ActionItemsController < ApplicationController
   # /.
   def fragment
     @current_filter = params[:filter].to_sym
+    @show_hidden = params[:show_hidden].present?
 
     case params[:section]
     when "pending_items"
       @pending_items = fragment_pending_items.to_a
-      @overdue_count = filtered_action_items(ActionItem.pending.active.overdue).count if @current_filter == :today
+      if @current_filter == :today
+        @overdue_count = filtered_action_items(ActionItem.pending.active.overdue).count
+        @hidden_count = filtered_action_items(ActionItem.today_scheduled_hidden.root_items).count
+      end
       render partial: "action_items/pending_items_section", layout: false
     when "pending_reviews"
       @pending_reviews = pending_reviews_for_today
@@ -430,7 +435,7 @@ class ActionItemsController < ApplicationController
 
   def fragment_pending_items
     case @current_filter
-    when :today then base_pending_scope.today
+    when :today then @show_hidden ? base_pending_scope.today_all : base_pending_scope.today
     when :tomorrow then base_pending_scope.tomorrow
     when :yesterday then ActionItem.none
     when :overdue then base_pending_scope.overdue

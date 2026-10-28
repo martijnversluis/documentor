@@ -122,7 +122,7 @@
     <% end %>
 
     <div data-controller="lazy-load"
-         data-lazy-load-url-value="<%= fragment_action_items_path(filter: @current_filter, section: :pending_items) %>"
+         data-lazy-load-url-value="<%= fragment_action_items_path(filter: @current_filter, section: :pending_items, show_hidden: @show_hidden ? 1 : nil) %>"
          data-lazy-load-delay-value="100"
          data-action="action-items:refresh@window->lazy-load#refresh">
       <div data-lazy-load-target="content">
